@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rentleeys — Affordable Stays Worldwide</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root {
+  --bg:      #fff;
+  --bg2:     #f7f8fa;
+  --bg3:     #f0f2f5;
+  --border:  #e5e7eb;
+  --text:    #111827;
+  --text2:   #6b7280;
+  --text3:   #9ca3af;
+  --primary: #ff5a5f;
+  --primary2:#e04e53;
+  --primary-light: #fff1f1;
+  --green:   #00a651;
+  --sans:    'Plus Jakarta Sans', sans-serif;
+  --body:    'Inter', sans-serif;
+  --radius:  12px;
+  --shadow:  0 2px 16px rgba(0,0,0,0.08);
+  --shadow2: 0 4px 24px rgba(0,0,0,0.12);
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { background:var(--bg); color:var(--text); font-family:var(--body); line-height:1.6; }
+
+/* ── NAVBAR ──────────────────────────────────────────────── */
+.nav {
+  position:sticky; top:0; z-index:100;
+  background:rgba(255,255,255,0.95);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 24px; height:64px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.nav-logo {
+  font-family:var(--sans); font-size:22px; font-weight:800;
+  color:var(--text); text-decoration:none; letter-spacing:-0.5px;
+}
+.nav-logo span { color:var(--primary); }
+.nav-links { display:flex; gap:24px; align-items:center; }
+.nav-links a { font-size:14px; color:var(--text2); text-decoration:none; font-weight:500; }
+.nav-links a:hover { color:var(--text); }
+.nav-btn { background:var(--primary); color:#fff; border:none; border-radius:8px; padding:9px 20px; font-size:14px; font-weight:700; cursor:pointer; font-family:var(--sans); }
+.nav-btn:hover { background:var(--primary2); }
+.nav-btn.outline { background:none; border:1.5px solid var(--border); color:var(--text); margin-right:8px; }
+.nav-btn.outline:hover { border-color:var(--text); }
+
+/* ── HERO ────────────────────────────────────────────────── */
+.hero {
+  background:linear-gradient(180deg, #fff5f5 0%, #fff 100%);
+  padding:72px 24px 56px;
+  text-align:center;
+}
+.hero-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  background:#fff; border:1px solid var(--border);
+  border-radius:20px; padding:6px 14px;
+  font-size:13px; color:var(--text2); font-weight:500;
+  margin-bottom:24px; box-shadow:var(--shadow);
+}
+.hero-badge span { color:var(--primary); font-weight:700; }
+.hero h1 {
+  font-family:var(--sans); font-size:clamp(32px,5vw,56px);
+  font-weight:800; color:var(--text); line-height:1.15;
+  letter-spacing:-1.5px; margin-bottom:16px;
+  max-width:680px; margin-left:auto; margin-right:auto;
+}
+.hero h1 em { color:var(--primary); font-style:normal; }
+.hero p {
+  font-size:18px; color:var(--text2); max-width:480px;
+  margin:0 auto 40px; line-height:1.7;
+}
+
+/* ── SEARCH BOX ──────────────────────────────────────────── */
+.search-box {
+  background:#fff; border:1px solid var(--border);
+  border-radius:60px; padding:8px 8px 8px 24px;
+  display:flex; align-items:center; gap:0;
+  max-width:760px; margin:0 auto 48px;
+  box-shadow:var(--shadow2);
+}
+.search-field {
+  display:flex; flex-direction:column; flex:1; padding:8px 16px;
+  border-right:1px solid var(--border); cursor:pointer;
+}
+.search-field:last-of-type { border-right:none; }
+.search-label { font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:0.5px; }
+.search-input {
+  font-size:14px; color:var(--text2); border:none; outline:none;
+  background:none; font-family:var(--body); width:100%;
+}
+.search-btn {
+  background:var(--primary); color:#fff; border:none;
+  border-radius:50px; padding:14px 24px; font-size:14px;
+  font-weight:700; cursor:pointer; display:flex; align-items:center;
+  gap:8px; white-space:nowrap; font-family:var(--sans);
+  flex-shrink:0;
+}
+.search-btn:hover { background:var(--primary2); }
+
+/* ── STATS ───────────────────────────────────────────────── */
+.stats { display:flex; justify-content:center; gap:48px; flex-wrap:wrap; margin-bottom:16px; }
+.stat-item { text-align:center; }
+.stat-num { font-family:var(--sans); font-size:28px; font-weight:800; color:var(--text); }
+.stat-label { font-size:13px; color:var(--text2); margin-top:2px; }
+
+/* ── SECTION ─────────────────────────────────────────────── */
+.section { padding:56px 24px; max-width:1200px; margin:0 auto; }
+.section-header { margin-bottom:32px; }
+.section-eyebrow { font-size:12px; font-weight:700; color:var(--primary); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; }
+.section-title { font-family:var(--sans); font-size:28px; font-weight:800; color:var(--text); letter-spacing:-0.5px; }
+.section-sub { font-size:15px; color:var(--text2); margin-top:6px; }
+
+/* ── PROPERTY CARDS ──────────────────────────────────────── */
+.properties-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:24px; }
+.prop-card {
+  background:#fff; border-radius:16px; overflow:hidden;
+  border:1px solid var(--border); transition:transform .2s, box-shadow .2s;
+  cursor:pointer; text-decoration:none; color:inherit; display:block;
+}
+.prop-card:hover { transform:translateY(-4px); box-shadow:var(--shadow2); }
+.prop-img {
+  width:100%; aspect-ratio:4/3; object-fit:cover;
+  background:linear-gradient(135deg,#ffecd2,#fcb69f);
+  display:flex; align-items:center; justify-content:center;
+  font-size:48px; position:relative;
+}
+.prop-badge {
+  position:absolute; top:12px; left:12px;
+  background:#fff; border-radius:6px; padding:4px 10px;
+  font-size:11px; font-weight:700; color:var(--text);
+}
+.prop-badge.new { background:var(--primary); color:#fff; }
+.prop-save {
+  position:absolute; top:12px; right:12px;
+  width:32px; height:32px; background:rgba(255,255,255,0.9);
+  border-radius:50%; display:flex; align-items:center;
+  justify-content:center; font-size:16px; cursor:pointer;
+}
+.prop-body { padding:16px; }
+.prop-location { font-size:12px; color:var(--text3); margin-bottom:4px; }
+.prop-title { font-family:var(--sans); font-size:15px; font-weight:700; color:var(--text); margin-bottom:6px; }
+.prop-meta { display:flex; gap:12px; font-size:12px; color:var(--text2); margin-bottom:10px; }
+.prop-price { display:flex; align-items:baseline; gap:4px; }
+.prop-price strong { font-family:var(--sans); font-size:18px; font-weight:800; color:var(--text); }
+.prop-price span { font-size:12px; color:var(--text2); }
+.prop-rating { display:flex; align-items:center; gap:4px; font-size:12px; color:var(--text2); margin-left:auto; }
+
+/* ── WHY US ──────────────────────────────────────────────── */
+.why-section { background:var(--bg2); padding:56px 24px; }
+.why-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:24px; max-width:1200px; margin:0 auto; }
+.why-card {
+  background:#fff; border-radius:16px; padding:28px 24px;
+  border:1px solid var(--border);
+}
+.why-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:16px; }
+.why-title { font-family:var(--sans); font-size:16px; font-weight:700; margin-bottom:8px; }
+.why-text { font-size:14px; color:var(--text2); line-height:1.6; }
+
+/* ── DESTINATIONS ────────────────────────────────────────── */
+.dest-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; }
+.dest-card {
+  border-radius:16px; overflow:hidden; position:relative;
+  aspect-ratio:3/4; cursor:pointer; display:flex;
+  align-items:flex-end; text-decoration:none;
+}
+.dest-bg {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:72px;
+}
+.dest-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%);
+}
+.dest-info { position:relative; padding:16px; color:#fff; }
+.dest-name { font-family:var(--sans); font-size:18px; font-weight:800; }
+.dest-count { font-size:12px; opacity:0.8; }
+
+/* ── HOW IT WORKS ────────────────────────────────────────── */
+.steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:32px; }
+.step { text-align:center; }
+.step-num {
+  width:48px; height:48px; border-radius:50%;
+  background:var(--primary-light); color:var(--primary);
+  font-family:var(--sans); font-size:20px; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 16px;
+}
+.step-title { font-family:var(--sans); font-size:16px; font-weight:700; margin-bottom:6px; }
+.step-text { font-size:14px; color:var(--text2); }
+
+/* ── HOST CTA ────────────────────────────────────────────── */
+.host-cta {
+  background:linear-gradient(135deg, var(--primary), #ff8a8d);
+  border-radius:24px; padding:48px 40px;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:32px; flex-wrap:wrap;
+}
+.host-cta-text h2 { font-family:var(--sans); font-size:28px; font-weight:800; color:#fff; letter-spacing:-0.5px; margin-bottom:8px; }
+.host-cta-text p { font-size:16px; color:rgba(255,255,255,0.85); }
+.host-cta-btn { background:#fff; color:var(--primary); border:none; border-radius:12px; padding:16px 32px; font-size:16px; font-weight:800; cursor:pointer; font-family:var(--sans); white-space:nowrap; }
+.host-cta-btn:hover { background:#fff8f8; }
+
+/* ── TESTIMONIALS ────────────────────────────────────────── */
+.reviews-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
+.review-card { background:#fff; border:1px solid var(--border); border-radius:16px; padding:24px; }
+.review-stars { color:#f59e0b; font-size:14px; margin-bottom:12px; }
+.review-text { font-size:14px; color:var(--text2); line-height:1.7; margin-bottom:16px; font-style:italic; }
+.review-author { display:flex; align-items:center; gap:10px; }
+.review-avatar { width:36px; height:36px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:700; font-family:var(--sans); }
+.review-name { font-size:13px; font-weight:700; color:var(--text); }
+.review-location { font-size:12px; color:var(--text3); }
+
+/* ── FOOTER ──────────────────────────────────────────────── */
+footer {
+  background:var(--text); color:#fff; padding:48px 24px 32px;
+}
+.footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:40px; max-width:1200px; margin:0 auto 40px; flex-wrap:wrap; }
+.footer-brand { font-family:var(--sans); font-size:20px; font-weight:800; margin-bottom:12px; }
+.footer-brand span { color:var(--primary); }
+.footer-desc { font-size:14px; color:#9ca3af; line-height:1.7; }
+.footer-col h4 { font-size:13px; font-weight:700; margin-bottom:16px; text-transform:uppercase; letter-spacing:0.5px; color:#d1d5db; }
+.footer-col a { display:block; font-size:14px; color:#9ca3af; text-decoration:none; margin-bottom:8px; }
+.footer-col a:hover { color:#fff; }
+.footer-bottom { border-top:1px solid #374151; padding-top:24px; display:flex; justify-content:space-between; align-items:center; max-width:1200px; margin:0 auto; font-size:13px; color:#6b7280; flex-wrap:wrap; gap:12px; }
+
+/* ── AUTH MODAL ──────────────────────────────────────────── */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center; padding:24px; }
+.modal-overlay.open { display:flex; }
+.modal { background:#fff; border-radius:20px; padding:36px; width:100%; max-width:420px; position:relative; }
+.modal-close { position:absolute; top:16px; right:16px; background:none; border:none; font-size:22px; cursor:pointer; color:var(--text2); }
+.modal-title { font-family:var(--sans); font-size:24px; font-weight:800; color:var(--text); margin-bottom:8px; }
+.modal-sub { font-size:14px; color:var(--text2); margin-bottom:24px; }
+.modal-input { width:100%; padding:12px 16px; border:1.5px solid var(--border); border-radius:10px; font-size:14px; color:var(--text); outline:none; font-family:var(--body); margin-bottom:12px; }
+.modal-input:focus { border-color:var(--primary); }
+.modal-btn { width:100%; padding:13px; background:var(--primary); color:#fff; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; font-family:var(--sans); margin-bottom:12px; }
+.modal-btn:hover { background:var(--primary2); }
+.modal-divider { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.modal-divider::before,.modal-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+.modal-divider span { font-size:12px; color:var(--text3); }
+.modal-social { width:100%; padding:12px; border:1.5px solid var(--border); border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; font-family:var(--body); background:#fff; color:var(--text); margin-bottom:10px; }
+.modal-social:hover { background:var(--bg2); }
+.modal-switch { text-align:center; font-size:13px; color:var(--text2); margin-top:8px; }
+.modal-switch a { color:var(--primary); font-weight:600; cursor:pointer; }
+.modal-err { font-size:13px; color:#ef4444; margin-bottom:8px; min-height:18px; }
+
+/* ── LOADING ─────────────────────────────────────────────── */
+.loading { text-align:center; padding:48px; color:var(--text2); font-size:15px; }
+
+@media(max-width:768px) {
+  .search-box { flex-direction:column; border-radius:16px; padding:16px; gap:12px; }
+  .search-field { border-right:none; border-bottom:1px solid var(--border); padding:8px 0; }
+  .search-field:last-of-type { border-bottom:none; }
+  .footer-grid { grid-template-columns:1fr 1fr; }
+  .host-cta { text-align:center; justify-content:center; }
+  .nav-links { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="nav">
+  <a href="/" class="nav-logo">rent<span>leeys</span></a>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#destinations">Destinations</a>
+    <a href="host.html">Become a host</a>
+  </div>
+  <div>
+    <button class="nav-btn outline" onclick="openAuth('login')">Sign in</button>
+    <button class="nav-btn" onclick="openAuth('signup')">Sign up</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">🌏 <span>Now available in Philippines</span> and 50+ countries</div>
+  <h1>Find your perfect stay<br>at <em>half the price</em></h1>
+  <p>Verified homes, apartments, and rooms from local hosts. No hidden fees. No price gouging.</p>
+
+  <!-- SEARCH -->
+  <div class="search-box">
+    <div class="search-field">
+      <span class="search-label">Where</span>
+      <input class="search-input" id="search-location" placeholder="City, region or country" />
+    </div>
+    <div class="search-field">
+      <span class="search-label">Check in</span>
+      <input class="search-input" id="search-checkin" type="date" />
+    </div>
+    <div class="search-field">
+      <span class="search-label">Check out</span>
+      <input class="search-input" id="search-checkout" type="date" />
+    </div>
+    <div class="search-field">
+      <span class="search-label">Guests</span>
+      <input class="search-input" id="search-guests" placeholder="1 guest" />
+    </div>
+    <button class="search-btn" onclick="doSearch()">
+      🔍 Search
+    </button>
+  </div>
+
+  <div class="stats">
+    <div class="stat-item">
+      <div class="stat-num" id="stat-listings">0</div>
+      <div class="stat-label">Active listings</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">50+</div>
+      <div class="stat-label">Countries</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">0% <span style="font-size:16px;color:var(--text2);">host fee</span></div>
+      <div class="stat-label">for first 3 months</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED LISTINGS -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-eyebrow">Featured stays</div>
+    <div class="section-title">Popular right now 🔥</div>
+    <div class="section-sub">Handpicked properties loved by guests</div>
+  </div>
+  <div class="properties-grid" id="featured-listings">
+    <div class="loading">Loading properties...</div>
+  </div>
+</div>
+
+<!-- WHY RENTLEEYS -->
+<div class="why-section">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div class="section-header" style="text-align:center;">
+      <div class="section-eyebrow">Why Rentleeys</div>
+      <div class="section-title">Better for guests. Better for hosts.</div>
+    </div>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-icon" style="background:#fff1f1;">💰</div>
+        <div class="why-title">Up to 40% cheaper</div>
+        <div class="why-text">No inflated service fees. What you see is what you pay. Lower fees means more stays for less money.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon" style="background:#f0fdf4;">✅</div>
+        <div class="why-title">Verified hosts</div>
+        <div class="why-text">Every host is verified with government ID. Every listing is reviewed by our team before going live.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon" style="background:#eff6ff;">💬</div>
+        <div class="why-title">Direct communication</div>
+        <div class="why-text">Message hosts directly. No middlemen. Get answers fast and book with confidence.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon" style="background:#fefce8;">🏠</div>
+        <div class="why-title">Philippines first</div>
+        <div class="why-text">Deep local knowledge. The best budget stays in Manila, Cebu, Boracay, Palawan and beyond.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DESTINATIONS -->
+<div class="section" id="destinations">
+  <div class="section-header">
+    <div class="section-eyebrow">Explore</div>
+    <div class="section-title">Top destinations</div>
+    <div class="section-sub">From ₱500/night in the Philippines to budget stays worldwide</div>
+  </div>
+  <div class="dest-grid">
+    <a class="dest-card" onclick="searchCity('Manila')">
+      <div class="dest-bg" style="background:linear-gradient(135deg,#667eea,#764ba2);">🌆</div>
+      <div class="dest-overlay"></div>
+      <div class="dest-info"><div class="dest-name">Manila</div><div class="dest-count">Philippines</div></div>
+    </a>
+    <a class="dest-card" onclick="searchCity('Cebu')">
+      <div class="dest-bg" style="background:linear-gradient(135deg,#f093fb,#f5576c);">🏝️</div>
+      <div class="dest-overlay"></div>
+      <div class="dest-info"><div class="dest-name">Cebu</div><div class="dest-count">Philippines</div></div>
+    </a>
+    <a class="dest-card" onclick="searchCity('Boracay')">
+      <div class="dest-bg" style="background:linear-gradient(135deg,#4facfe,#00f2fe);">🏖️</div>
+      <div class="dest-overlay"></div>
+      <div class="dest-info"><div class="dest-name">Boracay</div><div class="dest-count">Philippines</div></div>
+    </a>
+    <a class="dest-card" onclick="searchCity('Palawan')">
+      <div class="dest-bg" style="background:linear-gradient(135deg,#43e97b,#38f9d7);">🌴</div>
+      <div class="dest-overlay"></div>
+      <div class="dest-info"><div class="dest-name">Palawan</div><div class="dest-count">Philippines</div></div>
+    </a>
+    <a class="dest-card" onclick="searchCity('Baguio')">
+      <div class="dest-bg" style="background:linear-gradient(135deg,#fa709a,#fee140);">⛰️</div>
+      <div class="dest-overlay"></div>
+      <div class="dest-info"><div class="dest-name">Baguio</div><div class="dest-count">Philippines</div></div>
+    </a>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="why-section" id="how">
+  <div style="max-width:900px;margin:0 auto;text-align:center;">
+    <div class="section-eyebrow" style="text-align:center;margin-bottom:8px;">Simple process</div>
+    <div class="section-title" style="text-align:center;margin-bottom:40px;">Book in 3 easy steps</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Search your destination</div>
+        <div class="step-text">Enter where you want to go, your dates and number of guests.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Choose your stay</div>
+        <div class="step-text">Browse verified listings with real photos, reviews and transparent pricing.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Book & enjoy</div>
+        <div class="step-text">Pay securely, get instant confirmation and message your host directly.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOST CTA -->
+<div class="section">
+  <div class="host-cta">
+    <div class="host-cta-text">
+      <h2>Turn your space into income 💸</h2>
+      <p>List your property for FREE. 0% host fee for your first 3 months. Join hundreds of hosts earning extra income.</p>
+    </div>
+    <button class="host-cta-btn" onclick="window.location.href='host.html'">Start hosting today →</button>
+  </div>
+</div>
+
+<!-- TESTIMONIALS -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-eyebrow">Reviews</div>
+    <div class="section-title">Guests love Rentleeys ❤️</div>
+  </div>
+  <div class="reviews-grid">
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <div class="review-text">"Found a beautiful condo in Makati for ₱1,200/night. Airbnb wanted ₱2,800 for the same area. Absolutely love Rentleeys!"</div>
+      <div class="review-author">
+        <div class="review-avatar">MR</div>
+        <div><div class="review-name">Maria R.</div><div class="review-location">Manila, Philippines</div></div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <div class="review-text">"The host was amazing and the place was exactly as described. No surprise fees at checkout. Will definitely book again!"</div>
+      <div class="review-author">
+        <div class="review-avatar">JC</div>
+        <div><div class="review-name">James C.</div><div class="review-location">Cebu City, Philippines</div></div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <div class="review-text">"As a budget traveler, Rentleeys is a game changer. Booked a beachfront room in Boracay for a fraction of what other platforms charge."</div>
+      <div class="review-author">
+        <div class="review-avatar">SK</div>
+        <div><div class="review-name">Sarah K.</div><div class="review-location">Tourist, Australia</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">rent<span>leeys</span></div>
+      <p class="footer-desc">Affordable stays worldwide. Better for guests, better for hosts. No hidden fees, no price gouging.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Explore</h4>
+      <a href="search.html">Search stays</a>
+      <a href="#destinations">Destinations</a>
+      <a href="listing.html">Featured listings</a>
+    </div>
+    <div class="footer-col">
+      <h4>Hosting</h4>
+      <a href="host.html">Become a host</a>
+      <a href="host.html#tips">Hosting tips</a>
+      <a href="host.html#pricing">Pricing guide</a>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="mailto:hello@rentleeys.com">Contact us</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Rentleeys · Built with ❤️ in the Philippines 🇵🇭</span>
+    <span>Made for budget travelers worldwide 🌏</span>
+  </div>
+</footer>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="auth-modal" onclick="if(event.target===this)closeAuth()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAuth()">×</button>
+    <div class="modal-title" id="auth-title">Welcome back</div>
+    <div class="modal-sub" id="auth-sub">Sign in to your Rentleeys account</div>
+    <div class="modal-err" id="auth-err"></div>
+    <input class="modal-input" id="auth-email" type="email" placeholder="Email address" />
+    <input class="modal-input" id="auth-pass" type="password" placeholder="Password" />
+    <div id="auth-name-wrap" style="display:none;">
+      <input class="modal-input" id="auth-name" type="text" placeholder="Full name" />
+    </div>
+    <button class="modal-btn" onclick="handleAuth()">Continue</button>
+    <div class="modal-divider"><span>or</span></div>
+    <button class="modal-social" onclick="socialAuth('google')">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/></svg>
+      Continue with Google
+    </button>
+    <div class="modal-switch" id="auth-switch">
+      Don't have an account? <a onclick="toggleAuth()">Sign up</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPA_URL  = 'https://lvzwirglhdrutggaoyvm.supabase.co';
+const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2endpcmdsaGRydXRnZ2FveXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4Mjc0MzQsImV4cCI6MjA5NzQwMzQzNH0.55HME06oIExPfQ2KdgdBYbYQ4jGWzlfzDL_yXStc6zk';
+const _db = window.supabase.createClient(SUPA_URL, SUPA_ANON);
+var _user = null;
+var _authMode = 'login';
+
+// ── AUTH ──────────────────────────────────────────────────
+_db.auth.onAuthStateChange(function(event, session) {
+  _user = session ? session.user : null;
+  updateNavAuth();
+});
+
+function updateNavAuth() {
+  // Update nav buttons based on auth state
+}
+
+function openAuth(mode) {
+  _authMode = mode || 'login';
+  updateAuthModal();
+  document.getElementById('auth-modal').classList.add('open');
+}
+
+function closeAuth() {
+  document.getElementById('auth-modal').classList.remove('open');
+  document.getElementById('auth-err').textContent = '';
+}
+
+function toggleAuth() {
+  _authMode = _authMode === 'login' ? 'signup' : 'login';
+  updateAuthModal();
+}
+
+function updateAuthModal() {
+  var isLogin = _authMode === 'login';
+  document.getElementById('auth-title').textContent = isLogin ? 'Welcome back' : 'Create account';
+  document.getElementById('auth-sub').textContent = isLogin ? 'Sign in to your Rentleeys account' : 'Join thousands of travelers saving on stays';
+  document.getElementById('auth-name-wrap').style.display = isLogin ? 'none' : 'block';
+  document.getElementById('auth-switch').innerHTML = isLogin
+    ? "Don't have an account? <a onclick='toggleAuth()'>Sign up</a>"
+    : "Already have an account? <a onclick='toggleAuth()'>Sign in</a>";
+  document.getElementById('auth-err').textContent = '';
+}
+
+async function handleAuth() {
+  var email = document.getElementById('auth-email').value.trim();
+  var pass  = document.getElementById('auth-pass').value;
+  var err   = document.getElementById('auth-err');
+  if (!email || !pass) { err.textContent = 'Please fill all fields.'; return; }
+
+  if (_authMode === 'signup') {
+    var name = document.getElementById('auth-name').value.trim();
+    var { data, error } = await _db.auth.signUp({ email, password: pass, options: { data: { full_name: name } } });
+    if (error) { err.textContent = error.message; return; }
+    closeAuth();
+    alert('Account created! Check your email to verify.');
+  } else {
+    var { data, error } = await _db.auth.signInWithPassword({ email, password: pass });
+    if (error) { err.textContent = 'Invalid email or password.'; return; }
+    closeAuth();
+    window.location.href = 'dashboard.html';
+  }
+}
+
+async function socialAuth(provider) {
+  var { error } = await _db.auth.signInWithOAuth({
+    provider: provider,
+    options: { redirectTo: 'https://rentleeys.com/dashboard.html' }
+  });
+  if (error) document.getElementById('auth-err').textContent = error.message;
+}
+
+// ── SEARCH ────────────────────────────────────────────────
+function doSearch() {
+  var loc   = document.getElementById('search-location').value.trim();
+  var cin   = document.getElementById('search-checkin').value;
+  var cout  = document.getElementById('search-checkout').value;
+  var guests= document.getElementById('search-guests').value.trim();
+  var params = new URLSearchParams();
+  if(loc)    params.set('location', loc);
+  if(cin)    params.set('checkin', cin);
+  if(cout)   params.set('checkout', cout);
+  if(guests) params.set('guests', guests);
+  window.location.href = 'search.html?' + params.toString();
+}
+
+function searchCity(city) {
+  document.getElementById('search-location').value = city;
+  doSearch();
+}
+
+// ── LOAD FEATURED LISTINGS ────────────────────────────────
+async function loadFeaturedListings() {
+  var grid = document.getElementById('featured-listings');
+  var { data, error } = await _db.from('rentleeys_properties')
+    .select('*').eq('is_approved', true).eq('is_available', true)
+    .order('created_at', { ascending: false }).limit(8);
+
+  if (error || !data || data.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:48px 24px;color:var(--text2);">
+        <div style="font-size:48px;margin-bottom:16px;">🏠</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;">No listings yet</div>
+        <div style="font-size:14px;margin-bottom:24px;">Be the first to list your property!</div>
+        <a href="host.html" style="background:var(--primary);color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">List your property →</a>
+      </div>`;
+    document.getElementById('stat-listings').textContent = '0';
+    return;
+  }
+
+  document.getElementById('stat-listings').textContent = data.length + '+';
+
+  var EMOJIS = { apartment:'🏢', house:'🏡', room:'🛏️', villa:'🏰', condo:'🏙️' };
+  var COLORS = ['linear-gradient(135deg,#667eea,#764ba2)','linear-gradient(135deg,#f093fb,#f5576c)','linear-gradient(135deg,#4facfe,#00f2fe)','linear-gradient(135deg,#43e97b,#38f9d7)','linear-gradient(135deg,#fa709a,#fee140)','linear-gradient(135deg,#a18cd1,#fbc2eb)'];
+
+  grid.innerHTML = data.map(function(p, i) {
+    var emoji = EMOJIS[p.property_type] || '🏠';
+    var color = COLORS[i % COLORS.length];
+    var rating = (4.5 + Math.random() * 0.5).toFixed(1);
+    return `
+      <a class="prop-card" href="listing.html?id=${p.id}">
+        <div class="prop-img" style="background:${p.images && p.images[0] ? 'none' : color};">
+          ${p.images && p.images[0]
+            ? `<img src="${p.images[0]}" style="width:100%;height:100%;object-fit:cover;" alt="${p.title}">`
+            : `<span style="font-size:56px;">${emoji}</span>`}
+          <div class="prop-badge new">New</div>
+          <div class="prop-save">♡</div>
+        </div>
+        <div class="prop-body">
+          <div class="prop-location">📍 ${p.city || ''}, ${p.country || 'Philippines'}</div>
+          <div class="prop-title">${p.title}</div>
+          <div class="prop-meta">
+            <span>👥 ${p.max_guests} guests</span>
+            <span>🛏️ ${p.bedrooms} bed</span>
+            <span>🚿 ${p.bathrooms} bath</span>
+          </div>
+          <div style="display:flex;align-items:center;">
+            <div class="prop-price">
+              <strong>${p.currency === 'PHP' ? '₱' : '$'}${Number(p.price_per_night).toLocaleString()}</strong>
+              <span>/ night</span>
+            </div>
+            <div class="prop-rating">⭐ ${rating}</div>
+          </div>
+        </div>
+      </a>`;
+  }).join('');
+}
+
+// ── INIT ──────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', function() {
+  loadFeaturedListings();
+
+  // Set default dates
+  var today = new Date();
+  var tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+  var nextWeek = new Date(today); nextWeek.setDate(today.getDate() + 7);
+  document.getElementById('search-checkin').value = tomorrow.toISOString().split('T')[0];
+  document.getElementById('search-checkout').value = nextWeek.toISOString().split('T')[0];
+
+  // Search on Enter
+  document.getElementById('search-location').addEventListener('keydown', function(e) {
+    if(e.key === 'Enter') doSearch();
+  });
+});
+</script>
+</body>
+</html>

@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HTTKR0F6YP"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-HTTKR0F6YP');
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Property — Rentleeys</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
@@ -268,7 +276,12 @@ function openBooking() {
   document.getElementById('book-modal').style.display = 'flex';
 }
 
+function trackEvent(name, params) {
+  if(typeof gtag !== 'undefined') gtag('event', name, params || {});
+}
+
 async function confirmBooking() {
+  trackEvent('begin_checkout', { currency: 'PHP' });
   var cin    = document.getElementById('checkin').value;
   var cout   = document.getElementById('checkout').value;
   var guests = parseInt(document.getElementById('book-guests').value);

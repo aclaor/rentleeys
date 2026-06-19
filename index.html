@@ -283,9 +283,13 @@ footer {
     <a href="#destinations">Destinations</a>
     <a href="host.html">Become a host</a>
   </div>
-  <div>
+  <div id="nav-auth-btns">
     <button class="nav-btn outline" onclick="openAuth('login')">Sign in</button>
-    <button class="nav-btn" onclick="openAuth('signup')">Sign up</button>
+    <button class="nav-btn" onclick="openAuth('signup')">Sign up free</button>
+  </div>
+  <div id="nav-user-menu" style="display:none;align-items:center;gap:10px;">
+    <a href="dashboard.html" style="font-size:14px;color:var(--text2);text-decoration:none;font-weight:500;">My Dashboard</a>
+    <div id="nav-avatar" onclick="window.location.href='dashboard.html'" style="width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);">?</div>
   </div>
 </nav>
 
@@ -554,7 +558,15 @@ _db.auth.onAuthStateChange(function(event, session) {
 });
 
 function updateNavAuth() {
-  // Update nav buttons based on auth state
+  if (_user) {
+    document.getElementById('nav-auth-btns').style.display = 'none';
+    document.getElementById('nav-user-menu').style.display = 'flex';
+    var name = _user.user_metadata?.full_name || _user.email || '';
+    document.getElementById('nav-avatar').textContent = name.charAt(0).toUpperCase();
+  } else {
+    document.getElementById('nav-auth-btns').style.display = 'flex';
+    document.getElementById('nav-user-menu').style.display = 'none';
+  }
 }
 
 function openAuth(mode) {
@@ -601,6 +613,7 @@ async function handleAuth() {
     var { data, error } = await _db.auth.signInWithPassword({ email, password: pass });
     if (error) { err.textContent = 'Invalid email or password.'; return; }
     closeAuth();
+    updateNavAuth();
     window.location.href = 'dashboard.html';
   }
 }

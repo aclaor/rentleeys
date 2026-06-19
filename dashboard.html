@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HTTKR0F6YP"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-HTTKR0F6YP');
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — Rentleeys</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
@@ -495,7 +503,12 @@ async function loadReservations() {
   }).join('')+'</div>';
 }
 
+function trackEvent(name, params) {
+  if(typeof gtag !== 'undefined') gtag('event', name, params || {});
+}
+
 async function updateBooking(id, status) {
+  trackEvent(status === 'confirmed' ? 'booking_confirmed' : 'booking_declined', { booking_id: id });
   var { error } = await _db.from('rentleeys_bookings').update({status:status}).eq('id', id);
   if (error) { showToast('Error: '+error.message); return; }
   showToast(status === 'confirmed' ? '✅ Booking accepted!' : '❌ Booking declined');

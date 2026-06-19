@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HTTKR0F6YP"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-HTTKR0F6YP');
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rentleeys — Affordable Stays Worldwide</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
@@ -584,7 +592,8 @@ async function handleAuth() {
 
   if (_authMode === 'signup') {
     var name = document.getElementById('auth-name').value.trim();
-    var { data, error } = await _db.auth.signUp({ email, password: pass, options: { data: { full_name: name } } });
+    trackEvent('sign_up', { method: 'email' });
+  var { data, error } = await _db.auth.signUp({ email, password: pass, options: { data: { full_name: name } } });
     if (error) { err.textContent = error.message; return; }
     closeAuth();
     alert('Account created! Check your email to verify.');
@@ -596,7 +605,12 @@ async function handleAuth() {
   }
 }
 
+function trackEvent(name, params) {
+  if(typeof gtag !== 'undefined') gtag('event', name, params || {});
+}
+
 async function socialAuth(provider) {
+  trackEvent('login', { method: provider });
   var { error } = await _db.auth.signInWithOAuth({
     provider: provider,
     options: { redirectTo: 'https://rentleeys.com/dashboard.html' }

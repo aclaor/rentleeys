@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Rentleeys</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2a2d3e;--border2:#363a52;
+  --text:#e8e8f0;--text2:#8888aa;--text3:#444466;
+  --primary:#ff5a5f;--primary2:#e04e53;
+  --green:#22c55e;--green-bg:rgba(34,197,94,0.1);
+  --red:#ef4444;--red-bg:rgba(239,68,68,0.1);
+  --amber:#f59e0b;--amber-bg:rgba(245,158,11,0.1);
+  --blue:#3b82f6;--blue-bg:rgba(59,130,246,0.1);
+  --sans:'Plus Jakarta Sans',sans-serif;
+  --body:'Inter',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);display:flex;min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:50;}
+.sidebar-logo{padding:20px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.logo-icon{width:32px;height:32px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo-text{font-family:var(--sans);font-size:15px;font-weight:800;color:var(--text);}
+.logo-badge{font-size:10px;font-weight:700;background:var(--primary);color:#fff;padding:2px 6px;border-radius:4px;margin-left:4px;}
+.sidebar-nav{padding:12px;flex:1;overflow-y:auto;}
+.nav-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);padding:0 8px;margin:16px 0 6px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:all .15s;text-decoration:none;position:relative;}
+.nav-item:hover{background:var(--bg3);color:var(--text);}
+.nav-item.active{background:rgba(255,90,95,0.12);color:var(--primary);font-weight:600;}
+.nav-icon{font-size:16px;width:20px;text-align:center;}
+.nav-badge{margin-left:auto;background:var(--primary);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center;}
+.sidebar-bottom{padding:12px;border-top:1px solid var(--border);}
+.admin-chip{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border-radius:10px;margin-bottom:8px;}
+.admin-avatar{width:30px;height:30px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.admin-info{flex:1;overflow:hidden;}
+.admin-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.admin-role{font-size:10px;color:var(--primary);}
+.sign-out{width:100%;padding:8px;background:none;border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2);cursor:pointer;font-family:var(--body);}
+.sign-out:hover{color:var(--primary);border-color:var(--primary);}
+
+/* MAIN */
+.main{margin-left:220px;flex:1;padding:28px;min-height:100vh;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* TOP BAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.page-title{font-family:var(--sans);font-size:22px;font-weight:800;color:var(--text);letter-spacing:-0.5px;}
+.page-sub{font-size:13px;color:var(--text2);margin-top:3px;}
+.topbar-actions{display:flex;gap:10px;}
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);border:none;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-outline{background:none;border:1px solid var(--border2);color:var(--text2);}
+.btn-outline:hover{border-color:var(--text2);color:var(--text);}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:28px;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px 20px;}
+.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);margin-bottom:8px;}
+.stat-val{font-family:var(--sans);font-size:28px;font-weight:800;color:var(--text);line-height:1;}
+.stat-sub{font-size:12px;color:var(--text2);margin-top:6px;}
+.stat-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;}
+
+/* TABLE */
+.table-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:24px;}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);}
+.table-title{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--text);}
+.table-count{font-size:12px;color:var(--text2);background:var(--bg3);padding:3px 10px;border-radius:20px;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:14px 16px;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--bg3);}
+.td-main{color:var(--text);font-weight:600;font-size:14px;}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-pending{background:var(--amber-bg);color:var(--amber);}
+.badge-approved,.badge-confirmed,.badge-live{background:var(--green-bg);color:var(--green);}
+.badge-rejected,.badge-cancelled{background:var(--red-bg);color:var(--red);}
+.badge-review{background:var(--blue-bg);color:var(--blue);}
+.badge-completed{background:var(--bg3);color:var(--text2);}
+
+/* ACTION BUTTONS */
+.action-btns{display:flex;gap:6px;}
+.btn-approve{padding:5px 12px;background:var(--green-bg);color:var(--green);border:1px solid rgba(34,197,94,0.3);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;}
+.btn-approve:hover{background:var(--green);color:#000;}
+.btn-reject{padding:5px 12px;background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,0.3);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;}
+.btn-reject:hover{background:var(--red);color:#fff;}
+.btn-view{padding:5px 12px;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;text-decoration:none;}
+.btn-view:hover{color:var(--text);}
+.btn-delete-sm{padding:5px 10px;background:var(--red-bg);color:var(--red);border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;}
+
+/* PROP PREVIEW */
+.prop-preview{display:flex;align-items:center;gap:12px;}
+.prop-thumb{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;overflow:hidden;}
+.prop-thumb img{width:100%;height:100%;object-fit:cover;}
+
+/* SEARCH/FILTER */
+.filter-bar{display:flex;gap:10px;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.filter-input{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--text);outline:none;font-family:var(--body);min-width:200px;}
+.filter-input:focus{border-color:var(--border2);}
+.filter-select{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--text);outline:none;cursor:pointer;}
+
+/* EMPTY */
+.empty-row td{text-align:center;padding:40px;color:var(--text3);}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;transform:translateY(100px);opacity:0;transition:all .3s;box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:520px;max-height:80vh;overflow-y:auto;}
+.modal-title{font-family:var(--sans);font-size:18px;font-weight:800;margin-bottom:16px;}
+.modal-field{margin-bottom:12px;}
+.modal-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;}
+.modal-val{font-size:14px;color:var(--text);}
+.modal-close{float:right;background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;margin-top:-4px;}
+
+/* LOGIN */
+.login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;width:100%;}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:400px;text-align:center;}
+.login-icon{font-size:48px;margin-bottom:16px;}
+.login-title{font-family:var(--sans);font-size:22px;font-weight:800;margin-bottom:8px;}
+.login-sub{font-size:14px;color:var(--text2);margin-bottom:24px;}
+.login-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:14px;color:var(--text);outline:none;margin-bottom:10px;font-family:var(--body);}
+.login-input:focus{border-color:var(--border2);}
+.login-btn{width:100%;background:var(--primary);color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+.login-err{color:var(--red);font-size:13px;margin-bottom:8px;min-height:18px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-icon">⚡</div>
+    <div class="login-title">Rentleeys Admin</div>
+    <div class="login-sub">Sign in with your admin account to continue</div>
+    <div class="login-err" id="login-err"></div>
+    <input class="login-input" id="admin-email" type="email" placeholder="Admin email" />
+    <input class="login-input" id="admin-pass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()" />
+    <button class="login-btn" onclick="adminLogin()">Sign in →</button>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel" style="display:none;width:100%;display:none;">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🏠</div>
+      <div><div class="logo-text">rentleeys <span class="logo-badge">ADMIN</span></div></div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active" onclick="showPage('overview')" id="nav-overview">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+
+      <div class="nav-label">Listings</div>
+      <div class="nav-item" onclick="showPage('pending')" id="nav-pending">
+        <span class="nav-icon">⏳</span> Pending Review
+        <span class="nav-badge" id="badge-pending">0</span>
+      </div>
+      <div class="nav-item" onclick="showPage('all-listings')" id="nav-all-listings">
+        <span class="nav-icon">🏠</span> All Listings
+      </div>
+
+      <div class="nav-label">Bookings</div>
+      <div class="nav-item" onclick="showPage('bookings')" id="nav-bookings">
+        <span class="nav-icon">📅</span> All Bookings
+        <span class="nav-badge" id="badge-bookings">0</span>
+      </div>
+
+      <div class="nav-label">Users</div>
+      <div class="nav-item" onclick="showPage('users')" id="nav-users">
+        <span class="nav-icon">👥</span> All Users
+      </div>
+      <div class="nav-item" onclick="showPage('hosts')" id="nav-hosts">
+        <span class="nav-icon">🏡</span> Hosts
+      </div>
+
+      <div class="nav-label">Platform</div>
+      <div class="nav-item" onclick="window.open('https://rentleeys.com','_blank')">
+        <span class="nav-icon">🌐</span> View Site
+      </div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="admin-chip">
+        <div class="admin-avatar" id="admin-initial">A</div>
+        <div class="admin-info">
+          <div class="admin-name" id="admin-email-display">Admin</div>
+          <div class="admin-role">● Super Admin</div>
+        </div>
+      </div>
+      <button class="sign-out" onclick="adminSignOut()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- OVERVIEW -->
+    <div class="page active" id="page-overview">
+      <div class="topbar">
+        <div><div class="page-title">Dashboard Overview</div><div class="page-sub">Welcome back! Here's what's happening on Rentleeys.</div></div>
+        <div class="topbar-actions">
+          <button class="btn btn-outline" onclick="loadAll()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-label">Total Listings</div>
+          <div class="stat-val" id="s-total-listings">—</div>
+          <div class="stat-sub"><span class="stat-dot" style="background:var(--green);"></span><span id="s-live-listings">0</span> live</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pending Review</div>
+          <div class="stat-val" id="s-pending">—</div>
+          <div class="stat-sub" style="color:var(--amber);">Needs your approval</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Bookings</div>
+          <div class="stat-val" id="s-bookings">—</div>
+          <div class="stat-sub"><span id="s-pending-bookings">0</span> pending</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Revenue</div>
+          <div class="stat-val" id="s-revenue">—</div>
+          <div class="stat-sub">platform lifetime</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Hosts</div>
+          <div class="stat-val" id="s-hosts">—</div>
+          <div class="stat-sub">registered hosts</div>
+        </div>
+      </div>
+
+      <!-- PENDING QUICK VIEW -->
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">⏳ Listings pending approval</div>
+          <span class="table-count" id="pending-quick-count">0 pending</span>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Property</th><th>Host</th><th>Location</th><th>Price</th><th>Submitted</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="pending-quick-tbody">
+            <tr class="empty-row"><td colspan="6">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- RECENT BOOKINGS -->
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">📅 Recent bookings</div>
+          <span class="table-count" id="bookings-quick-count">0 bookings</span>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Property</th><th>Guest</th><th>Dates</th><th>Amount</th><th>Status</th>
+          </tr></thead>
+          <tbody id="bookings-quick-tbody">
+            <tr class="empty-row"><td colspan="5">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PENDING LISTINGS -->
+    <div class="page" id="page-pending">
+      <div class="topbar">
+        <div><div class="page-title">⏳ Pending Review</div><div class="page-sub">Listings waiting for your approval before going live.</div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Listings to review</div>
+          <span class="table-count" id="pending-count">Loading...</span>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Property</th><th>Host</th><th>Type</th><th>Location</th><th>Price/night</th><th>Submitted</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="pending-tbody">
+            <tr class="empty-row"><td colspan="7">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ALL LISTINGS -->
+    <div class="page" id="page-all-listings">
+      <div class="topbar">
+        <div><div class="page-title">🏠 All Listings</div><div class="page-sub">Manage all properties on Rentleeys.</div></div>
+      </div>
+      <div class="table-card">
+        <div class="filter-bar">
+          <input class="filter-input" id="listings-search" placeholder="Search by title, city..." oninput="filterListings()" />
+          <select class="filter-select" id="listings-status" onchange="filterListings()">
+            <option value="all">All status</option>
+            <option value="approved">Live</option>
+            <option value="pending">Pending</option>
+          </select>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Property</th><th>Type</th><th>Location</th><th>Price</th><th>Status</th><th>Created</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="all-listings-tbody">
+            <tr class="empty-row"><td colspan="7">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ALL BOOKINGS -->
+    <div class="page" id="page-bookings">
+      <div class="topbar">
+        <div><div class="page-title">📅 All Bookings</div><div class="page-sub">Every booking made on Rentleeys.</div></div>
+      </div>
+      <div class="table-card">
+        <div class="filter-bar">
+          <select class="filter-select" id="bookings-status" onchange="loadBookings()">
+            <option value="all">All status</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Property</th><th>Guest ID</th><th>Check In</th><th>Check Out</th><th>Guests</th><th>Amount</th><th>Status</th>
+          </tr></thead>
+          <tbody id="bookings-tbody">
+            <tr class="empty-row"><td colspan="7">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="page" id="page-users">
+      <div class="topbar">
+        <div><div class="page-title">👥 All Users</div><div class="page-sub">Everyone registered on Rentleeys.</div></div>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead><tr>
+            <th>User</th><th>Email</th><th>Provider</th><th>Joined</th><th>Bookings</th>
+          </tr></thead>
+          <tbody id="users-tbody">
+            <tr class="empty-row"><td colspan="5">Loading users...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- HOSTS -->
+    <div class="page" id="page-hosts">
+      <div class="topbar">
+        <div><div class="page-title">🏡 Hosts</div><div class="page-sub">All registered hosts and their listings.</div></div>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead><tr>
+            <th>Host</th><th>Listings</th><th>Verified</th><th>Joined</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="hosts-tbody">
+            <tr class="empty-row"><td colspan="5">Loading hosts...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PROPERTY MODAL -->
+<div class="modal-overlay" id="prop-modal" onclick="if(event.target===this)closePropModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closePropModal()">×</button>
+    <div class="modal-title" id="prop-modal-title">Property Details</div>
+    <div id="prop-modal-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPA_URL      = 'https://lvzwirglhdrutggaoyvm.supabase.co';
+const SUPA_ANON     = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2endpcmdsaGRydXRnZ2FveXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4Mjc0MzQsImV4cCI6MjA5NzQwMzQzNH0.55HME06oIExPfQ2KdgdBYbYQ4jGWzlfzDL_yXStc6zk';
+const ADMIN_EMAILS  = ['alexclaor@gmail.com']; // Add your admin emails here
+const _db = window.supabase.createClient(SUPA_URL, SUPA_ANON);
+var _user = null;
+var _allListings = [];
+var _allBookings = [];
+
+// ── AUTH ──────────────────────────────────────────────────
+_db.auth.onAuthStateChange(function(event, session) {
+  if (!session) {
+    showLoginScreen();
+    return;
+  }
+  _user = session.user;
+  if (!ADMIN_EMAILS.includes(_user.email)) {
+    document.getElementById('login-err').textContent = 'Access denied. Admin only.';
+    _db.auth.signOut();
+    return;
+  }
+  showAdminPanel();
+});
+
+function showLoginScreen() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('admin-panel').style.display = 'none';
+}
+
+function showAdminPanel() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-panel').style.display = 'flex';
+  var name = _user.user_metadata?.full_name || _user.email;
+  document.getElementById('admin-initial').textContent = name.charAt(0).toUpperCase();
+  document.getElementById('admin-email-display').textContent = _user.email;
+  loadAll();
+}
+
+async function adminLogin() {
+  var email = document.getElementById('admin-email').value.trim();
+  var pass  = document.getElementById('admin-pass').value;
+  var err   = document.getElementById('login-err');
+  err.textContent = '';
+  if (!email || !pass) { err.textContent = 'Please fill all fields.'; return; }
+  var { error } = await _db.auth.signInWithPassword({ email, password: pass });
+  if (error) { err.textContent = error.message; }
+}
+
+async function adminSignOut() {
+  await _db.auth.signOut();
+  showLoginScreen();
+}
+
+// ── LOAD ALL ──────────────────────────────────────────────
+async function loadAll() {
+  await Promise.all([loadListings(), loadBookings(), loadUsers(), loadHosts()]);
+  updateStats();
+}
+
+// ── LISTINGS ──────────────────────────────────────────────
+async function loadListings() {
+  var { data } = await _db.from('rentleeys_properties')
+    .select('*').order('created_at', {ascending:false}).limit(100);
+  _allListings = data || [];
+
+  var pending = _allListings.filter(function(l){return !l.is_approved;});
+  document.getElementById('badge-pending').textContent = pending.length;
+  document.getElementById('pending-count').textContent = pending.length + ' pending';
+  document.getElementById('pending-quick-count').textContent = pending.length + ' pending';
+
+  renderPendingTable(pending, 'pending-quick-tbody', true);
+  renderPendingTable(pending, 'pending-tbody', false);
+  renderAllListings(_allListings);
+}
+
+function renderPendingTable(items, tbodyId, limit) {
+  var tbody = document.getElementById(tbodyId);
+  var rows  = limit ? items.slice(0,5) : items;
+  if (!rows || rows.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="7">✅ No listings pending review</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(function(p) {
+    var thumb = p.images && p.images[0]
+      ? '<img src="'+p.images[0]+'" style="width:100%;height:100%;object-fit:cover;">'
+      : '🏠';
+    var date = new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    var sym  = p.currency === 'PHP' ? '₱' : '$';
+    return '<tr>'
+      +'<td><div class="prop-preview"><div class="prop-thumb">'+thumb+'</div><div><div class="td-main">'+p.title+'</div><div style="font-size:11px;color:var(--text3);">'+p.property_type+'</div></div></div></td>'
+      +'<td style="font-size:12px;">'+p.host_id.slice(0,8)+'...</td>'
+      +'<td>'+p.city+', '+p.country+'</td>'
+      +'<td>'+sym+Number(p.price_per_night).toLocaleString()+'/night</td>'
+      +'<td style="font-size:12px;color:var(--text3);">'+date+'</td>'
+      +'<td><div class="action-btns">'
+      +'<button class="btn-approve" onclick="approveListing(\''+p.id+'\')">✓ Approve</button>'
+      +'<button class="btn-reject" onclick="rejectListing(\''+p.id+'\')">✗ Reject</button>'
+      +'<a class="btn-view" href="listing.html?id='+p.id+'" target="_blank">View</a>'
+      +'</div></td></tr>';
+  }).join('');
+}
+
+function renderAllListings(items) {
+  var tbody = document.getElementById('all-listings-tbody');
+  if (!items || items.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="7">No listings found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = items.map(function(p) {
+    var thumb = p.images && p.images[0]
+      ? '<img src="'+p.images[0]+'" style="width:100%;height:100%;object-fit:cover;">'
+      : '🏠';
+    var date = new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    var sym  = p.currency === 'PHP' ? '₱' : '$';
+    var badge = p.is_approved
+      ? '<span class="badge badge-live">● Live</span>'
+      : '<span class="badge badge-review">⏳ Pending</span>';
+    return '<tr>'
+      +'<td><div class="prop-preview"><div class="prop-thumb">'+thumb+'</div><div><div class="td-main">'+p.title+'</div><div style="font-size:11px;color:var(--text3);">ID: '+p.id.slice(0,8)+'</div></div></div></td>'
+      +'<td><span class="badge badge-review" style="font-size:10px;">'+p.property_type+'</span></td>'
+      +'<td>'+p.city+', '+p.country+'</td>'
+      +'<td>'+sym+Number(p.price_per_night).toLocaleString()+'</td>'
+      +'<td>'+badge+'</td>'
+      +'<td style="font-size:12px;color:var(--text3);">'+date+'</td>'
+      +'<td><div class="action-btns">'
+      +(p.is_approved ? '<button class="btn-reject" onclick="rejectListing(\''+p.id+'\')">Unpublish</button>' : '<button class="btn-approve" onclick="approveListing(\''+p.id+'\')">Approve</button>')
+      +'<a class="btn-view" href="listing.html?id='+p.id+'" target="_blank">View</a>'
+      +'<button class="btn-delete-sm" onclick="deleteListing(\''+p.id+'\')">Delete</button>'
+      +'</div></td></tr>';
+  }).join('');
+}
+
+function filterListings() {
+  var search = document.getElementById('listings-search').value.toLowerCase();
+  var status = document.getElementById('listings-status').value;
+  var filtered = _allListings.filter(function(l) {
+    var matchSearch = !search || l.title.toLowerCase().includes(search) || (l.city||'').toLowerCase().includes(search);
+    var matchStatus = status === 'all' || (status === 'approved' ? l.is_approved : !l.is_approved);
+    return matchSearch && matchStatus;
+  });
+  renderAllListings(filtered);
+}
+
+async function approveListing(id) {
+  var { error } = await _db.from('rentleeys_properties').update({is_approved:true}).eq('id',id);
+  if (error) { showToast('Error: '+error.message); return; }
+  showToast('✅ Listing approved and live!');
+  loadListings();
+}
+
+async function rejectListing(id) {
+  var reason = prompt('Reason for rejection (optional):') || '';
+  var { error } = await _db.from('rentleeys_properties').update({is_approved:false}).eq('id',id);
+  if (error) { showToast('Error: '+error.message); return; }
+  showToast('❌ Listing unpublished');
+  loadListings();
+}
+
+async function deleteListing(id) {
+  if (!confirm('Permanently delete this listing? This cannot be undone.')) return;
+  var { error } = await _db.from('rentleeys_properties').delete().eq('id',id);
+  if (error) { showToast('Error: '+error.message); return; }
+  showToast('🗑️ Listing deleted');
+  loadListings();
+}
+
+// ── BOOKINGS ──────────────────────────────────────────────
+async function loadBookings() {
+  var status = document.getElementById('bookings-status') ? document.getElementById('bookings-status').value : 'all';
+  var query  = _db.from('rentleeys_bookings')
+    .select('*, rentleeys_properties(title,currency)').order('created_at',{ascending:false}).limit(100);
+  if (status !== 'all') query = query.eq('status', status);
+  var { data } = await query;
+  _allBookings = data || [];
+
+  var pending = _allBookings.filter(function(b){return b.status==='pending';}).length;
+  document.getElementById('badge-bookings').textContent = pending;
+  document.getElementById('s-pending-bookings').textContent = pending;
+
+  var revenue = _allBookings.filter(function(b){return b.status==='completed';}).reduce(function(s,b){return s+(b.total_price||0);},0);
+
+  renderBookingsTable(_allBookings.slice(0,5), 'bookings-quick-tbody', true);
+  renderBookingsTable(_allBookings, 'bookings-tbody', false);
+  return {pending, revenue};
+}
+
+function renderBookingsTable(items, tbodyId, compact) {
+  var tbody = document.getElementById(tbodyId);
+  if (!items || items.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="7">No bookings yet</td></tr>';
+    document.getElementById('bookings-quick-count') && (document.getElementById('bookings-quick-count').textContent = '0 bookings');
+    return;
+  }
+  !compact && document.getElementById('bookings-quick-count') && (document.getElementById('bookings-quick-count').textContent = items.length+' bookings');
+  tbody.innerHTML = items.map(function(b) {
+    var prop = b.rentleeys_properties || {};
+    var sym  = (prop.currency||'PHP') === 'PHP' ? '₱' : '$';
+    var badge = '<span class="badge badge-'+b.status+'">'+b.status.charAt(0).toUpperCase()+b.status.slice(1)+'</span>';
+    return '<tr>'
+      +'<td class="td-main">'+(prop.title||'Unknown property')+'</td>'
+      +'<td style="font-size:12px;color:var(--text3);">'+b.guest_id.slice(0,8)+'...</td>'
+      +'<td>'+b.check_in+'</td>'
+      +'<td>'+b.check_out+'</td>'
+      +'<td>'+b.guests+'</td>'
+      +'<td class="td-main">'+sym+Number(b.total_price||0).toLocaleString()+'</td>'
+      +'<td>'+badge+'</td></tr>';
+  }).join('');
+}
+
+// ── USERS ─────────────────────────────────────────────────
+async function loadUsers() {
+  var { data } = await _db.from('rentleeys_hosts').select('*').order('joined_at',{ascending:false}).limit(50);
+  var tbody = document.getElementById('users-tbody');
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No users yet</td></tr>';
+    document.getElementById('s-hosts').textContent = '0';
+    return;
+  }
+  document.getElementById('s-hosts').textContent = data.length;
+  tbody.innerHTML = data.map(function(u) {
+    var date = new Date(u.joined_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    var initial = (u.full_name||'?').charAt(0).toUpperCase();
+    return '<tr>'
+      +'<td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">'+initial+'</div><div class="td-main">'+(u.full_name||'Unknown')+'</div></div></td>'
+      +'<td style="font-size:12px;color:var(--text3);">'+u.user_id.slice(0,16)+'...</td>'
+      +'<td><span class="badge badge-approved">Google</span></td>'
+      +'<td style="font-size:12px;color:var(--text3);">'+date+'</td>'
+      +'<td>—</td></tr>';
+  }).join('');
+}
+
+// ── HOSTS ─────────────────────────────────────────────────
+async function loadHosts() {
+  var { data } = await _db.from('rentleeys_hosts').select('*').order('joined_at',{ascending:false});
+  var tbody = document.getElementById('hosts-tbody');
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No hosts yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(function(h) {
+    var date  = new Date(h.joined_at).toLocaleDateString('en-US',{month:'short',year:'numeric'});
+    var initial = (h.full_name||'?').charAt(0).toUpperCase();
+    var listCount = _allListings.filter(function(l){return l.host_id===h.user_id;}).length;
+    return '<tr>'
+      +'<td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">'+initial+'</div><div><div class="td-main">'+(h.full_name||'Unknown')+'</div><div style="font-size:11px;color:var(--text3);">'+(h.bio?h.bio.slice(0,40)+'...':'No bio')+'</div></div></div></td>'
+      +'<td class="td-main">'+listCount+' listing'+(listCount!==1?'s':'')+'</td>'
+      +'<td>'+(h.is_verified?'<span class="badge badge-approved">✓ Verified</span>':'<span class="badge badge-pending">Unverified</span>')+'</td>'
+      +'<td style="font-size:12px;color:var(--text3);">'+date+'</td>'
+      +'<td><div class="action-btns">'
+      +(!h.is_verified?'<button class="btn-approve" onclick="verifyHost(\''+h.user_id+'\')">Verify</button>':'')
+      +'</div></td></tr>';
+  }).join('');
+}
+
+async function verifyHost(userId) {
+  var { error } = await _db.from('rentleeys_hosts').update({is_verified:true}).eq('user_id',userId);
+  if (error) { showToast('Error: '+error.message); return; }
+  showToast('✅ Host verified!');
+  loadHosts();
+}
+
+// ── STATS ─────────────────────────────────────────────────
+function updateStats() {
+  var total   = _allListings.length;
+  var live    = _allListings.filter(function(l){return l.is_approved;}).length;
+  var pending = _allListings.filter(function(l){return !l.is_approved;}).length;
+  var revenue = _allBookings.filter(function(b){return b.status==='completed';}).reduce(function(s,b){return s+(b.total_price||0);},0);
+
+  document.getElementById('s-total-listings').textContent = total;
+  document.getElementById('s-live-listings').textContent = live;
+  document.getElementById('s-pending').textContent = pending;
+  document.getElementById('s-bookings').textContent = _allBookings.length;
+  document.getElementById('s-revenue').textContent = '₱'+Number(revenue).toLocaleString();
+}
+
+// ── NAVIGATION ────────────────────────────────────────────
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  document.getElementById('page-'+page).classList.add('active');
+  var nav = document.getElementById('nav-'+page);
+  if (nav) nav.classList.add('active');
+  if (page === 'bookings') loadBookings();
+  if (page === 'users') loadUsers();
+  if (page === 'hosts') loadHosts();
+}
+
+function closePropModal() {
+  document.getElementById('prop-modal').classList.remove('open');
+}
+
+// ── TOAST ─────────────────────────────────────────────────
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');}, 3000);
+}
+</script>
+</body>
+</html>

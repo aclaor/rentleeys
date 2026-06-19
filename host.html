@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Become a Host — Rentleeys</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root {
+  --bg:#fff; --bg2:#f7f8fa; --bg3:#f0f2f5;
+  --border:#e5e7eb; --text:#111827; --text2:#6b7280; --text3:#9ca3af;
+  --primary:#ff5a5f; --primary2:#e04e53; --primary-light:#fff1f1;
+  --green:#00a651; --sans:'Plus Jakarta Sans',sans-serif; --body:'Inter',sans-serif;
+  --radius:12px; --shadow:0 2px 16px rgba(0,0,0,0.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg2);color:var(--text);font-family:var(--body);}
+.nav{background:#fff;border-bottom:1px solid var(--border);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.nav-logo{font-family:var(--sans);font-size:22px;font-weight:800;color:var(--text);text-decoration:none;}
+.nav-logo span{color:var(--primary);}
+.nav-btn{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+
+/* HERO */
+.host-hero{background:linear-gradient(135deg,var(--primary),#ff8a8d);padding:64px 24px;text-align:center;color:#fff;}
+.host-hero h1{font-family:var(--sans);font-size:clamp(28px,4vw,48px);font-weight:800;letter-spacing:-1px;margin-bottom:12px;}
+.host-hero p{font-size:18px;opacity:0.9;max-width:480px;margin:0 auto 32px;}
+.earnings-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:10px 20px;font-size:15px;font-weight:600;margin-bottom:32px;}
+.hero-stats{display:flex;justify-content:center;gap:48px;flex-wrap:wrap;}
+.hero-stat-num{font-family:var(--sans);font-size:32px;font-weight:800;}
+.hero-stat-label{font-size:13px;opacity:0.8;margin-top:2px;}
+
+/* MAIN LAYOUT */
+.host-main{max-width:1100px;margin:0 auto;padding:40px 24px;display:grid;grid-template-columns:1fr 380px;gap:32px;align-items:start;}
+@media(max-width:900px){.host-main{grid-template-columns:1fr;}}
+
+/* FORM CARD */
+.form-card{background:#fff;border-radius:20px;border:1px solid var(--border);overflow:hidden;}
+.form-steps{display:flex;border-bottom:1px solid var(--border);}
+.form-step{flex:1;padding:16px;text-align:center;font-size:13px;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:3px solid transparent;}
+.form-step.active{color:var(--primary);border-bottom-color:var(--primary);}
+.form-step.done{color:var(--green);border-bottom-color:var(--green);}
+.form-body{padding:32px;}
+.form-section{display:none;}
+.form-section.active{display:block;}
+.form-title{font-family:var(--sans);font-size:20px;font-weight:800;color:var(--text);margin-bottom:6px;}
+.form-sub{font-size:14px;color:var(--text2);margin-bottom:24px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;}
+.field input,.field textarea,.field select{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;color:var(--text);outline:none;font-family:var(--body);background:#fff;}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--primary);}
+.field textarea{resize:vertical;min-height:100px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+
+/* PROPERTY TYPES */
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+.type-chip{border:2px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer;transition:all .15s;}
+.type-chip:hover{border-color:var(--primary);}
+.type-chip.selected{border-color:var(--primary);background:var(--primary-light);}
+.type-chip-icon{font-size:24px;margin-bottom:6px;}
+.type-chip-label{font-size:12px;font-weight:600;color:var(--text);}
+
+/* AMENITIES */
+.amenity-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px;}
+.amenity-chip{border:1.5px solid var(--border);border-radius:8px;padding:10px;text-align:center;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s;}
+.amenity-chip:hover{border-color:var(--primary);}
+.amenity-chip.selected{border-color:var(--primary);background:var(--primary-light);color:var(--primary);}
+
+/* IMAGE UPLOAD */
+.img-upload{border:2px dashed var(--border);border-radius:12px;padding:32px;text-align:center;cursor:pointer;margin-bottom:16px;}
+.img-upload:hover{border-color:var(--primary);background:var(--primary-light);}
+.img-preview{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.img-preview-item{aspect-ratio:1;border-radius:8px;overflow:hidden;position:relative;}
+.img-preview-item img{width:100%;height:100%;object-fit:cover;}
+.img-remove{position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:12px;}
+
+/* NAV BUTTONS */
+.form-nav{display:flex;justify-content:space-between;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);}
+.btn-prev{background:none;border:1.5px solid var(--border);border-radius:10px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;color:var(--text2);font-family:var(--sans);}
+.btn-next{background:var(--primary);color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+.btn-next:hover{background:var(--primary2);}
+.btn-submit{background:var(--green);color:#fff;border:none;border-radius:10px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);width:100%;}
+
+/* SIDEBAR */
+.sidebar{display:flex;flex-direction:column;gap:20px;}
+.sidebar-card{background:#fff;border-radius:16px;border:1px solid var(--border);padding:24px;}
+.sidebar-title{font-family:var(--sans);font-size:16px;font-weight:700;margin-bottom:16px;}
+.earning-calc{display:flex;flex-direction:column;gap:12px;}
+.calc-row{display:flex;justify-content:space-between;font-size:14px;}
+.calc-row.total{font-weight:700;font-size:16px;padding-top:12px;border-top:1px solid var(--border);}
+.calc-input{width:100%;padding:10px 16px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-weight:700;color:var(--text);margin-bottom:12px;font-family:var(--sans);}
+.calc-input:focus{border-color:var(--primary);outline:none;}
+.tip-list{display:flex;flex-direction:column;gap:10px;}
+.tip-item{display:flex;gap:10px;font-size:13px;color:var(--text2);align-items:flex-start;}
+.tip-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+
+/* SUCCESS */
+.success-screen{display:none;text-align:center;padding:48px 32px;}
+.success-screen.show{display:block;}
+.success-icon{font-size:64px;margin-bottom:20px;}
+.success-title{font-family:var(--sans);font-size:24px;font-weight:800;color:var(--text);margin-bottom:8px;}
+.success-sub{font-size:15px;color:var(--text2);margin-bottom:32px;}
+
+/* AUTH GATE */
+.auth-gate{text-align:center;padding:48px 32px;}
+.auth-gate-icon{font-size:48px;margin-bottom:16px;}
+.auth-gate-title{font-family:var(--sans);font-size:20px;font-weight:800;margin-bottom:8px;}
+.auth-gate-sub{font-size:14px;color:var(--text2);margin-bottom:24px;}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-logo">rent<span>leeys</span></a>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <span id="nav-user" style="font-size:14px;color:var(--text2);"></span>
+    <button class="nav-btn" onclick="window.location.href='dashboard.html'">My Dashboard</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="host-hero">
+  <div class="earnings-badge">💰 0% host fee for your first 3 months</div>
+  <h1>List your space.<br>Earn extra income.</h1>
+  <p>Join hosts across the Philippines earning money from their spare rooms, condos and houses.</p>
+  <div class="hero-stats">
+    <div>
+      <div class="hero-stat-num">₱15,000+</div>
+      <div class="hero-stat-label">avg monthly earnings</div>
+    </div>
+    <div>
+      <div class="hero-stat-num">0%</div>
+      <div class="hero-stat-label">fees for 3 months</div>
+    </div>
+    <div>
+      <div class="hero-stat-num">24h</div>
+      <div class="hero-stat-label">listing approval</div>
+    </div>
+  </div>
+</div>
+
+<div class="host-main">
+
+  <!-- FORM -->
+  <div class="form-card">
+
+    <!-- AUTH GATE -->
+    <div class="auth-gate" id="auth-gate">
+      <div class="auth-gate-icon">🔐</div>
+      <div class="auth-gate-title">Sign in to list your property</div>
+      <div class="auth-gate-sub">Create a free account to start earning from your space.</div>
+      <button class="btn-next" onclick="signInGoogle()" style="margin-bottom:10px;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/></svg>
+        Continue with Google
+      </button>
+      <button class="btn-prev" onclick="showEmailForm()" style="width:100%;">Sign up with email</button>
+    </div>
+
+    <!-- LISTING FORM -->
+    <div id="listing-form" style="display:none;">
+      <div class="form-steps">
+        <div class="form-step active" id="step-tab-1">1. Property</div>
+        <div class="form-step" id="step-tab-2">2. Details</div>
+        <div class="form-step" id="step-tab-3">3. Pricing</div>
+        <div class="form-step" id="step-tab-4">4. Photos</div>
+      </div>
+
+      <div class="form-body">
+
+        <!-- STEP 1: Property Type -->
+        <div class="form-section active" id="step-1">
+          <div class="form-title">What kind of place do you have?</div>
+          <div class="form-sub">Choose the type that best describes your space.</div>
+          <div class="type-grid">
+            <div class="type-chip selected" onclick="selectType(this,'apartment')">
+              <div class="type-chip-icon">🏢</div>
+              <div class="type-chip-label">Apartment</div>
+            </div>
+            <div class="type-chip" onclick="selectType(this,'house')">
+              <div class="type-chip-icon">🏡</div>
+              <div class="type-chip-label">House</div>
+            </div>
+            <div class="type-chip" onclick="selectType(this,'room')">
+              <div class="type-chip-icon">🛏️</div>
+              <div class="type-chip-label">Room</div>
+            </div>
+            <div class="type-chip" onclick="selectType(this,'condo')">
+              <div class="type-chip-icon">🏙️</div>
+              <div class="type-chip-label">Condo</div>
+            </div>
+            <div class="type-chip" onclick="selectType(this,'villa')">
+              <div class="type-chip-icon">🏰</div>
+              <div class="type-chip-label">Villa</div>
+            </div>
+            <div class="type-chip" onclick="selectType(this,'cabin')">
+              <div class="type-chip-icon">🛖</div>
+              <div class="type-chip-label">Cabin</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Property title *</label>
+            <input id="f-title" placeholder="e.g. Cozy Studio in BGC with Pool Access" />
+          </div>
+          <div class="field">
+            <label>Description *</label>
+            <textarea id="f-desc" placeholder="Describe your space — highlight what makes it special, nearby attractions, house rules..."></textarea>
+          </div>
+          <div class="form-nav">
+            <div></div>
+            <button class="btn-next" onclick="goStep(2)">Next: Details →</button>
+          </div>
+        </div>
+
+        <!-- STEP 2: Details -->
+        <div class="form-section" id="step-2">
+          <div class="form-title">Tell us more about your space</div>
+          <div class="form-sub">Help guests know what to expect.</div>
+
+          <div class="field-row3">
+            <div class="field">
+              <label>Max guests</label>
+              <select id="f-guests"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>8</option><option>10</option></select>
+            </div>
+            <div class="field">
+              <label>Bedrooms</label>
+              <select id="f-beds"><option>0</option><option selected>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+            </div>
+            <div class="field">
+              <label>Bathrooms</label>
+              <select id="f-baths"><option selected>1</option><option>2</option><option>3</option></select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Address</label>
+            <input id="f-address" placeholder="Street address" />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>City *</label>
+              <input id="f-city" placeholder="e.g. Makati City" />
+            </div>
+            <div class="field">
+              <label>Province / Region</label>
+              <input id="f-province" placeholder="e.g. Metro Manila" />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Country *</label>
+              <select id="f-country">
+                <option value="Philippines" selected>Philippines</option>
+                <option value="USA">USA</option>
+                <option value="Japan">Japan</option>
+                <option value="Thailand">Thailand</option>
+                <option value="Singapore">Singapore</option>
+                <option value="Malaysia">Malaysia</option>
+                <option value="Indonesia">Indonesia</option>
+                <option value="Australia">Australia</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Amenities</label>
+            <div class="amenity-grid">
+              <div class="amenity-chip selected" onclick="toggleAmenity(this,'WiFi')">📶 WiFi</div>
+              <div class="amenity-chip" onclick="toggleAmenity(this,'Air Conditioning')">❄️ Aircon</div>
+              <div class="amenity-chip" onclick="toggleAmenity(this,'Kitchen')">🍳 Kitchen</div>
+              <div class="amenity-chip" onclick="toggleAmenity(this,'Pool')">🏊 Pool</div>
+              <div class="amenity-chip" onclick="toggleAmenity(this,'Parking')">🚗 Parking</div>
+              <div class="amenity-chip" onclick="toggleAmenity(this,'Washing Machine')">🫧 Washer</div>
+              <div class="amenity-chip" onclick="toggleAmenity(this,'TV')">📺 TV</div>
+              <div class="amenity-chip" onclick="toggleAmenity(this,'Gym')">💪 Gym</div>
+              <div class="amenity-chip" onclick="toggleAmenity(this,'Pet Friendly')">🐾 Pets OK</div>
+            </div>
+          </div>
+
+          <div class="form-nav">
+            <button class="btn-prev" onclick="goStep(1)">← Back</button>
+            <button class="btn-next" onclick="goStep(3)">Next: Pricing →</button>
+          </div>
+        </div>
+
+        <!-- STEP 3: Pricing -->
+        <div class="form-section" id="step-3">
+          <div class="form-title">Set your price</div>
+          <div class="form-sub">You can always change this later. We recommend starting competitively.</div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Currency</label>
+              <select id="f-currency" onchange="updateCalc()">
+                <option value="PHP" selected>Philippine Peso (₱)</option>
+                <option value="USD">US Dollar ($)</option>
+                <option value="SGD">Singapore Dollar (S$)</option>
+                <option value="AUD">Australian Dollar (A$)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Price per night *</label>
+              <input id="f-price" type="number" placeholder="1500" min="0" oninput="updateCalc()" />
+            </div>
+          </div>
+
+          <div style="background:var(--bg2);border-radius:12px;padding:20px;margin-bottom:16px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;">Estimated earnings (30 days at 70% occupancy):</div>
+            <div class="calc-row"><span>21 nights × <span id="calc-price">₱0</span></span><span id="calc-gross">₱0</span></div>
+            <div class="calc-row"><span>Rentleeys fee (0% first 3 months!)</span><span style="color:var(--green);">₱0</span></div>
+            <div class="calc-row total"><span>Your estimated earnings</span><span id="calc-net" style="color:var(--green);">₱0</span></div>
+          </div>
+
+          <div class="field">
+            <label>Minimum stay (nights)</label>
+            <select id="f-minstay">
+              <option value="1" selected>1 night</option>
+              <option value="2">2 nights</option>
+              <option value="3">3 nights</option>
+              <option value="7">7 nights</option>
+            </select>
+          </div>
+
+          <div class="form-nav">
+            <button class="btn-prev" onclick="goStep(2)">← Back</button>
+            <button class="btn-next" onclick="goStep(4)">Next: Photos →</button>
+          </div>
+        </div>
+
+        <!-- STEP 4: Photos -->
+        <div class="form-section" id="step-4">
+          <div class="form-title">Add photos of your space</div>
+          <div class="form-sub">Great photos get 3x more bookings. Add at least 3 photos.</div>
+
+          <div class="img-preview" id="img-preview"></div>
+
+          <div class="img-upload" onclick="document.getElementById('photo-upload').click()">
+            <div style="font-size:32px;margin-bottom:8px;">📸</div>
+            <div style="font-weight:700;color:var(--text);margin-bottom:4px;">Click to add photos</div>
+            <div style="font-size:13px;color:var(--text2);">JPG, PNG up to 5MB each</div>
+          </div>
+          <input type="file" id="photo-upload" accept="image/*" multiple style="display:none" onchange="handlePhotos(this)">
+
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:#166534;">
+            💡 <strong>Tip:</strong> Add photos of: living area, bedroom, bathroom, kitchen, view, building entrance
+          </div>
+
+          <div class="form-nav">
+            <button class="btn-prev" onclick="goStep(3)">← Back</button>
+            <button class="btn-submit" onclick="submitListing()">🚀 Submit listing for review</button>
+          </div>
+        </div>
+
+        <!-- SUCCESS -->
+        <div class="success-screen" id="success-screen">
+          <div class="success-icon">🎉</div>
+          <div class="success-title">Your listing is submitted!</div>
+          <div class="success-sub">We'll review your listing within 24 hours and notify you by email. You can manage your listings from your host dashboard.</div>
+          <button class="btn-next" onclick="window.location.href='dashboard.html'" style="margin:0 auto;display:block;">Go to Dashboard →</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- EARNINGS CALC -->
+    <div class="sidebar-card">
+      <div class="sidebar-title">💰 Earnings calculator</div>
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Your nightly price</label>
+      <input class="calc-input" id="side-price" type="number" placeholder="1500" oninput="updateSideCalc(this.value)" />
+      <div class="earning-calc">
+        <div class="calc-row"><span>Monthly (70% occ.)</span><span id="side-monthly">₱0</span></div>
+        <div class="calc-row"><span>Rentleeys fee</span><span style="color:var(--green);">₱0 (free!)</span></div>
+        <div class="calc-row total"><span>You earn</span><span id="side-net" style="color:var(--green);">₱0</span></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px;">*Based on 21 nights/month. 0% fee for first 3 months.</div>
+    </div>
+
+    <!-- TIPS -->
+    <div class="sidebar-card">
+      <div class="sidebar-title">✅ Tips for success</div>
+      <div class="tip-list">
+        <div class="tip-item"><div class="tip-icon">📸</div><div>Use bright, clear photos — listings with 10+ photos get 40% more bookings</div></div>
+        <div class="tip-item"><div class="tip-icon">💬</div><div>Respond to guests within 1 hour — faster response = better ranking</div></div>
+        <div class="tip-item"><div class="tip-icon">💰</div><div>Price competitively to start — you can raise rates after getting reviews</div></div>
+        <div class="tip-item"><div class="tip-icon">🏠</div><div>Write a detailed description — mention nearby transport, malls, attractions</div></div>
+        <div class="tip-item"><div class="tip-icon">⭐</div><div>First 3 reviews matter most — offer a small discount to early guests</div></div>
+      </div>
+    </div>
+
+    <!-- PROTECTION -->
+    <div class="sidebar-card">
+      <div class="sidebar-title">🛡️ Host protection</div>
+      <div style="font-size:14px;color:var(--text2);line-height:1.7;">
+        Every booking on Rentleeys includes:<br>
+        ✓ Guest identity verification<br>
+        ✓ Secure payment processing<br>
+        ✓ Direct support from our team<br>
+        ✓ Property damage reporting system
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SUPA_URL  = 'https://lvzwirglhdrutggaoyvm.supabase.co';
+const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2endpcmdsaGRydXRnZ2FveXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4Mjc0MzQsImV4cCI6MjA5NzQwMzQzNH0.55HME06oIExPfQ2KdgdBYbYQ4jGWzlfzDL_yXStc6zk';
+const _db = window.supabase.createClient(SUPA_URL, SUPA_ANON);
+var _user = null;
+var _step = 1;
+var _type = 'apartment';
+var _amenities = ['WiFi'];
+var _photos = [];
+
+// Auth
+_db.auth.onAuthStateChange(function(event, session) {
+  _user = session ? session.user : null;
+  if (_user) {
+    document.getElementById('auth-gate').style.display = 'none';
+    document.getElementById('listing-form').style.display = 'block';
+    document.getElementById('nav-user').textContent = _user.email;
+  } else {
+    document.getElementById('auth-gate').style.display = 'block';
+    document.getElementById('listing-form').style.display = 'none';
+  }
+});
+
+async function signInGoogle() {
+  await _db.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: 'https://rentleeys.com/host.html' }
+  });
+}
+
+function showEmailForm() {
+  window.location.href = 'index.html#signup';
+}
+
+// Step navigation
+function goStep(n) {
+  if (n > _step && !validateStep(_step)) return;
+  document.getElementById('step-' + _step).classList.remove('active');
+  document.getElementById('step-tab-' + _step).classList.remove('active');
+  document.getElementById('step-tab-' + _step).classList.add('done');
+  _step = n;
+  document.getElementById('step-' + _step).classList.add('active');
+  document.getElementById('step-tab-' + _step).classList.add('active');
+  document.getElementById('step-tab-' + _step).classList.remove('done');
+}
+
+function validateStep(n) {
+  if (n === 1) {
+    if (!document.getElementById('f-title').value.trim()) { alert('Please add a property title.'); return false; }
+    if (!document.getElementById('f-desc').value.trim()) { alert('Please add a description.'); return false; }
+  }
+  if (n === 2) {
+    if (!document.getElementById('f-city').value.trim()) { alert('Please add a city.'); return false; }
+  }
+  if (n === 3) {
+    if (!document.getElementById('f-price').value) { alert('Please set a price.'); return false; }
+  }
+  return true;
+}
+
+function selectType(el, type) {
+  document.querySelectorAll('.type-chip').forEach(function(c) { c.classList.remove('selected'); });
+  el.classList.add('selected');
+  _type = type;
+}
+
+function toggleAmenity(el, amenity) {
+  el.classList.toggle('selected');
+  if (el.classList.contains('selected')) {
+    if (!_amenities.includes(amenity)) _amenities.push(amenity);
+  } else {
+    _amenities = _amenities.filter(function(a) { return a !== amenity; });
+  }
+}
+
+function updateCalc() {
+  var price = parseFloat(document.getElementById('f-price').value) || 0;
+  var curr = document.getElementById('f-currency').value;
+  var sym = curr === 'PHP' ? '₱' : curr === 'USD' ? '$' : curr === 'SGD' ? 'S$' : 'A$';
+  var gross = price * 21;
+  document.getElementById('calc-price').textContent = sym + price.toLocaleString();
+  document.getElementById('calc-gross').textContent = sym + gross.toLocaleString();
+  document.getElementById('calc-net').textContent = sym + gross.toLocaleString();
+}
+
+function updateSideCalc(val) {
+  var price = parseFloat(val) || 0;
+  var monthly = price * 21;
+  document.getElementById('side-monthly').textContent = '₱' + monthly.toLocaleString();
+  document.getElementById('side-net').textContent = '₱' + monthly.toLocaleString();
+}
+
+function handlePhotos(input) {
+  var files = Array.from(input.files);
+  files.forEach(function(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      _photos.push(e.target.result);
+      renderPhotos();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderPhotos() {
+  var preview = document.getElementById('img-preview');
+  preview.innerHTML = _photos.map(function(src, i) {
+    return '<div class="img-preview-item"><img src="' + src + '"><button class="img-remove" onclick="removePhoto(' + i + ')">×</button></div>';
+  }).join('');
+}
+
+function removePhoto(i) {
+  _photos.splice(i, 1);
+  renderPhotos();
+}
+
+async function submitListing() {
+  if (!_user) { alert('Please sign in first.'); return; }
+  if (_photos.length < 1) {
+    if (!confirm('No photos added. Submit anyway? Listings with photos get more bookings.')) return;
+  }
+
+  var btn = document.querySelector('.btn-submit');
+  btn.textContent = 'Submitting...';
+  btn.disabled = true;
+
+  try {
+    var listingData = {
+      host_id:        _user.id,
+      title:          document.getElementById('f-title').value.trim(),
+      description:    document.getElementById('f-desc').value.trim(),
+      property_type:  _type,
+      address:        document.getElementById('f-address').value.trim(),
+      city:           document.getElementById('f-city').value.trim(),
+      province:       document.getElementById('f-province').value.trim(),
+      country:        document.getElementById('f-country').value,
+      price_per_night:parseFloat(document.getElementById('f-price').value),
+      currency:       document.getElementById('f-currency').value,
+      max_guests:     parseInt(document.getElementById('f-guests').value),
+      bedrooms:       parseInt(document.getElementById('f-beds').value),
+      bathrooms:      parseInt(document.getElementById('f-baths').value),
+      amenities:      _amenities,
+      images:         _photos.slice(0, 10),
+      is_available:   true,
+      is_approved:    false,
+    };
+
+    var { data, error } = await _db.from('rentleeys_properties').insert(listingData).select();
+    if (error) throw error;
+
+    // Also create/update host profile
+    await _db.from('rentleeys_hosts').upsert({
+      user_id:   _user.id,
+      full_name: _user.user_metadata?.full_name || _user.email,
+      joined_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+
+    document.querySelector('.form-body').innerHTML = '';
+    document.getElementById('success-screen') && document.getElementById('success-screen').classList.add('show');
+    document.querySelector('.form-steps').style.display = 'none';
+    document.querySelector('.form-body').appendChild(
+      Object.assign(document.createElement('div'), {
+        className: 'success-screen show',
+        innerHTML: '<div class="success-icon">🎉</div><div class="success-title">Listing submitted!</div><div class="success-sub">We will review your listing within 24 hours and email you when it goes live.</div><button class="btn-next" onclick="window.location.href=\'dashboard.html\'" style="margin:0 auto;display:block;">Go to Dashboard →</button>'
+      })
+    );
+  } catch(e) {
+    alert('Error submitting listing: ' + e.message);
+    btn.textContent = '🚀 Submit listing for review';
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>

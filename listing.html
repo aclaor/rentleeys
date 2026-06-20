@@ -15,6 +15,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://www.paypal.com/sdk/js?client-id=ATf1UgpM9IskiwDQTMm49rcFNcq3Bi0EJTHpkmVQCLePpiI7ebNcf9-exQKI-YXFYZMbiRMoTq1eHLD_&currency=USD"></script>
 <style>
 :root{--bg:#fff;--bg2:#f7f8fa;--border:#e5e7eb;--text:#111827;--text2:#6b7280;--text3:#9ca3af;--primary:#ff5a5f;--primary2:#e04e53;--primary-light:#fff1f1;--green:#00a651;--sans:'Plus Jakarta Sans',sans-serif;--body:'Inter',sans-serif;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -103,7 +104,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
     <div style="font-size:14px;color:var(--text2);margin-bottom:20px;" id="book-summary"></div>
     <textarea id="book-message" placeholder="Message to host (optional) — introduce yourself and mention your trip purpose" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--body);resize:vertical;min-height:80px;outline:none;margin-bottom:16px;"></textarea>
     <div id="book-err" style="color:#ef4444;font-size:13px;margin-bottom:8px;min-height:18px;"></div>
-    <button onclick="confirmBooking()" style="width:100%;background:var(--primary);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);">Send booking request 🏠</button>
+    <div id="paypal-btn-container" style="display:none;margin-bottom:10px;"></div>
+<button onclick="showPayPal()" id="proceed-btn" style="width:100%;background:var(--primary);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);">Continue to Payment 💳</button>
     <div style="text-align:center;font-size:12px;color:var(--text3);margin-top:10px;">You won't be charged yet — host must confirm first</div>
   </div>
 </div>
@@ -264,6 +266,59 @@ function updatePrice() {
   document.getElementById('price-total').textContent = sym+Number(subtotal).toLocaleString();
 }
 
+function showPayPal() {
+  var cin   = document.getElementById('checkin').value;
+  var cout  = document.getElementById('checkout').value;
+  var d1    = new Date(cin), d2 = new Date(cout);
+  var nights = Math.max(1, Math.round((d2-d1)/(1000*60*60*24)));
+  var total  = (_property.price_per_night * nights).toFixed(2);
+
+  // Convert PHP to USD for PayPal (rough estimate)
+  var usdAmount = _property.currency === 'PHP'
+    ? (total / 56).toFixed(2)  // approx PHP to USD
+    : total;
+
+  document.getElementById('proceed-btn').style.display = 'none';
+  document.getElementById('paypal-btn-container').style.display = 'block';
+
+  // Clear previous PayPal buttons
+  document.getElementById('paypal-btn-container').innerHTML = '';
+
+  paypal.Buttons({
+    createOrder: function(data, actions) {
+      return actions.order.create({
+        purchase_units: [{
+          amount: {
+            value: usdAmount,
+            currency_code: 'USD'
+          },
+          description: _property.title + ' (' + nights + ' nights)'
+        }]
+      });
+    },
+    onApprove: async function(data, actions) {
+      var details = await actions.order.capture();
+      // Payment successful - save booking
+      await confirmBooking(details.id);
+    },
+    onCancel: function() {
+      document.getElementById('proceed-btn').style.display = 'block';
+      document.getElementById('paypal-btn-container').style.display = 'none';
+      document.getElementById('book-err').textContent = 'Payment cancelled.';
+    },
+    onError: function(err) {
+      document.getElementById('book-err').textContent = 'Payment error. Please try again.';
+      console.error('PayPal error:', err);
+    },
+    style: {
+      color: 'gold',
+      shape: 'rect',
+      label: 'pay',
+      height: 48
+    }
+  }).render('#paypal-btn-container');
+}
+
 function openBooking() {
   if (!_user) { alert('Please sign in to book this property.'); window.location.href = '/?login=1'; return; }
   var cin  = document.getElementById('checkin').value;
@@ -280,7 +335,7 @@ function trackEvent(name, params) {
   if(typeof gtag !== 'undefined') gtag('event', name, params || {});
 }
 
-async function confirmBooking() {
+async function confirmBooking(paymentId) {
   trackEvent('begin_checkout', { currency: 'PHP' });
   var cin    = document.getElementById('checkin').value;
   var cout   = document.getElementById('checkout').value;
@@ -303,12 +358,13 @@ async function confirmBooking() {
       guests:      guests,
       total_price: total,
       currency:    _property.currency,
-      status:      'pending',
+      status:      'confirmed',
+      payment_id:  paymentId || null,
       message:     msg
     });
     if (error) throw error;
     document.getElementById('book-modal').style.display = 'none';
-    alert('🎉 Booking request sent! The host will confirm within 24 hours.');
+    alert('🎉 Payment successful! Your booking is confirmed. Check your dashboard for details.');
     window.location.href = 'dashboard.html';
   } catch(e) {
     err.textContent = 'Error: ' + e.message;

@@ -283,7 +283,7 @@ footer {
     <a href="#destinations">Destinations</a>
     <a href="host.html">Become a host</a>
     <a href="resources.html">Resources</a>
-    <a href="messages.html">💬 Messages</a>
+    <a href="#" onclick="goToMessages(event)">💬 Messages</a>
     <a href="help.html">Help</a>
   </div>
   <div id="nav-auth-btns">
@@ -575,6 +575,17 @@ _db.auth.onAuthStateChange(function(event, session) {
   _user = session ? session.user : null;
   updateNavAuth();
 });
+
+function goToMessages(e) {
+  e.preventDefault();
+  if (_user) {
+    window.location.href = 'messages.html';
+  } else {
+    openAuth('login');
+    // After login redirect to messages
+    sessionStorage.setItem('redirect_after_login', 'messages.html');
+  }
+}
 
 function updateNavAuth() {
   if (_user) {

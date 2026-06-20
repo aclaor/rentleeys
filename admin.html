@@ -610,80 +610,38 @@ function renderBookingsTable(items, tbodyId, compact) {
     document.getElementById('bookings-quick-count') && (document.getElementById('bookings-quick-count').textContent = '0 bookings');
     return;
   }
-  !compact && document.getElementById('bookings-quick-count') && (document.getElementById('bookings-quick-count').textContent = items.length+' bookings');
+  document.getElementById('bookings-quick-count') && (document.getElementById('bookings-quick-count').textContent = items.length + ' bookings');
+
   tbody.innerHTML = items.map(function(b) {
     var prop = b.rentleeys_properties || {};
-    var sym  = (prop.currency||'PHP') === 'PHP' ? '₱' : '$';
-    var badge = '<span class="badge badge-'+b.status+'">'+b.status.charAt(0).toUpperCase()+b.status.slice(1)+'</span>';
-    var actions = b.status === 'pending'
-      ? '<div class="action-btns"><button class="btn-approve" onclick="updateBookingStatus(''+b.id+'','confirmed')">✓ Confirm</button><button class="btn-reject" onclick="updateBookingStatus(''+b.id+'','cancelled')">✗ Cancel</button></div>'
-      : b.status === 'confirmed'
-      ? '<div class="action-btns"><button class="btn-approve" onclick="markPaid(''+b.id+'',''+b.total_price+'')">💸 Pay Host</button><button class="btn-approve" onclick="updateBookingStatus(''+b.id+'','completed')">✓ Complete</button><button class="btn-reject" onclick="updateBookingStatus(''+b.id+'','cancelled')">✗ Cancel</button></div>'
-      : '—';
+    var sym  = (prop.currency || 'PHP') === 'PHP' ? '\u20B1' : '$';
+    var badge = '<span class="badge badge-' + b.status + '">' + b.status.charAt(0).toUpperCase() + b.status.slice(1) + '</span>';
+    var actions = '\u2014';
+    if (b.status === 'pending') {
+      actions = '<div class="action-btns">'
+        + '<button class="btn-approve" data-id="' + b.id + '" data-action="confirmed" onclick="updateBookingStatus(this.dataset.id,this.dataset.action)">Confirm</button>'
+        + '<button class="btn-reject" data-id="' + b.id + '" data-action="cancelled" onclick="updateBookingStatus(this.dataset.id,this.dataset.action)">Cancel</button>'
+        + '</div>';
+    } else if (b.status === 'confirmed') {
+      actions = '<div class="action-btns">'
+        + '<button class="btn-approve" data-id="' + b.id + '" data-price="' + (b.total_price || 0) + '" onclick="markPaid(this.dataset.id,this.dataset.price)">Pay Host</button>'
+        + '<button class="btn-approve" data-id="' + b.id + '" data-action="completed" onclick="updateBookingStatus(this.dataset.id,this.dataset.action)">Complete</button>'
+        + '<button class="btn-reject" data-id="' + b.id + '" data-action="cancelled" onclick="updateBookingStatus(this.dataset.id,this.dataset.action)">Cancel</button>'
+        + '</div>';
+    }
     return '<tr>'
-      +'<td class="td-main">'+(prop.title||'Unknown property')+'</td>'
-      +'<td style="font-size:12px;color:var(--text3);">'+b.guest_id.slice(0,8)+'...</td>'
-      +'<td>'+b.check_in+'</td>'
-      +'<td>'+b.check_out+'</td>'
-      +'<td>'+b.guests+'</td>'
-      +'<td class="td-main">'+sym+Number(b.total_price||0).toLocaleString()+'</td>'
-      +'<td>'+badge+'</td>'
-      +'<td>'+actions+'</td></tr>';
+      + '<td class="td-main">' + (prop.title || 'Unknown property') + '</td>'
+      + '<td style="font-size:12px;color:var(--text3);">' + b.guest_id.slice(0,8) + '...</td>'
+      + '<td>' + b.check_in + '</td>'
+      + '<td>' + b.check_out + '</td>'
+      + '<td>' + b.guests + '</td>'
+      + '<td class="td-main">' + sym + Number(b.total_price || 0).toLocaleString() + '</td>'
+      + '<td>' + badge + '</td>'
+      + '<td>' + actions + '</td>'
+      + '</tr>';
   }).join('');
 }
 
-// ── USERS ─────────────────────────────────────────────────
-async function loadUsers() {
-  var { data } = await _db.from('rentleeys_hosts').select('*').order('joined_at',{ascending:false}).limit(50);
-  var tbody = document.getElementById('users-tbody');
-  if (!data || data.length === 0) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No users yet</td></tr>';
-    document.getElementById('s-hosts').textContent = '0';
-    return;
-  }
-  document.getElementById('s-hosts').textContent = data.length;
-  tbody.innerHTML = data.map(function(u) {
-    var date = new Date(u.joined_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-    var initial = (u.full_name||'?').charAt(0).toUpperCase();
-    return '<tr>'
-      +'<td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">'+initial+'</div><div class="td-main">'+(u.full_name||'Unknown')+'</div></div></td>'
-      +'<td style="font-size:12px;color:var(--text3);">'+u.user_id.slice(0,16)+'...</td>'
-      +'<td><span class="badge badge-approved">Google</span></td>'
-      +'<td style="font-size:12px;color:var(--text3);">'+date+'</td>'
-      +'<td>—</td></tr>';
-  }).join('');
-}
-
-// ── HOSTS ─────────────────────────────────────────────────
-async function loadHosts() {
-  var { data } = await _db.from('rentleeys_hosts').select('*').order('joined_at',{ascending:false});
-  var tbody = document.getElementById('hosts-tbody');
-  if (!data || data.length === 0) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No hosts yet</td></tr>';
-    return;
-  }
-  tbody.innerHTML = data.map(function(h) {
-    var date  = new Date(h.joined_at).toLocaleDateString('en-US',{month:'short',year:'numeric'});
-    var initial = (h.full_name||'?').charAt(0).toUpperCase();
-    var listCount = _allListings.filter(function(l){return l.host_id===h.user_id;}).length;
-    return '<tr>'
-      +'<td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">'+initial+'</div><div><div class="td-main">'+(h.full_name||'Unknown')+'</div><div style="font-size:11px;color:var(--text3);">'+(h.bio?h.bio.slice(0,40)+'...':'No bio')+'</div></div></div></td>'
-      +'<td class="td-main">'+listCount+' listing'+(listCount!==1?'s':'')+'</td>'
-      +'<td>'+(h.is_verified?'<span class="badge badge-approved">✓ Verified</span>':'<span class="badge badge-pending">Unverified</span>')+'</td>'
-      +'<td style="font-size:12px;color:var(--text3);">'+date+'</td>'
-      +'<td><div class="action-btns">'
-      +(!h.is_verified?'<button class="btn-approve" onclick="verifyHost(\''+h.user_id+'\')">Verify</button>':'')
-      +'</div></td></tr>';
-  }).join('');
-}
-
-function markPaid(id, totalPrice) {
-  var hostPayout = (parseFloat(totalPrice) * 0.92).toFixed(2);
-  var confirmed = confirm('Pay host $'+hostPayout+' (92% of $'+totalPrice+')?
-
-After paying the host via PayPal/GCash, click OK to mark as completed.');
-  if (confirmed) updateBookingStatus(id, 'completed');
-}
 
 async function updateBookingStatus(id, status) {
   var { error } = await _db.from('rentleeys_bookings').update({status:status}).eq('id',id);

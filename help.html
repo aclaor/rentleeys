@@ -307,7 +307,7 @@ async function submitRequest() {
   btn.disabled = true;
 
   try {
-    // Send via Brevo API
+    // Try Brevo API first
     var response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
@@ -315,45 +315,53 @@ async function submitRequest() {
         'api-key': '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'
       },
       body: JSON.stringify({
-        sender: { name: 'Rentleeys Help Center', email: 'hello@rentleeys.com' },
+        sender: { name: name + ' via Rentleeys', email: 'hello@rentleeys.com' },
         to: [{ email: 'support@rentleeys.com', name: 'Rentleeys Support' }],
         replyTo: { email: email, name: name },
-        subject: '['+topic.toUpperCase()+'] Support request from '+name+' ('+role+')',
+        subject: '[' + topic.toUpperCase() + '] ' + name + ' (' + role + ')',
         htmlContent: '<h2>New Support Request</h2>'
-          +'<p><strong>Name:</strong> '+name+'</p>'
-          +'<p><strong>Email:</strong> <a href="mailto:'+email+'">'+email+'</a></p>'
-          +'<p><strong>Role:</strong> '+role+'</p>'
-          +'<p><strong>Topic:</strong> '+topic+'</p>'
-          +'<hr>'
-          +'<p><strong>Message:</strong></p>'
-          +'<p>'+message.replace(/\n/g,'<br>')+'</p>'
-          +'<hr>'
-          +'<p style="color:#6b7280;font-size:12px;">Sent from Rentleeys Help Center</p>'
+          + '<p><strong>Name:</strong> ' + name + '</p>'
+          + '<p><strong>Email:</strong> <a href="mailto:' + email + '">' + email + '</a></p>'
+          + '<p><strong>Role:</strong> ' + role + '</p>'
+          + '<p><strong>Topic:</strong> ' + topic + '</p>'
+          + '<hr><p><strong>Message:</strong></p>'
+          + '<p>' + message.replace(/
+/g, '<br>') + '</p>'
       })
     });
 
     if (response.ok) {
-      document.getElementById('contact-form').style.display = 'none';
-      document.getElementById('form-success').classList.add('show');
-    } else {
-      // Fallback to mailto
-      var subject = encodeURIComponent('['+topic.toUpperCase()+'] Support from '+name);
-      var body = encodeURIComponent('Name: '+name+'\nEmail: '+email+'\nRole: '+role+'\nTopic: '+topic+'\n\nMessage:\n'+message);
-      window.location.href = 'mailto:support@rentleeys.com?subject='+subject+'&body='+body;
-      document.getElementById('contact-form').style.display = 'none';
-      document.getElementById('form-success').classList.add('show');
+      showSuccess();
+      return;
     }
   } catch(e) {
-    // Fallback to mailto if API fails
-    var subject = encodeURIComponent('['+topic.toUpperCase()+'] Support from '+name);
-    var body = encodeURIComponent('Name: '+name+'\nEmail: '+email+'\nRole: '+role+'\nTopic: '+topic+'\n\nMessage:\n'+message);
-    window.location.href = 'mailto:support@rentleeys.com?subject='+subject+'&body='+body;
-    document.getElementById('contact-form').style.display = 'none';
-    document.getElementById('form-success').classList.add('show');
+    console.log('Brevo failed, using mailto:', e);
   }
+
+  // Always works fallback - open email client
+  var subject = encodeURIComponent('[' + topic + '] Message from ' + name);
+  var body = encodeURIComponent(
+    'Hi Rentleeys Support,' +
+    '\n\nName: ' + name +
+    '\nEmail: ' + email +
+    '\nI am a: ' + role +
+    '\nTopic: ' + topic +
+    '\n\nMessage:\n' + message +
+    '\n\n---\nSent from rentleeys.com/help.html'
+  );
+  window.open('mailto:support@rentleeys.com?subject=' + subject + '&body=' + body, '_blank');
+  showSuccess();
 
   btn.textContent = 'Send request →';
   btn.disabled = false;
+}
+
+function showSuccess() {
+  document.getElementById('contact-form').style.display = 'none';
+  document.getElementById('form-success').classList.add('show');
+  document.getElementById('form-success').innerHTML = '✅ <strong>Request submitted!</strong><br><br>'
+    + 'We'll get back to you at your email within 24 hours.<br><br>'
+    + 'You can also email us directly at <a href="mailto:support@rentleeys.com" style="color:var(--green);">support@rentleeys.com</a>';
 }
 
 // Init

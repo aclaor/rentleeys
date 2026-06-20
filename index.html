@@ -599,22 +599,32 @@ function updateAuthModal() {
 async function handleAuth() {
   var email = document.getElementById('auth-email').value.trim();
   var pass  = document.getElementById('auth-pass').value;
-  var err   = document.getElementById('auth-err');
-  if (!email || !pass) { err.textContent = 'Please fill all fields.'; return; }
+  var errEl = document.getElementById('auth-err');
+  errEl.textContent = '';
+  if (!email || !pass) { errEl.textContent = 'Please fill all fields.'; return; }
 
   if (_authMode === 'signup') {
     var name = document.getElementById('auth-name').value.trim();
-    trackEvent('sign_up', { method: 'email' });
-    var signupResult = await _db.auth.signUp({ email, password: pass, options: { data: { full_name: name } } });
-    if (signupResult.error) { err.textContent = signupResult.error.message; return; }
-    closeAuth();
-    alert('Account created! Check your email to verify.');
+    try {
+      var res = await _db.auth.signUp({
+        email: email,
+        password: pass,
+        options: { data: { full_name: name } }
+      });
+      if (res.error) { errEl.textContent = res.error.message; return; }
+      if (typeof gtag !== 'undefined') gtag('event', 'sign_up', { method: 'email' });
+      closeAuth();
+      alert('Account created! Check your email to verify.');
+    } catch(e) { errEl.textContent = e.message; }
   } else {
-    var loginResult = await _db.auth.signInWithPassword({ email, password: pass });
-    if (loginResult.error) { err.textContent = 'Invalid email or password.'; return; }
-    closeAuth();
-    updateNavAuth();
-    window.location.href = 'dashboard.html';
+    try {
+      var res2 = await _db.auth.signInWithPassword({ email: email, password: pass });
+      if (res2.error) { errEl.textContent = 'Invalid email or password.'; return; }
+      if (typeof gtag !== 'undefined') gtag('event', 'login', { method: 'email' });
+      closeAuth();
+      updateNavAuth();
+      window.location.href = 'dashboard.html';
+    } catch(e) { errEl.textContent = e.message; }
   }
 }
 

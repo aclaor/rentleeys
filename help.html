@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Help Center — Rentleeys</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{--bg:#fff;--bg2:#f7f8fa;--border:#e5e7eb;--text:#111827;--text2:#6b7280;--text3:#9ca3af;--primary:#ff5a5f;--green:#00a651;--sans:'Plus Jakarta Sans',sans-serif;--body:'Inter',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);}
+.nav{height:64px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.logo{font-family:var(--sans);font-size:20px;font-weight:800;text-decoration:none;color:var(--text);}
+.logo span{color:var(--primary);}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#fff5f5,#fff);padding:56px 24px 40px;text-align:center;}
+.hero h1{font-family:var(--sans);font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:16px;}
+.search-bar{max-width:560px;margin:0 auto;display:flex;background:#fff;border:1.5px solid var(--border);border-radius:50px;padding:6px 6px 6px 20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);}
+.search-bar input{flex:1;border:none;outline:none;font-size:15px;font-family:var(--body);color:var(--text);}
+.search-bar button{background:var(--primary);color:#fff;border:none;border-radius:50px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;}
+
+/* CONTACT CHANNELS */
+.contact-section{max-width:900px;margin:0 auto;padding:48px 24px;}
+.contact-title{font-family:var(--sans);font-size:24px;font-weight:800;text-align:center;margin-bottom:8px;}
+.contact-sub{font-size:15px;color:var(--text2);text-align:center;margin-bottom:32px;}
+.contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:48px;}
+.contact-card{border:1.5px solid var(--border);border-radius:16px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;text-decoration:none;color:inherit;display:block;}
+.contact-card:hover{border-color:var(--primary);box-shadow:0 4px 20px rgba(255,90,95,0.1);transform:translateY(-2px);}
+.contact-icon{font-size:40px;margin-bottom:14px;}
+.contact-name{font-family:var(--sans);font-size:16px;font-weight:700;margin-bottom:6px;}
+.contact-desc{font-size:13px;color:var(--text2);margin-bottom:10px;line-height:1.5;}
+.contact-badge{display:inline-block;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
+.badge-fast{background:#dcfce7;color:#166534;}
+.badge-medium{background:#fef9c3;color:#854d0e;}
+.badge-slow{background:#f3f4f6;color:#374151;}
+
+/* FAQ */
+.faq-section{background:var(--bg2);padding:48px 24px;}
+.faq-inner{max-width:760px;margin:0 auto;}
+.faq-title{font-family:var(--sans);font-size:24px;font-weight:800;margin-bottom:32px;}
+.faq-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;}
+.faq-tab{padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--text2);transition:all .15s;}
+.faq-tab.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+.faq-list{display:flex;flex-direction:column;gap:2px;}
+.faq-item{background:#fff;border-radius:10px;overflow:hidden;margin-bottom:4px;}
+.faq-q{padding:16px 20px;font-size:15px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;}
+.faq-q:hover{background:#fafafa;}
+.faq-arrow{font-size:18px;color:var(--text3);transition:transform .2s;}
+.faq-a{padding:0 20px 16px;font-size:14px;color:var(--text2);line-height:1.7;display:none;}
+.faq-item.open .faq-a{display:block;}
+.faq-item.open .faq-arrow{transform:rotate(180deg);}
+
+/* CONTACT FORM */
+.contact-form-section{max-width:640px;margin:0 auto;padding:48px 24px;}
+.form-title{font-family:var(--sans);font-size:24px;font-weight:800;margin-bottom:8px;}
+.form-sub{font-size:15px;color:var(--text2);margin-bottom:28px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;}
+.field input,.field textarea,.field select{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;color:var(--text);outline:none;font-family:var(--body);}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--primary);}
+.field textarea{min-height:120px;resize:vertical;}
+.submit-btn{background:var(--primary);color:#fff;border:none;border-radius:10px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);width:100%;}
+.success-msg{display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:20px;text-align:center;font-size:15px;color:#166534;}
+.success-msg.show{display:block;}
+
+/* SAFETY */
+.safety-section{background:#fff5f5;border-top:1px solid #fecaca;padding:40px 24px;}
+.safety-inner{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+.safety-text h3{font-family:var(--sans);font-size:20px;font-weight:800;color:var(--primary);margin-bottom:6px;}
+.safety-text p{font-size:14px;color:var(--text2);}
+.safety-btn{background:var(--primary);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--sans);}
+
+footer{background:var(--text);color:#fff;padding:32px 24px;text-align:center;font-size:13px;color:#6b7280;}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="logo">rent<span>leeys</span></a>
+  <a href="/" style="font-size:14px;color:var(--text2);text-decoration:none;">← Back to Home</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div style="font-size:48px;margin-bottom:16px;">💬</div>
+  <h1>How can we help?</h1>
+  <div class="search-bar">
+    <input id="faq-search" placeholder="Search help articles..." oninput="searchFAQ(this.value)" />
+    <button onclick="searchFAQ(document.getElementById('faq-search').value)">Search</button>
+  </div>
+</div>
+
+<!-- CONTACT CHANNELS -->
+<div class="contact-section">
+  <div class="contact-title">Contact Rentleeys support</div>
+  <div class="contact-sub">Choose the fastest way to reach us</div>
+  <div class="contact-grid">
+
+    <a href="mailto:support@rentleeys.com" class="contact-card">
+      <div class="contact-icon">📧</div>
+      <div class="contact-name">Email Support</div>
+      <div class="contact-desc">Send us an email and we'll respond within 24 hours.</div>
+      <span class="contact-badge badge-medium">Within 24 hours</span>
+    </a>
+
+    <div class="contact-card" onclick="document.getElementById('contact-form-section').scrollIntoView({behavior:'smooth'})">
+      <div class="contact-icon">📝</div>
+      <div class="contact-name">Submit a request</div>
+      <div class="contact-desc">Fill out our support form and track your request online.</div>
+      <span class="contact-badge badge-medium">Within 24 hours</span>
+    </div>
+
+    <a href="mailto:safety@rentleeys.com" class="contact-card" style="border-color:#fecaca;">
+      <div class="contact-icon">🆘</div>
+      <div class="contact-name">Safety issue</div>
+      <div class="contact-desc">Report urgent safety concerns. We treat these as top priority.</div>
+      <span class="contact-badge badge-fast" style="background:#fff5f5;color:var(--primary);">Priority response</span>
+    </a>
+
+  </div>
+
+  <!-- Quick links -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+    <div onclick="filterFAQ('booking')" style="background:var(--bg2);border-radius:12px;padding:16px;cursor:pointer;display:flex;align-items:center;gap:12px;">
+      <span style="font-size:24px;">📅</span>
+      <div><div style="font-weight:600;font-size:14px;">Booking issues</div><div style="font-size:12px;color:var(--text2);">Changes, cancellations</div></div>
+    </div>
+    <div onclick="filterFAQ('payment')" style="background:var(--bg2);border-radius:12px;padding:16px;cursor:pointer;display:flex;align-items:center;gap:12px;">
+      <span style="font-size:24px;">💳</span>
+      <div><div style="font-weight:600;font-size:14px;">Payments & refunds</div><div style="font-size:12px;color:var(--text2);">Charges, payouts</div></div>
+    </div>
+    <div onclick="filterFAQ('account')" style="background:var(--bg2);border-radius:12px;padding:16px;cursor:pointer;display:flex;align-items:center;gap:12px;">
+      <span style="font-size:24px;">👤</span>
+      <div><div style="font-weight:600;font-size:14px;">Account & profile</div><div style="font-size:12px;color:var(--text2);">Login, settings</div></div>
+    </div>
+    <div onclick="filterFAQ('host')" style="background:var(--bg2);border-radius:12px;padding:16px;cursor:pointer;display:flex;align-items:center;gap:12px;">
+      <span style="font-size:24px;">🏠</span>
+      <div><div style="font-weight:600;font-size:14px;">Hosting</div><div style="font-size:12px;color:var(--text2);">Listings, payouts</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq-section">
+  <div class="faq-inner">
+    <div class="faq-title">Frequently asked questions</div>
+    <div class="faq-tabs">
+      <div class="faq-tab active" onclick="filterFAQ('all',this)">All</div>
+      <div class="faq-tab" onclick="filterFAQ('booking',this)">Booking</div>
+      <div class="faq-tab" onclick="filterFAQ('payment',this)">Payment</div>
+      <div class="faq-tab" onclick="filterFAQ('host',this)">Hosting</div>
+      <div class="faq-tab" onclick="filterFAQ('account',this)">Account</div>
+    </div>
+    <div class="faq-list" id="faq-list"></div>
+  </div>
+</div>
+
+<!-- CONTACT FORM -->
+<div class="contact-form-section" id="contact-form-section">
+  <div class="form-title">Submit a support request</div>
+  <div class="form-sub">Our team typically responds within 24 hours.</div>
+
+  <div class="success-msg" id="form-success">
+    ✅ <strong>Request submitted!</strong> We'll get back to you at your email within 24 hours.
+  </div>
+
+  <div id="contact-form">
+    <div class="field">
+      <label>Your name</label>
+      <input id="cf-name" placeholder="Full name" />
+    </div>
+    <div class="field">
+      <label>Email address</label>
+      <input id="cf-email" type="email" placeholder="your@email.com" />
+    </div>
+    <div class="field">
+      <label>I am a...</label>
+      <select id="cf-role">
+        <option value="guest">Guest</option>
+        <option value="host">Host</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Topic</label>
+      <select id="cf-topic">
+        <option value="booking">Booking issue</option>
+        <option value="payment">Payment or refund</option>
+        <option value="listing">Listing problem</option>
+        <option value="account">Account issue</option>
+        <option value="safety">Safety concern</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Describe your issue</label>
+      <textarea id="cf-message" placeholder="Please describe your issue in detail. Include booking dates, property name, and any relevant information..."></textarea>
+    </div>
+    <button class="submit-btn" onclick="submitRequest()">Send request →</button>
+  </div>
+</div>
+
+<!-- SAFETY BANNER -->
+<div class="safety-section">
+  <div class="safety-inner">
+    <div style="font-size:48px;">🆘</div>
+    <div class="safety-text">
+      <h3>Safety issue during your stay?</h3>
+      <p>If you feel unsafe or encounter an emergency, contact local authorities first. Then report to Rentleeys immediately — we're here 24/7 for urgent safety issues.</p>
+    </div>
+    <a href="mailto:safety@rentleeys.com" class="safety-btn">Get safety help →</a>
+  </div>
+</div>
+
+<footer>© 2026 Rentleeys · <a href="/privacy.html" style="color:#9ca3af;">Privacy</a> · <a href="/terms.html" style="color:#9ca3af;">Terms</a> · <a href="mailto:hello@rentleeys.com" style="color:#ff5a5f;">hello@rentleeys.com</a></footer>
+
+<script>
+const SUPA_URL  = 'https://lvzwirglhdrutggaoyvm.supabase.co';
+const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2endpcmdsaGRydXRnZ2FveXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4Mjc0MzQsImV4cCI6MjA5NzQwMzQzNH0.55HME06oIExPfQ2KdgdBYbYQ4jGWzlfzDL_yXStc6zk';
+
+var _faqs = [
+  // BOOKING
+  {cat:'booking', q:'How do I cancel a booking?', a:'Go to your Dashboard → My Bookings → select the booking → click Cancel. Refunds depend on the host\'s cancellation policy. Contact support@rentleeys.com if you need help.'},
+  {cat:'booking', q:'Can I change my booking dates?', a:'Contact your host directly through the dashboard to request date changes. If the host agrees, email us at support@rentleeys.com and we\'ll update the booking.'},
+  {cat:'booking', q:'What if the host cancels my booking?', a:'If a host cancels, you receive a full refund automatically. We\'ll also help you find alternative accommodation. Host cancellations are taken seriously and may result in penalties.'},
+  {cat:'booking', q:'How do I contact my host?', a:'Go to Dashboard → My Bookings → select your booking → click Message Host. You can communicate directly with your host through the platform.'},
+  {cat:'booking', q:'What if the property looks different from the photos?', a:'If the property is significantly different from the listing, report it to us within 24 hours of check-in at support@rentleeys.com. This is covered under our RentCover protection.'},
+
+  // PAYMENT
+  {cat:'payment', q:'When am I charged?', a:'You are charged immediately when you confirm your booking via PayPal. For manual payment options (GCash, bank transfer), you have 48 hours to complete payment or the booking may be cancelled.'},
+  {cat:'payment', q:'How do I get a refund?', a:'Refunds depend on the cancellation policy of your booking. Flexible: full refund up to 24 hours before check-in. Moderate: full refund up to 5 days before. Strict: 50% refund up to 7 days before.'},
+  {cat:'payment', q:'What payment methods are accepted?', a:'We accept PayPal, GCash (Philippines), and bank transfer (BDO, BPI, Metrobank). Credit/debit cards are accepted through PayPal.'},
+  {cat:'payment', q:'Why was I charged a service fee?', a:'Rentleeys charges an 8% service fee on top of the listing price. This covers platform maintenance, customer support, RentCover protection, and payment processing. This is significantly lower than Airbnb\'s 14%.'},
+
+  // HOST
+  {cat:'host', q:'When do I receive my payout?', a:'You receive your payout within 24 hours of your guest\'s check-in date. We send payment via PayPal or GCash. The payout is your listing price minus our 2% host fee.'},
+  {cat:'host', q:'How do I list my property?', a:'Go to rentleeys.com/host.html, sign in, and fill out the 4-step listing form. Your listing will be reviewed and approved within 24 hours.'},
+  {cat:'host', q:'What is the host fee?', a:'Rentleeys charges hosts 2% per booking — much lower than Airbnb\'s 3%. For your first 3 months, the host fee is 0% completely free!'},
+  {cat:'host', q:'How do I approve or decline a booking request?', a:'Go to your Dashboard → Reservations. You\'ll see pending requests with Accept and Decline buttons. We recommend responding within 24 hours to maintain a good response rate.'},
+  {cat:'host', q:'What if a guest damages my property?', a:'Report any damage within 72 hours of checkout at support@rentleeys.com with photos. We\'ll help document the damage and mediate with the guest. Always document the property condition before check-in.'},
+
+  // ACCOUNT
+  {cat:'account', q:'How do I sign up?', a:'Click Sign up on the homepage. You can register with your Google account (recommended) or with your email and password.'},
+  {cat:'account', q:'I forgot my password. How do I reset it?', a:'Click Sign in → Forgot password → enter your email. You\'ll receive a password reset link. If you signed up with Google, use the Continue with Google button instead.'},
+  {cat:'account', q:'How do I update my profile?', a:'Go to Dashboard → Profile. You can update your name, phone number, bio, and payout details there.'},
+  {cat:'account', q:'How do I delete my account?', a:'Email hello@rentleeys.com with the subject "Delete my account" from your registered email. We\'ll process your request within 3 business days and delete all your data.'},
+];
+
+var _currentFilter = 'all';
+
+function renderFAQ(faqs) {
+  var list = document.getElementById('faq-list');
+  if (!faqs.length) {
+    list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text2);">No results found. Try a different search or <a href="mailto:support@rentleeys.com" style="color:var(--primary);">contact us</a>.</div>';
+    return;
+  }
+  list.innerHTML = faqs.map(function(f, i) {
+    return '<div class="faq-item" id="faq-'+i+'">'
+      +'<div class="faq-q" onclick="toggleFAQ('+i+')">'
+      +f.q
+      +'<span class="faq-arrow">⌄</span></div>'
+      +'<div class="faq-a">'+f.a+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function toggleFAQ(i) {
+  var item = document.getElementById('faq-'+i);
+  item.classList.toggle('open');
+}
+
+function filterFAQ(cat, tabEl) {
+  _currentFilter = cat;
+  document.querySelectorAll('.faq-tab').forEach(function(t){t.classList.remove('active');});
+  if (tabEl) tabEl.classList.add('active');
+  var filtered = cat === 'all' ? _faqs : _faqs.filter(function(f){return f.cat===cat;});
+  renderFAQ(filtered);
+  document.getElementById('faq-list').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function searchFAQ(q) {
+  if (!q.trim()) { renderFAQ(_faqs); return; }
+  var lower = q.toLowerCase();
+  var filtered = _faqs.filter(function(f){
+    return f.q.toLowerCase().includes(lower) || f.a.toLowerCase().includes(lower);
+  });
+  renderFAQ(filtered);
+}
+
+async function submitRequest() {
+  var name    = document.getElementById('cf-name').value.trim();
+  var email   = document.getElementById('cf-email').value.trim();
+  var role    = document.getElementById('cf-role').value;
+  var topic   = document.getElementById('cf-topic').value;
+  var message = document.getElementById('cf-message').value.trim();
+
+  if (!name || !email || !message) {
+    alert('Please fill in all required fields.');
+    return;
+  }
+
+  // Send to support email via Supabase edge function or just show success
+  // For now, open email client with pre-filled content
+  var subject = encodeURIComponent('['+topic.toUpperCase()+'] Support request from '+name+' ('+role+')');
+  var body = encodeURIComponent('Name: '+name+'\nEmail: '+email+'\nRole: '+role+'\nTopic: '+topic+'\n\nMessage:\n'+message);
+  window.open('mailto:support@rentleeys.com?subject='+subject+'&body='+body);
+
+  document.getElementById('contact-form').style.display = 'none';
+  document.getElementById('form-success').classList.add('show');
+}
+
+// Init
+renderFAQ(_faqs);
+</script>
+</body>
+</html>

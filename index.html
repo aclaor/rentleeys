@@ -282,6 +282,7 @@ footer {
     <a href="#how">How it works</a>
     <a href="#destinations">Destinations</a>
     <a href="host.html">Become a host</a>
+    <a href="resources.html">Resources</a>
     <a href="messages.html">💬 Messages</a>
     <a href="help.html">Help</a>
   </div>
@@ -509,6 +510,7 @@ footer {
       <h4>Hosting</h4>
       <a href="host.html">List your property</a>
       <a href="payouts.html">How payouts work</a>
+      <a href="resources.html">Hosting resources</a>
       <a href="pages.html?page=rentcover">RentCover for Hosts</a>
       <a href="pages.html?page=careers">Join our team</a>
     </div>
@@ -540,9 +542,12 @@ footer {
     <button class="modal-close" onclick="closeAuth()">×</button>
     <div class="modal-title" id="auth-title">Welcome back</div>
     <div class="modal-sub" id="auth-sub">Sign in to your Rentleeys account</div>
-    <div class="modal-err" id="auth-err"></div>
+    <div id="auth-err" style="display:none;font-size:13px;color:#ef4444;margin-bottom:8px;padding:10px 14px;background:#fef2f2;border-radius:8px;border:1px solid #fecaca;"></div>
     <input class="modal-input" id="auth-email" type="email" placeholder="Email address" />
     <input class="modal-input" id="auth-pass" type="password" placeholder="Password" />
+    <div id="forgot-wrap" style="text-align:right;margin-bottom:8px;">
+      <a onclick="forgotPassword()" style="font-size:13px;color:var(--primary);cursor:pointer;font-weight:500;">Forgot password?</a>
+    </div>
     <div id="auth-name-wrap" style="display:none;">
       <input class="modal-input" id="auth-name" type="text" placeholder="Full name" />
     </div>
@@ -597,6 +602,29 @@ function closeAuth() {
 function toggleAuth() {
   _authMode = _authMode === 'login' ? 'signup' : 'login';
   updateAuthModal();
+}
+
+async function forgotPassword() {
+  var email = document.getElementById('auth-email').value.trim();
+  var errEl = document.getElementById('auth-err');
+  if (!email) {
+    errEl.textContent = 'Please enter your email address first.';
+    errEl.style.display = 'block';
+    return;
+  }
+  var result = await _db.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://rentleeys.com/dashboard.html'
+  });
+  if (result.error) {
+    errEl.textContent = result.error.message;
+    errEl.style.display = 'block';
+  } else {
+    errEl.style.background = '#f0fdf4';
+    errEl.style.color = '#166534';
+    errEl.style.borderColor = '#bbf7d0';
+    errEl.textContent = '✅ Password reset email sent! Check your inbox.';
+    errEl.style.display = 'block';
+  }
 }
 
 function updateAuthModal() {
@@ -747,6 +775,29 @@ window.addEventListener('DOMContentLoaded', function() {
     if(e.key === 'Enter') doSearch();
   });
 });
+
+async function forgotPassword() {
+  var email = document.getElementById('auth-email').value.trim();
+  var errEl = document.getElementById('auth-err');
+  if (!email) {
+    errEl.textContent = 'Please enter your email address first.';
+    errEl.style.display = 'block';
+    return;
+  }
+  var result = await _db.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://rentleeys.com/dashboard.html'
+  });
+  if (result.error) {
+    errEl.textContent = result.error.message;
+    errEl.style.display = 'block';
+  } else {
+    errEl.style.background = '#f0fdf4';
+    errEl.style.color = '#166534';
+    errEl.style.borderColor = '#bbf7d0';
+    errEl.textContent = '✅ Password reset email sent! Check your inbox.';
+    errEl.style.display = 'block';
+  }
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Host Payouts — Rentleeys</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--bg2:#f7f8fa;--border:#e5e7eb;--text:#111827;--text2:#6b7280;--primary:#ff5a5f;--green:#00a651;--sans:'Plus Jakarta Sans',sans-serif;--body:'Inter',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.7;}
+.nav{height:64px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;justify-content:space-between;}
+.logo{font-family:var(--sans);font-size:20px;font-weight:800;text-decoration:none;color:var(--text);}
+.logo span{color:var(--primary);}
+.hero{background:linear-gradient(135deg,#fff5f5,#fff);padding:56px 24px;text-align:center;}
+.hero h1{font-family:var(--sans);font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:12px;}
+.hero p{font-size:18px;color:var(--text2);max-width:480px;margin:0 auto;}
+.container{max-width:860px;margin:0 auto;padding:48px 24px;}
+.section{margin-bottom:48px;}
+h2{font-family:var(--sans);font-size:22px;font-weight:800;margin-bottom:20px;letter-spacing:-0.5px;}
+.fee-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px;}
+.fee-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;}
+.fee-pct{font-family:var(--sans);font-size:40px;font-weight:800;color:var(--primary);line-height:1;}
+.fee-label{font-size:14px;color:var(--text2);margin-top:8px;}
+.fee-desc{font-size:12px;color:#9ca3af;margin-top:4px;}
+.example-card{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:24px;margin-bottom:24px;}
+.example-title{font-family:var(--sans);font-size:16px;font-weight:700;color:#166534;margin-bottom:16px;}
+.example-row{display:flex;justify-content:space-between;font-size:14px;color:#166534;padding:6px 0;border-bottom:1px solid #bbf7d0;}
+.example-row:last-child{border-bottom:none;font-weight:700;font-size:16px;}
+.timeline{display:flex;flex-direction:column;gap:0;}
+.timeline-item{display:flex;gap:20px;padding-bottom:28px;position:relative;}
+.timeline-item::before{content:'';position:absolute;left:19px;top:40px;bottom:0;width:2px;background:var(--border);}
+.timeline-item:last-child::before{display:none;}
+.timeline-dot{width:40px;height:40px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.timeline-content{padding-top:8px;}
+.timeline-title{font-family:var(--sans);font-size:15px;font-weight:700;margin-bottom:4px;}
+.timeline-desc{font-size:14px;color:var(--text2);}
+.faq{display:flex;flex-direction:column;gap:16px;}
+.faq-item{border:1px solid var(--border);border-radius:12px;padding:20px;}
+.faq-q{font-family:var(--sans);font-size:15px;font-weight:700;margin-bottom:8px;}
+.faq-a{font-size:14px;color:var(--text2);}
+.cta{background:linear-gradient(135deg,var(--primary),#ff8a8d);border-radius:20px;padding:40px;text-align:center;color:#fff;}
+.cta h2{color:#fff;margin-bottom:8px;}
+.cta p{opacity:0.9;margin-bottom:24px;}
+.cta-btn{background:#fff;color:var(--primary);border:none;border-radius:10px;padding:14px 32px;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--sans);}
+footer{text-align:center;padding:32px;border-top:1px solid var(--border);font-size:13px;color:var(--text2);margin-top:60px;}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/" class="logo">rent<span>leeys</span></a>
+  <a href="/host.html" style="font-size:14px;color:var(--primary);text-decoration:none;font-weight:600;">Start hosting →</a>
+</nav>
+
+<div class="hero">
+  <div style="font-size:48px;margin-bottom:16px;">💰</div>
+  <h1>Simple, transparent payouts</h1>
+  <p>Know exactly what you earn before you list. No surprises, no hidden deductions.</p>
+</div>
+
+<div class="container">
+
+  <!-- FEE STRUCTURE -->
+  <div class="section">
+    <h2>Fee structure</h2>
+    <div class="fee-grid">
+      <div class="fee-card">
+        <div class="fee-pct">8%</div>
+        <div class="fee-label">Guest service fee</div>
+        <div class="fee-desc">Added on top of your listing price — paid by guests, not you</div>
+      </div>
+      <div class="fee-card">
+        <div class="fee-pct" style="color:var(--green);">2%</div>
+        <div class="fee-label">Host fee</div>
+        <div class="fee-desc">Deducted from your payout. Lower than Airbnb's 3%!</div>
+      </div>
+      <div class="fee-card">
+        <div class="fee-pct" style="color:#3b82f6;">98%</div>
+        <div class="fee-label">You receive</div>
+        <div class="fee-desc">Of your listing price goes directly to you</div>
+      </div>
+    </div>
+
+    <!-- EXAMPLE -->
+    <div class="example-card">
+      <div class="example-title">📊 Example: ₱2,000/night for 3 nights</div>
+      <div class="example-row"><span>Your listing price</span><span>₱2,000 × 3 = ₱6,000</span></div>
+      <div class="example-row"><span>Guest pays service fee (8%)</span><span>+₱480</span></div>
+      <div class="example-row"><span>Guest total payment</span><span>₱6,480</span></div>
+      <div class="example-row"><span>Rentleeys host fee (2%)</span><span>-₱120</span></div>
+      <div class="example-row"><span>🏆 Your payout</span><span>₱5,880</span></div>
+    </div>
+    <p style="font-size:13px;color:var(--text2);">Compare: Airbnb charges hosts 3% and guests 14% — that's 17% total. Rentleeys charges only 10% total — saving everyone money!</p>
+  </div>
+
+  <!-- PAYOUT TIMELINE -->
+  <div class="section">
+    <h2>When do I get paid?</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot">1</div>
+        <div class="timeline-content">
+          <div class="timeline-title">Guest books and pays</div>
+          <div class="timeline-desc">Guest completes payment via PayPal. You receive a booking notification email immediately.</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">2</div>
+        <div class="timeline-content">
+          <div class="timeline-title">Guest checks in</div>
+          <div class="timeline-desc">Guest arrives at your property on the check-in date.</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">3</div>
+        <div class="timeline-content">
+          <div class="timeline-title">You receive payment within 24 hours</div>
+          <div class="timeline-desc">Rentleeys sends your payout via PayPal or GCash within 24 hours of check-in. We deduct our 2% host fee automatically.</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">✓</div>
+        <div class="timeline-content">
+          <div class="timeline-title">Booking completed</div>
+          <div class="timeline-desc">After guest checkout, both parties can leave reviews. Your earnings history is available in your dashboard.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAYOUT METHODS -->
+  <div class="section">
+    <h2>How we pay you</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+      <div style="border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;">
+        <div style="font-size:32px;margin-bottom:8px;">💳</div>
+        <div style="font-family:var(--sans);font-weight:700;margin-bottom:4px;">PayPal</div>
+        <div style="font-size:13px;color:var(--text2);">Direct to your PayPal account. Fast and secure.</div>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;">
+        <div style="font-size:32px;margin-bottom:8px;">📱</div>
+        <div style="font-family:var(--sans);font-weight:700;margin-bottom:4px;">GCash</div>
+        <div style="font-size:13px;color:var(--text2);">Philippine hosts can receive via GCash instantly.</div>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;">
+        <div style="font-size:32px;margin-bottom:8px;">🏦</div>
+        <div style="font-family:var(--sans);font-weight:700;margin-bottom:4px;">Bank Transfer</div>
+        <div style="font-size:13px;color:var(--text2);">Local bank transfer (BDO, BPI, Metrobank). 1-2 business days.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="section">
+    <h2>Frequently asked questions</h2>
+    <div class="faq">
+      <div class="faq-item">
+        <div class="faq-q">How is Rentleeys cheaper than Airbnb?</div>
+        <div class="faq-a">Airbnb charges guests 14% and hosts 3% — total 17%. Rentleeys charges guests 8% and hosts 2% — total 10%. That's 7% less, meaning more money stays with you and your guests pay less.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What if a guest cancels?</div>
+        <div class="faq-a">If a guest cancels before check-in, you receive a cancellation fee based on your cancellation policy. Rentleeys handles disputes and will contact you directly.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Do I need a PayPal account?</div>
+        <div class="faq-a">Yes, we recommend setting up a PayPal account to receive payouts. Alternatively you can receive via GCash if you're in the Philippines. Contact us at hello@rentleeys.com to set up your preferred payout method.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Is there a minimum payout amount?</div>
+        <div class="faq-a">No minimum. We pay you for every booking regardless of the amount.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How do I update my payout details?</div>
+        <div class="faq-a">Go to your Dashboard → Profile and update your PayPal email or GCash number. You can also email us at hello@rentleeys.com.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <h2>Ready to start earning? 🏠</h2>
+    <p>List your property for free. 0% host fee for your first 3 months!</p>
+    <button class="cta-btn" onclick="window.location.href='/host.html'">List your property →</button>
+  </div>
+
+</div>
+
+<footer>© 2026 Rentleeys · <a href="/privacy.html" style="color:var(--primary);">Privacy</a> · <a href="/terms.html" style="color:var(--primary);">Terms</a> · <a href="mailto:hello@rentleeys.com" style="color:var(--primary);">hello@rentleeys.com</a></footer>
+</body>
+</html>

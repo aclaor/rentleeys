@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rentleeys</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--bg2:#f7f8fa;--border:#e5e7eb;--text:#111827;--text2:#6b7280;--primary:#ff5a5f;--green:#00a651;--sans:'Plus Jakarta Sans',sans-serif;--body:'Inter',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.7;}
+.nav{height:64px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.logo{font-family:var(--sans);font-size:20px;font-weight:800;text-decoration:none;color:var(--text);}
+.logo span{color:var(--primary);}
+.hero{padding:56px 24px 40px;text-align:center;}
+.hero-icon{font-size:56px;margin-bottom:16px;}
+.hero h1{font-family:var(--sans);font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:12px;}
+.hero p{font-size:17px;color:var(--text2);max-width:520px;margin:0 auto;}
+.container{max-width:800px;margin:0 auto;padding:0 24px 60px;}
+h2{font-family:var(--sans);font-size:22px;font-weight:800;margin:36px 0 12px;letter-spacing:-0.5px;}
+h3{font-family:var(--sans);font-size:17px;font-weight:700;margin:24px 0 8px;}
+p{color:var(--text2);margin-bottom:14px;font-size:15px;}
+ul{color:var(--text2);padding-left:20px;margin-bottom:16px;font-size:15px;}
+li{margin-bottom:8px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;}
+.card-title{font-family:var(--sans);font-size:16px;font-weight:700;margin-bottom:8px;}
+.card-text{font-size:14px;color:var(--text2);}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px;}
+.highlight{background:#fff5f5;border:1px solid #fecaca;border-radius:12px;padding:20px;margin-bottom:20px;}
+.highlight-title{font-family:var(--sans);font-weight:700;color:var(--primary);margin-bottom:6px;}
+.green-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:20px;margin-bottom:20px;}
+.page-section{display:none;}
+.page-section.active{display:block;}
+footer{background:var(--text);color:#fff;padding:40px 24px;margin-top:60px;}
+.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:32px;max-width:900px;margin:0 auto 32px;}
+.footer-col h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:14px;}
+.footer-col a{display:block;font-size:14px;color:#9ca3af;text-decoration:none;margin-bottom:8px;cursor:pointer;}
+.footer-col a:hover{color:#fff;}
+.footer-bottom{border-top:1px solid #374151;padding-top:20px;text-align:center;font-size:13px;color:#6b7280;max-width:900px;margin:0 auto;}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="logo">rent<span>leeys</span></a>
+  <a href="/" style="font-size:14px;color:var(--text2);text-decoration:none;">← Back to Home</a>
+</nav>
+
+<!-- RENTCOVER PAGE -->
+<div class="page-section" id="page-rentcover">
+  <div class="hero" style="background:linear-gradient(135deg,#fff5f5,#fff);">
+    <div class="hero-icon">🛡️</div>
+    <h1>RentCover</h1>
+    <p>Top-to-bottom protection for guests and hosts on every Rentleeys stay.</p>
+  </div>
+  <div class="container">
+    <div class="highlight">
+      <div class="highlight-title">Included free on every booking</div>
+      <p style="margin:0;color:var(--text2);">RentCover is automatically included at no extra cost for every Rentleeys booking.</p>
+    </div>
+    <h2>For Guests</h2>
+    <div class="grid">
+      <div class="card"><div class="card-title">🔑 Check-in guarantee</div><div class="card-text">If you can't check in and the host can't resolve it, we'll find you comparable accommodation or give you a full refund.</div></div>
+      <div class="card"><div class="card-title">📸 Listing accuracy</div><div class="card-text">If the property is significantly different from the listing, contact us within 24 hours and we'll make it right.</div></div>
+      <div class="card"><div class="card-title">🧹 Cleanliness</div><div class="card-text">If the property isn't clean when you arrive, report it to us and we'll arrange cleaning or alternative accommodation.</div></div>
+      <div class="card"><div class="card-title">🚪 Safety issues</div><div class="card-text">If you encounter safety issues during your stay, contact Rentleeys support 24/7 and we'll assist immediately.</div></div>
+    </div>
+    <h2>For Hosts</h2>
+    <div class="grid">
+      <div class="card"><div class="card-title">💰 Payment protection</div><div class="card-text">Your payout is guaranteed within 24 hours of guest check-in, regardless of any disputes.</div></div>
+      <div class="card"><div class="card-title">📋 Damage reporting</div><div class="card-text">Report any damage within 72 hours of checkout. We'll mediate with the guest and help document claims.</div></div>
+      <div class="card"><div class="card-title">⭐ Review protection</div><div class="card-text">We remove reviews that violate our policies and provide context for disputed reviews.</div></div>
+      <div class="card"><div class="card-title">🆘 24/7 support</div><div class="card-text">Our team is available around the clock to help with any issues during a guest's stay.</div></div>
+    </div>
+    <p style="font-size:13px;color:var(--text2);">To make a RentCover claim, email <a href="mailto:support@rentleeys.com" style="color:var(--primary);">support@rentleeys.com</a> or contact us through your dashboard within 24 hours of the issue.</p>
+  </div>
+</div>
+
+<!-- CANCELLATION PAGE -->
+<div class="page-section" id="page-cancellation">
+  <div class="hero" style="background:linear-gradient(135deg,#f0fdf4,#fff);">
+    <div class="hero-icon">📋</div>
+    <h1>Cancellation Options</h1>
+    <p>Flexible policies that work for both guests and hosts.</p>
+  </div>
+  <div class="container">
+    <h2>Guest cancellation policies</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">✅ Flexible</div>
+        <div class="card-text">Full refund up to 24 hours before check-in. Great for travelers who need flexibility.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 Moderate</div>
+        <div class="card-text">Full refund up to 5 days before check-in. 50% refund after that.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔒 Strict</div>
+        <div class="card-text">50% refund up to 7 days before check-in. No refund after that.</div>
+      </div>
+    </div>
+    <h2>Host cancellations</h2>
+    <p>Hosts should avoid cancelling confirmed bookings. If you must cancel:</p>
+    <ul>
+      <li>Cancel as early as possible to give guests time to rebook</li>
+      <li>Repeated cancellations may result in listing suspension</li>
+      <li>Guests receive a full refund for host-cancelled bookings</li>
+    </ul>
+    <h2>Extenuating circumstances</h2>
+    <p>In cases of natural disasters, serious illness, or other major events beyond your control, Rentleeys may offer full refunds regardless of the cancellation policy. Contact <a href="mailto:support@rentleeys.com" style="color:var(--primary);">support@rentleeys.com</a>.</p>
+  </div>
+</div>
+
+<!-- ANTI-DISCRIMINATION PAGE -->
+<div class="page-section" id="page-nondiscrimination">
+  <div class="hero" style="background:linear-gradient(135deg,#fffbeb,#fff);">
+    <div class="hero-icon">🤝</div>
+    <h1>Non-Discrimination Policy</h1>
+    <p>Rentleeys is a community built on respect, inclusion, and belonging.</p>
+  </div>
+  <div class="container">
+    <div class="green-box">
+      <div style="font-family:var(--sans);font-weight:700;color:#166534;margin-bottom:6px;">Our commitment</div>
+      <p style="margin:0;color:#166534;">Rentleeys is committed to providing a platform where everyone — regardless of race, ethnicity, national origin, religion, gender, sexual orientation, disability, or age — can find and offer accommodations with dignity and respect.</p>
+    </div>
+    <h2>For guests</h2>
+    <p>Every guest deserves equal access to accommodations. Hosts on Rentleeys agree not to decline bookings based on protected characteristics.</p>
+    <h2>For hosts</h2>
+    <p>You may set house rules and preferences for your property, but you may not discriminate against potential guests based on protected characteristics.</p>
+    <h2>Report discrimination</h2>
+    <p>If you believe you've experienced discrimination on Rentleeys, please contact us immediately at <a href="mailto:support@rentleeys.com" style="color:var(--primary);">support@rentleeys.com</a>. We take all reports seriously and investigate every case.</p>
+    <h2>Consequences</h2>
+    <p>Hosts or guests found to have violated this policy may have their accounts suspended or permanently banned from Rentleeys.</p>
+  </div>
+</div>
+
+<!-- ACCESSIBILITY PAGE -->
+<div class="page-section" id="page-accessibility">
+  <div class="hero" style="background:linear-gradient(135deg,#eff6ff,#fff);">
+    <div class="hero-icon">♿</div>
+    <h1>Accessibility</h1>
+    <p>We're committed to making Rentleeys accessible to everyone.</p>
+  </div>
+  <div class="container">
+    <h2>Accessible listings</h2>
+    <p>Hosts can mark their properties with accessibility features including:</p>
+    <div class="grid">
+      <div class="card"><div class="card-title">🚪 Step-free access</div><div class="card-text">No stairs required to enter the property.</div></div>
+      <div class="card"><div class="card-title">🛁 Roll-in shower</div><div class="card-text">Shower accessible by wheelchair.</div></div>
+      <div class="card"><div class="card-title">🅿️ Accessible parking</div><div class="card-text">Designated accessible parking space available.</div></div>
+      <div class="card"><div class="card-title">🛏️ Wide doorways</div><div class="card-text">Doorways at least 32 inches wide for wheelchair access.</div></div>
+    </div>
+    <h2>Search for accessible stays</h2>
+    <p>Use the filters on our <a href="/search.html" style="color:var(--primary);">search page</a> to find properties with accessibility features.</p>
+    <h2>Need assistance?</h2>
+    <p>Our support team is available to help guests with disabilities find suitable accommodations. Contact us at <a href="mailto:support@rentleeys.com" style="color:var(--primary);">support@rentleeys.com</a>.</p>
+  </div>
+</div>
+
+<!-- NEWSROOM PAGE -->
+<div class="page-section" id="page-newsroom">
+  <div class="hero" style="background:linear-gradient(135deg,#faf5ff,#fff);">
+    <div class="hero-icon">📰</div>
+    <h1>Newsroom</h1>
+    <p>Latest news and updates from Rentleeys.</p>
+  </div>
+  <div class="container">
+    <div class="card" style="margin-bottom:20px;">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">June 2026</div>
+      <div class="card-title">🚀 Rentleeys launches in the Philippines</div>
+      <div class="card-text">Rentleeys officially launches as the most affordable short-term rental platform in the Philippines, offering up to 40% lower fees than competitors. Early hosts can list for free with 0% commission for the first 3 months.</div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">June 2026</div>
+      <div class="card-title">💰 Rentleeys introduces transparent fee structure</div>
+      <div class="card-text">Unlike other platforms that hide fees until checkout, Rentleeys shows the full price breakdown upfront — 8% guest fee and 2% host fee, compared to Airbnb's 17% combined fees.</div>
+    </div>
+    <p style="margin-top:24px;font-size:14px;color:var(--text2);">For press inquiries, contact <a href="mailto:hello@rentleeys.com" style="color:var(--primary);">hello@rentleeys.com</a></p>
+  </div>
+</div>
+
+<!-- CAREERS PAGE -->
+<div class="page-section" id="page-careers">
+  <div class="hero" style="background:linear-gradient(135deg,#fff5f5,#fff);">
+    <div class="hero-icon">💼</div>
+    <h1>Careers at Rentleeys</h1>
+    <p>Help us make travel more affordable for everyone.</p>
+  </div>
+  <div class="container">
+    <div class="highlight">
+      <div class="highlight-title">We're just getting started!</div>
+      <p style="margin:0;color:var(--text2);">Rentleeys is an early-stage startup. We're not hiring formally yet, but we'd love to hear from passionate people who believe in our mission.</p>
+    </div>
+    <h2>Our mission</h2>
+    <p>Make short-term rentals affordable and accessible for everyone — especially travelers in Southeast Asia and budget-conscious explorers worldwide.</p>
+    <h2>What we value</h2>
+    <ul>
+      <li>Transparency in everything we do</li>
+      <li>Community over profit</li>
+      <li>Making travel accessible to all</li>
+      <li>Supporting local hosts and economies</li>
+    </ul>
+    <h2>Interested in joining us?</h2>
+    <p>Send your resume and a note about why you want to join Rentleeys to <a href="mailto:hello@rentleeys.com" style="color:var(--primary);">hello@rentleeys.com</a></p>
+  </div>
+</div>
+
+<!-- DEFAULT: show rentcover -->
+<script>
+  var page = new URLSearchParams(window.location.search).get('page') || 'rentcover';
+  var el = document.getElementById('page-' + page);
+  if (el) {
+    el.classList.add('active');
+    var titles = {
+      rentcover: 'RentCover — Rentleeys',
+      cancellation: 'Cancellation Options — Rentleeys',
+      nondiscrimination: 'Non-Discrimination — Rentleeys',
+      accessibility: 'Accessibility — Rentleeys',
+      newsroom: 'Newsroom — Rentleeys',
+      careers: 'Careers — Rentleeys'
+    };
+    document.title = titles[page] || 'Rentleeys';
+  } else {
+    document.getElementById('page-rentcover').classList.add('active');
+  }
+</script>
+
+<footer>
+  <div class="footer-grid">
+    <div>
+      <h4>Support</h4>
+      <a onclick="window.location.href='pages.html?page=rentcover'">RentCover</a>
+      <a onclick="window.location.href='pages.html?page=cancellation'">Cancellation options</a>
+      <a onclick="window.location.href='pages.html?page=nondiscrimination'">Anti-discrimination</a>
+      <a onclick="window.location.href='pages.html?page=accessibility'">Accessibility</a>
+    </div>
+    <div>
+      <h4>Hosting</h4>
+      <a href="/host.html">List your property</a>
+      <a href="/payouts.html">How payouts work</a>
+      <a onclick="window.location.href='pages.html?page=rentcover'">RentCover for Hosts</a>
+    </div>
+    <div>
+      <h4>Rentleeys</h4>
+      <a onclick="window.location.href='pages.html?page=newsroom'">Newsroom</a>
+      <a onclick="window.location.href='pages.html?page=careers'">Careers</a>
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/terms.html">Terms of Service</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 Rentleeys · Built with ❤️ in the Philippines 🇵🇭</div>
+</footer>
+</body>
+</html>

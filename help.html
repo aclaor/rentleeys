@@ -422,6 +422,26 @@ function showSuccess() {
 
 // Init
 renderFAQ(_faqs);
+
+// Check if coming from safety link
+window.addEventListener('DOMContentLoaded', function() {
+  var action = sessionStorage.getItem('help_action');
+  if (action === 'safety') {
+    sessionStorage.removeItem('help_action');
+    // Auto open safety email modal
+    setTimeout(function() {
+      openEmail('safety@rentleeys.com', 'URGENT Safety Issue', 'Hi Rentleeys,%0A%0AI have a safety concern...');
+    }, 500);
+  }
+
+  // Check if URL has #contact-form-section
+  if (window.location.hash === '#contact-form-section') {
+    setTimeout(function() {
+      var el = document.getElementById('contact-form-section');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }, 300);
+  }
+});
 </script>
 </body>
 </html>

@@ -258,7 +258,7 @@ footer {
 .modal-social:hover { background:var(--bg2); }
 .modal-switch { text-align:center; font-size:13px; color:var(--text2); margin-top:8px; }
 .modal-switch a { color:var(--primary); font-weight:600; cursor:pointer; }
-.modal-err { font-size:13px; color:#ef4444; margin-bottom:8px; min-height:18px; }
+.modal-err { font-size:13px; color:#ef4444; margin-bottom:8px; min-height:0; display:none; }
 
 /* ── LOADING ─────────────────────────────────────────────── */
 .loading { text-align:center; padding:48px; color:var(--text2); font-size:15px; }
@@ -496,22 +496,34 @@ footer {
       <p class="footer-desc">Affordable stays worldwide. Better for guests, better for hosts. No hidden fees, no price gouging.</p>
     </div>
     <div class="footer-col">
-      <h4>Explore</h4>
-      <a href="search.html">Search stays</a>
-      <a href="#destinations">Destinations</a>
-      <a href="listing.html">Featured listings</a>
+      <h4>Support</h4>
+      <a href="pages.html?page=rentcover">🛡️ RentCover</a>
+      <a href="pages.html?page=cancellation">Cancellation options</a>
+      <a href="pages.html?page=nondiscrimination">Anti-discrimination</a>
+      <a href="pages.html?page=accessibility">Disability support</a>
+      <a href="mailto:support@rentleeys.com">Contact support</a>
     </div>
     <div class="footer-col">
       <h4>Hosting</h4>
-      <a href="host.html">Become a host</a>
-      <a href="host.html#tips">Hosting tips</a>
-      <a href="host.html#pricing">Pricing guide</a>
+      <a href="host.html">List your property</a>
+      <a href="payouts.html">How payouts work</a>
+      <a href="pages.html?page=rentcover">RentCover for Hosts</a>
+      <a href="pages.html?page=careers">Join our team</a>
     </div>
     <div class="footer-col">
-      <h4>Support</h4>
+      <h4>Explore</h4>
+      <a href="search.html">Search stays</a>
+      <a href="#destinations">Philippines</a>
+      <a href="search.html?location=Manila">Manila</a>
+      <a href="search.html?location=Cebu">Cebu</a>
+      <a href="search.html?location=Boracay">Boracay</a>
+    </div>
+    <div class="footer-col">
+      <h4>Rentleeys</h4>
+      <a href="pages.html?page=newsroom">Newsroom</a>
       <a href="privacy.html">Privacy Policy</a>
       <a href="terms.html">Terms of Service</a>
-      <a href="mailto:hello@rentleeys.com">Contact us</a>
+      <a href="mailto:hello@rentleeys.com">hello@rentleeys.com</a>
     </div>
   </div>
   <div class="footer-bottom">
@@ -577,7 +589,7 @@ function openAuth(mode) {
 
 function closeAuth() {
   document.getElementById('auth-modal').classList.remove('open');
-  document.getElementById('auth-err').textContent = '';
+  var ae = document.getElementById('auth-err'); if(ae){ae.textContent=''; ae.style.display='none';}
 }
 
 function toggleAuth() {
@@ -593,7 +605,7 @@ function updateAuthModal() {
   document.getElementById('auth-switch').innerHTML = isLogin
     ? "Don't have an account? <a onclick='toggleAuth()'>Sign up</a>"
     : "Already have an account? <a onclick='toggleAuth()'>Sign in</a>";
-  document.getElementById('auth-err').textContent = '';
+  var ae = document.getElementById('auth-err'); if(ae){ae.textContent=''; ae.style.display='none';}
 }
 
 async function handleAuth() {
@@ -601,7 +613,7 @@ async function handleAuth() {
   var pass  = document.getElementById('auth-pass').value;
   var errEl = document.getElementById('auth-err');
   errEl.textContent = '';
-  if (!email || !pass) { errEl.textContent = 'Please fill all fields.'; return; }
+  if (!email || !pass) { errEl.textContent = 'Please fill all fields.'; errEl.style.display="block"; return; }
 
   if (_authMode === 'signup') {
     var name = document.getElementById('auth-name').value.trim();

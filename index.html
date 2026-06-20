@@ -605,13 +605,13 @@ async function handleAuth() {
   if (_authMode === 'signup') {
     var name = document.getElementById('auth-name').value.trim();
     trackEvent('sign_up', { method: 'email' });
-  var { data, error } = await _db.auth.signUp({ email, password: pass, options: { data: { full_name: name } } });
-    if (error) { err.textContent = error.message; return; }
+    var signupResult = await _db.auth.signUp({ email, password: pass, options: { data: { full_name: name } } });
+    if (signupResult.error) { err.textContent = signupResult.error.message; return; }
     closeAuth();
     alert('Account created! Check your email to verify.');
   } else {
-    var { data, error } = await _db.auth.signInWithPassword({ email, password: pass });
-    if (error) { err.textContent = 'Invalid email or password.'; return; }
+    var loginResult = await _db.auth.signInWithPassword({ email, password: pass });
+    if (loginResult.error) { err.textContent = 'Invalid email or password.'; return; }
     closeAuth();
     updateNavAuth();
     window.location.href = 'dashboard.html';

@@ -96,18 +96,115 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
   <div class="loading">Loading property...</div>
 </div>
 
-<!-- BOOKING MODAL -->
-<div id="book-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:24px;">
-  <div style="background:#fff;border-radius:20px;padding:36px;max-width:420px;width:100%;position:relative;">
-    <button onclick="document.getElementById('book-modal').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text2);">×</button>
-    <div style="font-family:var(--sans);font-size:20px;font-weight:800;margin-bottom:6px;">Confirm booking request</div>
-    <div style="font-size:14px;color:var(--text2);margin-bottom:20px;" id="book-summary"></div>
-    <textarea id="book-message" placeholder="Message to host (optional) — introduce yourself and mention your trip purpose" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--body);resize:vertical;min-height:80px;outline:none;margin-bottom:16px;"></textarea>
-    <div id="book-err" style="color:#ef4444;font-size:13px;margin-bottom:8px;min-height:18px;"></div>
-    <div id="paypal-btn-container" style="display:none;margin-bottom:10px;"></div>
-<button onclick="showPayPal()" id="proceed-btn" style="width:100%;background:var(--primary);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);">Continue to Payment 💳</button>
-    <div style="text-align:center;font-size:12px;color:var(--text3);margin-top:10px;">You won't be charged yet — host must confirm first</div>
+<!-- MULTI-STEP BOOKING MODAL -->
+<div id="book-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;overflow-y:auto;">
+<div style="min-height:100%;display:flex;align-items:center;justify-content:center;padding:16px;">
+<div style="background:#fff;border-radius:20px;width:100%;max-width:520px;position:relative;">
+
+  <!-- Header -->
+  <div style="padding:18px 24px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
+    <button onclick="closeBookModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280;">×</button>
+    <div style="font-family:var(--sans);font-size:16px;font-weight:700;" id="modal-step-title">Request to book</div>
+    <div style="width:32px;"></div>
   </div>
+
+  <!-- Progress bar -->
+  <div style="display:flex;gap:4px;padding:14px 24px;border-bottom:1px solid #e5e7eb;">
+    <div id="si1" style="flex:1;height:3px;border-radius:2px;background:var(--primary);transition:background .3s;"></div>
+    <div id="si2" style="flex:1;height:3px;border-radius:2px;background:#e5e7eb;transition:background .3s;"></div>
+    <div id="si3" style="flex:1;height:3px;border-radius:2px;background:#e5e7eb;transition:background .3s;"></div>
+    <div id="si4" style="flex:1;height:3px;border-radius:2px;background:#e5e7eb;transition:background .3s;"></div>
+  </div>
+
+  <!-- STEP 1: When to pay -->
+  <div id="bs1" style="padding:24px;">
+    <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Step 1 of 4</div>
+    <div style="font-family:var(--sans);font-size:20px;font-weight:800;margin-bottom:20px;">Choose when to pay</div>
+    <div onclick="selectPayNow(true)" id="opt-pay-now" style="border:2px solid var(--primary);border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;background:#fff5f5;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div><div style="font-family:var(--sans);font-weight:700;" id="s1-pay-now-lbl">Pay now</div><div style="font-size:13px;color:#6b7280;">Secure your booking immediately</div></div>
+        <div style="width:20px;height:20px;border-radius:50%;background:var(--primary);border:2px solid var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><div style="width:8px;height:8px;border-radius:50%;background:#fff;"></div></div>
+      </div>
+    </div>
+    <div onclick="selectPayNow(false)" id="opt-pay-later" style="border:1.5px solid #e5e7eb;border-radius:14px;padding:16px;cursor:pointer;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div><div style="font-family:var(--sans);font-weight:700;">Pay later</div><div style="font-size:13px;color:#6b7280;">Pay within 48 hours to confirm</div></div>
+        <div style="width:20px;height:20px;border-radius:50%;border:2px solid #e5e7eb;flex-shrink:0;" id="pay-later-dot"></div>
+      </div>
+    </div>
+    <div style="background:#f7f8fa;border-radius:12px;padding:16px;margin-top:20px;">
+      <div style="font-family:var(--sans);font-size:14px;font-weight:700;margin-bottom:10px;" id="s1-title">—</div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;color:#6b7280;margin-bottom:6px;"><span id="s1-nlabel">—</span><span id="s1-sub">—</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;color:#6b7280;margin-bottom:6px;"><span>Service fee (8%)</span><span id="s1-fee">—</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;padding-top:10px;border-top:1px solid #e5e7eb;"><span>Total</span><span id="s1-total">—</span></div>
+    </div>
+    <button onclick="goBS(2)" style="width:100%;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);margin-top:16px;">Next</button>
+  </div>
+
+  <!-- STEP 2: Payment method -->
+  <div id="bs2" style="padding:24px;display:none;">
+    <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Step 2 of 4</div>
+    <div style="font-family:var(--sans);font-size:20px;font-weight:800;margin-bottom:16px;">Add a payment method</div>
+    <div id="paypal-buttons-container" style="margin-bottom:16px;"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;"><div style="flex:1;height:1px;background:#e5e7eb;"></div><span style="font-size:12px;color:#9ca3af;">or pay with</span><div style="flex:1;height:1px;background:#e5e7eb;"></div></div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+      <div onclick="pickPayMethod('gcash')" id="pm-gcash" style="border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:22px;">📱</span>
+        <div style="flex:1;"><div style="font-weight:600;font-size:14px;">GCash</div><div style="font-size:12px;color:#9ca3af;">Philippine mobile wallet</div></div>
+        <div style="width:18px;height:18px;border-radius:50%;border:2px solid #e5e7eb;" id="pm-gcash-dot"></div>
+      </div>
+      <div onclick="pickPayMethod('bank')" id="pm-bank" style="border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:22px;">🏦</span>
+        <div style="flex:1;"><div style="font-weight:600;font-size:14px;">Bank transfer</div><div style="font-size:12px;color:#9ca3af;">BDO, BPI, Metrobank</div></div>
+        <div style="width:18px;height:18px;border-radius:50%;border:2px solid #e5e7eb;" id="pm-bank-dot"></div>
+      </div>
+    </div>
+    <div id="gcash-info" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;margin-bottom:12px;font-size:13px;color:#166534;">📱 Send to GCash: <strong>+63 XXX XXX XXXX</strong><br>Account: <strong>Rentleeys</strong><br>Reference: shown after booking</div>
+    <div id="bank-info" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:12px;font-size:13px;color:#1e40af;">🏦 BDO Account: <strong>00XXX XXXXX</strong><br>Account name: <strong>Rentleeys</strong><br>Reference: shown after booking</div>
+    <div style="display:flex;gap:10px;"><button onclick="goBS(1)" style="flex:1;background:none;border:1.5px solid #e5e7eb;border-radius:12px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;">Back</button><button onclick="goBS(3)" style="flex:2;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);">Next</button></div>
+  </div>
+
+  <!-- STEP 3: Message -->
+  <div id="bs3" style="padding:24px;display:none;">
+    <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Step 3 of 4</div>
+    <div style="font-family:var(--sans);font-size:20px;font-weight:800;margin-bottom:6px;">Message the host</div>
+    <div style="font-size:14px;color:#6b7280;margin-bottom:16px;">Let them know a bit about yourself and why you're visiting.</div>
+    <textarea id="book-message" placeholder="Hi! I'm visiting Manila for a family vacation and your place looks perfect..." style="width:100%;padding:14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:14px;font-family:var(--body);resize:vertical;min-height:120px;outline:none;margin-bottom:16px;line-height:1.6;"></textarea>
+    <div style="display:flex;gap:10px;"><button onclick="goBS(2)" style="flex:1;background:none;border:1.5px solid #e5e7eb;border-radius:12px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;">Back</button><button onclick="goBS(4)" style="flex:2;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);">Next</button></div>
+  </div>
+
+  <!-- STEP 4: Review -->
+  <div id="bs4" style="padding:24px;display:none;">
+    <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Step 4 of 4</div>
+    <div style="font-family:var(--sans);font-size:20px;font-weight:800;margin-bottom:20px;">Review your request</div>
+    <div style="border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:14px;">
+      <div style="font-family:var(--sans);font-weight:700;margin-bottom:12px;">Your trip</div>
+      <div style="display:flex;justify-content:space-between;">
+        <div><div style="font-size:13px;font-weight:600;">Dates</div><div style="font-size:13px;color:#6b7280;" id="r4-dates">—</div></div>
+        <div style="text-align:right;"><div style="font-size:13px;font-weight:600;">Guests</div><div style="font-size:13px;color:#6b7280;" id="r4-guests">—</div></div>
+      </div>
+    </div>
+    <div style="border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:14px;">
+      <div style="font-family:var(--sans);font-weight:700;margin-bottom:12px;">Price details</div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;color:#6b7280;margin-bottom:8px;"><span id="r4-nlabel">—</span><span id="r4-sub">—</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;color:#6b7280;margin-bottom:8px;"><span>Service fee (8%)</span><span id="r4-fee">—</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;padding-top:10px;border-top:1px solid #e5e7eb;"><span>Total</span><span id="r4-total">—</span></div>
+    </div>
+    <div style="border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:16px;">
+      <div style="font-family:var(--sans);font-weight:700;margin-bottom:6px;">Payment method</div>
+      <div style="font-size:14px;color:#6b7280;" id="r4-paymethod">PayPal</div>
+    </div>
+    <div id="book-err" style="color:#ef4444;font-size:13px;margin-bottom:8px;display:none;"></div>
+    <div id="paypal-final" style="margin-bottom:12px;"></div>
+    <div id="manual-confirm-btn" style="display:none;">
+      <button onclick="confirmBooking(null)" style="width:100%;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);margin-bottom:10px;">Confirm booking request 🏠</button>
+    </div>
+    <button onclick="goBS(3)" style="width:100%;background:none;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px;font-size:14px;cursor:pointer;margin-bottom:10px;">Back</button>
+    <p style="font-size:12px;color:#9ca3af;text-align:center;">By confirming you agree to our <a href="/pages.html?page=cancellation" style="color:var(--primary);">Cancellation Policy</a> and <a href="/terms.html" style="color:var(--primary);">Terms</a>.</p>
+  </div>
+
+</div>
+</div>
 </div>
 
 <script>
@@ -322,6 +419,148 @@ function showPayPal() {
       height: 48
     }
   }).render('#paypal-btn-container');
+}
+
+// ── MULTI-STEP BOOKING ───────────────────────────────────
+var _bookStep = 1;
+var _payNow = true;
+var _payMethod = 'paypal';
+
+function openBooking() {
+  if (!_user) { alert('Please sign in to book this property.'); window.location.href = '/'; return; }
+  _bookStep = 1;
+  _payNow   = true;
+  _payMethod = 'paypal';
+  populateStep1();
+  goBS(1);
+  document.getElementById('book-modal').style.display = 'block';
+}
+
+function closeBookModal() {
+  document.getElementById('book-modal').style.display = 'none';
+}
+
+function populateStep1() {
+  var cin    = document.getElementById('checkin').value;
+  var cout   = document.getElementById('checkout').value;
+  var guests = document.getElementById('book-guests').value;
+  var d1 = new Date(cin), d2 = new Date(cout);
+  var nights   = Math.max(1, Math.round((d2-d1)/(1000*60*60*24)));
+  var sym      = _property.currency === 'PHP' ? '₱' : '$';
+  var subtotal = _property.price_per_night * nights;
+  var fee      = subtotal * 0.08;
+  var total    = subtotal + fee;
+
+  document.getElementById('s1-title').textContent  = _property.title;
+  document.getElementById('s1-nlabel').textContent = sym+Number(_property.price_per_night).toLocaleString()+' × '+nights+' night'+(nights>1?'s':'');
+  document.getElementById('s1-sub').textContent    = sym+Number(subtotal).toLocaleString();
+  document.getElementById('s1-fee').textContent    = sym+fee.toFixed(2);
+  document.getElementById('s1-total').textContent  = sym+total.toFixed(2);
+  document.getElementById('s1-pay-now-lbl').textContent = 'Pay '+sym+total.toFixed(2)+' now';
+}
+
+function goBS(n) {
+  for (var i=1;i<=4;i++) {
+    document.getElementById('bs'+i).style.display = i===n ? 'block' : 'none';
+    document.getElementById('si'+i).style.background = i<=n ? 'var(--primary)' : '#e5e7eb';
+  }
+  _bookStep = n;
+  if (n === 4) populateReview();
+  if (n === 4 && _payMethod === 'paypal') renderFinalPayPal();
+  if (n === 2 && _payMethod === 'paypal') renderPayPalButtons();
+}
+
+function selectPayNow(val) {
+  _payNow = val;
+  document.getElementById('opt-pay-now').style.border = val ? '2px solid var(--primary)' : '1.5px solid #e5e7eb';
+  document.getElementById('opt-pay-now').style.background = val ? '#fff5f5' : '#fff';
+  document.getElementById('opt-pay-later').style.border = !val ? '2px solid var(--primary)' : '1.5px solid #e5e7eb';
+  document.getElementById('pay-later-dot').style.background = !val ? 'var(--primary)' : '';
+}
+
+function pickPayMethod(method) {
+  _payMethod = method;
+  ['gcash','bank'].forEach(function(m) {
+    document.getElementById('pm-'+m).style.border = m===method ? '2px solid var(--primary)' : '1.5px solid #e5e7eb';
+    document.getElementById('pm-'+m+'-dot').style.background = m===method ? 'var(--primary)' : '';
+    document.getElementById(m+'-info').style.display = m===method ? 'block' : 'none';
+  });
+}
+
+function renderPayPalButtons() {
+  var cin    = document.getElementById('checkin').value;
+  var cout   = document.getElementById('checkout').value;
+  var d1 = new Date(cin), d2 = new Date(cout);
+  var nights   = Math.max(1, Math.round((d2-d1)/(1000*60*60*24)));
+  var subtotal = _property.price_per_night * nights;
+  var fee      = subtotal * 0.08;
+  var total    = (subtotal + fee);
+  var usd      = _property.currency === 'PHP' ? (total/56).toFixed(2) : total.toFixed(2);
+  var container = document.getElementById('paypal-buttons-container');
+  container.innerHTML = '';
+  if (typeof paypal === 'undefined') return;
+  paypal.Buttons({
+    createOrder: function(data, actions) {
+      return actions.order.create({ purchase_units:[{ amount:{value:usd,currency_code:'USD'}, description:_property.title }] });
+    },
+    onApprove: async function(data, actions) {
+      var details = await actions.order.capture();
+      await confirmBooking(details.id);
+    },
+    onCancel: function() {},
+    onError: function(e) { console.error('PayPal error',e); },
+    style: { color:'gold', shape:'rect', label:'pay', height:44 }
+  }).render('#paypal-buttons-container');
+}
+
+function renderFinalPayPal() {
+  var cin    = document.getElementById('checkin').value;
+  var cout   = document.getElementById('checkout').value;
+  var d1 = new Date(cin), d2 = new Date(cout);
+  var nights   = Math.max(1, Math.round((d2-d1)/(1000*60*60*24)));
+  var subtotal = _property.price_per_night * nights;
+  var fee      = subtotal * 0.08;
+  var total    = (subtotal + fee);
+  var usd      = _property.currency === 'PHP' ? (total/56).toFixed(2) : total.toFixed(2);
+  var container = document.getElementById('paypal-final');
+  container.innerHTML = '';
+  document.getElementById('manual-confirm-btn').style.display = 'none';
+  if (typeof paypal === 'undefined') { document.getElementById('manual-confirm-btn').style.display='block'; return; }
+  paypal.Buttons({
+    createOrder: function(data, actions) {
+      return actions.order.create({ purchase_units:[{ amount:{value:usd,currency_code:'USD'}, description:_property.title }] });
+    },
+    onApprove: async function(data, actions) {
+      var details = await actions.order.capture();
+      await confirmBooking(details.id);
+    },
+    onError: function(e) { document.getElementById('book-err').textContent='Payment failed. Try again.'; document.getElementById('book-err').style.display='block'; },
+    style: { color:'gold', shape:'rect', label:'pay', height:48 }
+  }).render('#paypal-final');
+}
+
+function populateReview() {
+  var cin    = document.getElementById('checkin').value;
+  var cout   = document.getElementById('checkout').value;
+  var guests = document.getElementById('book-guests').value;
+  var d1 = new Date(cin), d2 = new Date(cout);
+  var nights   = Math.max(1, Math.round((d2-d1)/(1000*60*60*24)));
+  var sym      = _property.currency === 'PHP' ? '₱' : '$';
+  var subtotal = _property.price_per_night * nights;
+  var fee      = subtotal * 0.08;
+  var total    = subtotal + fee;
+
+  document.getElementById('r4-dates').textContent  = cin + ' → ' + cout;
+  document.getElementById('r4-guests').textContent = guests + ' guest'+(parseInt(guests)>1?'s':'');
+  document.getElementById('r4-nlabel').textContent = sym+Number(_property.price_per_night).toLocaleString()+' × '+nights+' night'+(nights>1?'s':'');
+  document.getElementById('r4-sub').textContent    = sym+Number(subtotal).toLocaleString();
+  document.getElementById('r4-fee').textContent    = sym+fee.toFixed(2);
+  document.getElementById('r4-total').textContent  = sym+total.toFixed(2);
+  document.getElementById('r4-paymethod').textContent = _payMethod === 'paypal' ? 'PayPal' : _payMethod === 'gcash' ? 'GCash' : 'Bank Transfer';
+  if (_payMethod !== 'paypal') {
+    document.getElementById('manual-confirm-btn').style.display = 'block';
+    document.getElementById('paypal-final').style.display = 'none';
+  }
 }
 
 function openBooking() {

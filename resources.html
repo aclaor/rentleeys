@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hosting Resources — Rentleeys</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--bg2:#f7f8fa;--border:#e5e7eb;--text:#111827;--text2:#6b7280;--text3:#9ca3af;--primary:#ff5a5f;--green:#00a651;--sans:'Plus Jakarta Sans',sans-serif;--body:'Inter',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.7;}
+.nav{height:64px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.logo{font-family:var(--sans);font-size:20px;font-weight:800;text-decoration:none;color:var(--text);}
+.logo span{color:var(--primary);}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#fff5f5 0%,#fff 100%);padding:64px 24px;text-align:center;}
+.hero h1{font-family:var(--sans);font-size:clamp(28px,4vw,44px);font-weight:800;letter-spacing:-1px;margin-bottom:12px;}
+.hero p{font-size:17px;color:var(--text2);max-width:520px;margin:0 auto 32px;}
+
+/* TOPIC TABS */
+.topics{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:0 24px 32px;background:#fff5f5;}
+.topic-btn{padding:10px 20px;border-radius:24px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--text2);transition:all .15s;}
+.topic-btn:hover{border-color:var(--primary);color:var(--primary);}
+.topic-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+
+/* MAIN */
+.main{max-width:1100px;margin:0 auto;padding:48px 24px;}
+.section-title{font-family:var(--sans);font-size:26px;font-weight:800;letter-spacing:-0.5px;margin-bottom:8px;}
+.section-sub{font-size:15px;color:var(--text2);margin-bottom:32px;}
+
+/* ARTICLES GRID */
+.articles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;margin-bottom:48px;}
+.article-card{border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .2s;text-decoration:none;color:inherit;display:block;}
+.article-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.08);}
+.article-img{height:160px;display:flex;align-items:center;justify-content:center;font-size:56px;}
+.article-body{padding:18px;}
+.article-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--primary);margin-bottom:8px;}
+.article-title{font-family:var(--sans);font-size:16px;font-weight:700;margin-bottom:8px;line-height:1.4;}
+.article-preview{font-size:13px;color:var(--text2);line-height:1.6;}
+.article-read{font-size:12px;color:var(--primary);font-weight:600;margin-top:10px;}
+
+/* ARTICLE MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.article-modal{background:#fff;border-radius:20px;width:100%;max-width:680px;margin:auto;padding:40px;}
+.modal-close{float:right;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text2);margin-top:-8px;}
+.modal-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--primary);margin-bottom:12px;}
+.modal-title{font-family:var(--sans);font-size:28px;font-weight:800;letter-spacing:-0.5px;margin-bottom:16px;}
+.modal-body{font-size:15px;color:var(--text2);line-height:1.8;}
+.modal-body h3{font-family:var(--sans);font-weight:700;color:var(--text);margin:24px 0 10px;}
+.modal-body ul{padding-left:20px;margin-bottom:16px;}
+.modal-body li{margin-bottom:8px;}
+.modal-body p{margin-bottom:14px;}
+.modal-body .tip{background:#f0fdf4;border-left:4px solid var(--green);padding:14px 16px;border-radius:0 10px 10px 0;margin:16px 0;font-size:14px;color:#166534;}
+.modal-body .warning{background:#fff5f5;border-left:4px solid var(--primary);padding:14px 16px;border-radius:0 10px 10px 0;margin:16px 0;font-size:14px;color:#991b1b;}
+
+/* FEATURED */
+.featured{background:linear-gradient(135deg,var(--primary),#ff8a8d);border-radius:20px;padding:40px;color:#fff;margin-bottom:48px;display:flex;align-items:center;gap:32px;flex-wrap:wrap;}
+.featured h2{font-family:var(--sans);font-size:26px;font-weight:800;margin-bottom:8px;}
+.featured p{opacity:0.9;font-size:15px;margin-bottom:20px;}
+.featured-btn{background:#fff;color:var(--primary);border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+
+footer{background:var(--text);color:#fff;padding:32px 24px;text-align:center;font-size:13px;color:#6b7280;}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="logo">rent<span>leeys</span></a>
+  <div style="display:flex;gap:16px;align-items:center;">
+    <a href="help.html" style="font-size:14px;color:var(--text2);text-decoration:none;">Help Center</a>
+    <a href="host.html" style="background:var(--primary);color:#fff;padding:9px 18px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;">Start hosting</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div style="font-size:48px;margin-bottom:16px;">📚</div>
+  <h1>Hosting Resource Center</h1>
+  <p>Everything you need to become a successful Rentleeys host. Tips, guides, and best practices.</p>
+</div>
+
+<!-- TOPIC TABS -->
+<div class="topics">
+  <div class="topic-btn active" onclick="filterArticles('all',this)">All topics</div>
+  <div class="topic-btn" onclick="filterArticles('getting-started',this)">🚀 Get started</div>
+  <div class="topic-btn" onclick="filterArticles('hospitality',this)">⭐ 5-star hospitality</div>
+  <div class="topic-btn" onclick="filterArticles('pricing',this)">💰 Pricing</div>
+  <div class="topic-btn" onclick="filterArticles('safety',this)">🛡️ Safety & policies</div>
+  <div class="topic-btn" onclick="filterArticles('growth',this)">📈 Grow your business</div>
+</div>
+
+<div class="main">
+
+  <!-- FEATURED -->
+  <div class="featured">
+    <div style="font-size:64px;">🏠</div>
+    <div style="flex:1;">
+      <h2>New to hosting? Start here.</h2>
+      <p>Our step-by-step guide walks you through everything — from taking great photos to setting the perfect price.</p>
+      <button class="featured-btn" onclick="openArticle('beginners-guide')">Read the beginner's guide →</button>
+    </div>
+  </div>
+
+  <!-- SECTION TITLE -->
+  <div class="section-title" id="articles-title">All resources</div>
+  <div class="section-sub" id="articles-sub">Guides and tips for every stage of your hosting journey</div>
+
+  <!-- ARTICLES GRID -->
+  <div class="articles-grid" id="articles-grid"></div>
+
+</div>
+
+<!-- ARTICLE MODAL -->
+<div class="modal-overlay" id="article-modal" onclick="if(event.target===this)closeArticle()">
+  <div class="article-modal">
+    <button class="modal-close" onclick="closeArticle()">×</button>
+    <div class="modal-tag" id="modal-tag"></div>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<footer>© 2026 Rentleeys · <a href="/privacy.html" style="color:#9ca3af;">Privacy</a> · <a href="/terms.html" style="color:#9ca3af;">Terms</a> · <a href="mailto:hello@rentleeys.com" style="color:#ff5a5f;">hello@rentleeys.com</a></footer>
+
+<script>
+var ARTICLES = [
+  {
+    id: 'beginners-guide',
+    cat: 'getting-started',
+    tag: '🚀 Get started',
+    title: 'Complete beginner\'s guide to hosting on Rentleeys',
+    preview: 'Everything you need to know to list your first property and welcome your first guest.',
+    emoji: '🏠',
+    bg: 'linear-gradient(135deg,#667eea,#764ba2)',
+    content: `
+      <p>Welcome to Rentleeys hosting! This guide walks you through every step of setting up your listing and welcoming your first guest.</p>
+      <h3>Step 1: Create your listing</h3>
+      <p>Go to <a href="/host.html" style="color:var(--primary);">rentleeys.com/host.html</a> and fill in the 4-step form:</p>
+      <ul>
+        <li><strong>Property type</strong> — apartment, house, room, condo, villa</li>
+        <li><strong>Details</strong> — bedrooms, bathrooms, max guests, amenities</li>
+        <li><strong>Pricing</strong> — set your nightly rate</li>
+        <li><strong>Photos</strong> — add at least 5 clear photos</li>
+      </ul>
+      <div class="tip">💡 <strong>Tip:</strong> Listings with 10+ photos get 40% more bookings. Take photos during daytime with good natural light.</div>
+      <h3>Step 2: Wait for approval</h3>
+      <p>Our team reviews every listing within 24 hours to ensure quality and accuracy. You'll receive an email when your listing goes live.</p>
+      <h3>Step 3: Receive your first booking</h3>
+      <p>When a guest requests to book, you'll receive a notification. You have 24 hours to accept or decline. We recommend accepting quickly — fast response rates improve your ranking.</p>
+      <h3>Step 4: Welcome your guest</h3>
+      <p>Send a welcome message with check-in instructions, WiFi password, and any house rules. First impressions matter!</p>
+      <h3>Step 5: Get paid</h3>
+      <p>Your payout arrives within 24 hours of guest check-in via PayPal or GCash. No waiting weeks like other platforms!</p>
+      <div class="tip">💡 <strong>Remember:</strong> Your first 3 months have 0% host fee — so you keep 100% of your listing price!</div>
+    `
+  },
+  {
+    id: 'perfect-photos',
+    cat: 'getting-started',
+    tag: '🚀 Get started',
+    title: 'How to take photos that get more bookings',
+    preview: 'Great photos are the #1 factor in booking success. Learn how to showcase your space.',
+    emoji: '📸',
+    bg: 'linear-gradient(135deg,#f093fb,#f5576c)',
+    content: `
+      <p>Photos are the first thing guests see. Great photos can increase your bookings by up to 40%.</p>
+      <h3>Equipment</h3>
+      <p>You don't need a professional camera. A modern smartphone works perfectly. Just follow these tips:</p>
+      <ul>
+        <li>Use the widest angle lens available</li>
+        <li>Shoot in landscape (horizontal) orientation</li>
+        <li>Turn on HDR mode if available</li>
+      </ul>
+      <h3>Lighting</h3>
+      <div class="tip">💡 Always shoot during daytime with natural light. Open all curtains and blinds. Turn on all lights for a warm, inviting feel.</div>
+      <h3>What photos to take</h3>
+      <ul>
+        <li>🛋️ Living area (most important)</li>
+        <li>🛏️ Every bedroom</li>
+        <li>🚿 Bathroom(s)</li>
+        <li>🍳 Kitchen</li>
+        <li>🌅 View or outdoor area</li>
+        <li>🏢 Building entrance</li>
+        <li>📍 Neighborhood highlights</li>
+      </ul>
+      <h3>Staging tips</h3>
+      <ul>
+        <li>Make beds with fresh, wrinkle-free sheets</li>
+        <li>Remove personal items and clutter</li>
+        <li>Add fresh flowers or plants for color</li>
+        <li>Set the dining table</li>
+        <li>Fold towels neatly in bathroom</li>
+      </ul>
+    `
+  },
+  {
+    id: 'pricing-strategy',
+    cat: 'pricing',
+    tag: '💰 Pricing',
+    title: 'How to price your listing for maximum earnings',
+    preview: 'Set the right price to attract guests while maximizing your income.',
+    emoji: '💰',
+    bg: 'linear-gradient(135deg,#4facfe,#00f2fe)',
+    content: `
+      <p>Pricing is the most important factor after photos. Here's how to get it right.</p>
+      <h3>Research your market</h3>
+      <p>Search Rentleeys for similar properties in your area. Look at:</p>
+      <ul>
+        <li>Same property type (apartment, room, house)</li>
+        <li>Similar number of bedrooms</li>
+        <li>Same neighborhood or city</li>
+      </ul>
+      <h3>Start competitive</h3>
+      <div class="tip">💡 <strong>New host tip:</strong> Price 15-20% below comparable listings for your first month. Get those first 5 reviews, then raise your price.</div>
+      <h3>Philippines pricing guide</h3>
+      <ul>
+        <li>🛏️ Private room — ₱800 to ₱1,500/night</li>
+        <li>🏢 Studio apartment — ₱1,500 to ₱3,000/night</li>
+        <li>🏠 1-bedroom condo — ₱2,000 to ₱4,000/night</li>
+        <li>🏡 2-bedroom house — ₱3,000 to ₱6,000/night</li>
+        <li>🏰 Villa/resort — ₱8,000+/night</li>
+      </ul>
+      <h3>Adjust for seasons</h3>
+      <ul>
+        <li>📈 Raise prices during: Christmas, Holy Week, summer (April-May), long weekends</li>
+        <li>📉 Lower prices during: rainy season (June-September), slow weekdays</li>
+      </ul>
+      <h3>Minimum stay</h3>
+      <p>Set a 2-night minimum to reduce turnover costs. For weekly stays, offer a 10% discount.</p>
+    `
+  },
+  {
+    id: 'five-star-hosting',
+    cat: 'hospitality',
+    tag: '⭐ 5-star hospitality',
+    title: 'How to earn 5-star reviews every time',
+    preview: 'Consistently great reviews lead to more bookings and higher prices.',
+    emoji: '⭐',
+    bg: 'linear-gradient(135deg,#fa709a,#fee140)',
+    content: `
+      <p>5-star reviews are your most valuable asset on Rentleeys. Here's how to earn them consistently.</p>
+      <h3>Before check-in</h3>
+      <ul>
+        <li>Send a welcome message within 1 hour of booking</li>
+        <li>Share check-in instructions 24 hours before arrival</li>
+        <li>Confirm WiFi password, parking, and access details</li>
+        <li>Ask about any special requests or needs</li>
+      </ul>
+      <h3>The property</h3>
+      <div class="tip">💡 Clean to hotel standards. Guests forgive almost everything except cleanliness issues.</div>
+      <ul>
+        <li>Fresh sheets and towels for every guest</li>
+        <li>Stock basics: toilet paper, soap, shampoo</li>
+        <li>Provide a welcome snack or drink</li>
+        <li>Leave a handwritten welcome note</li>
+        <li>Check that all appliances work</li>
+      </ul>
+      <h3>During the stay</h3>
+      <ul>
+        <li>Check in with guests on day 2 (just a quick message)</li>
+        <li>Respond to messages within 1 hour</li>
+        <li>Never enter the property without permission</li>
+        <li>Respect guest privacy</li>
+      </ul>
+      <h3>After checkout</h3>
+      <ul>
+        <li>Leave a review for your guest</li>
+        <li>Ask them to leave a review</li>
+        <li>Note any improvements for next time</li>
+      </ul>
+    `
+  },
+  {
+    id: 'host-cancellation',
+    cat: 'safety',
+    tag: '🛡️ Safety & policies',
+    title: 'Host cancellation policy — what you need to know',
+    preview: 'What happens if you need to cancel a confirmed booking and how to protect your guests.',
+    emoji: '📋',
+    bg: 'linear-gradient(135deg,#a18cd1,#fbc2eb)',
+    content: `
+      <p>Cancelling a confirmed booking is a serious matter. Here's everything you need to know.</p>
+      <div class="warning">⚠️ <strong>Important:</strong> Cancelling a confirmed booking negatively impacts your listing ranking and may result in penalties.</div>
+      <h3>What happens when you cancel</h3>
+      <ul>
+        <li>Guest receives a <strong>100% full refund</strong> within 3-5 business days</li>
+        <li>Your listing ranking is temporarily lowered</li>
+        <li>You receive a cancellation warning on your host profile</li>
+        <li>Rentleeys helps the guest find alternative accommodation</li>
+      </ul>
+      <h3>Penalty system</h3>
+      <ul>
+        <li>1st cancellation — warning email sent</li>
+        <li>2nd cancellation — listing temporarily suspended for 7 days</li>
+        <li>3rd cancellation — permanent listing removal</li>
+      </ul>
+      <h3>What if you genuinely can't host?</h3>
+      <p>Contact Rentleeys support at <a href="mailto:support@rentleeys.com" style="color:var(--primary);">support@rentleeys.com</a> as soon as possible. Extenuating circumstances (natural disasters, serious illness, emergencies) may be considered and penalties waived.</p>
+      <h3>How to avoid cancellations</h3>
+      <ul>
+        <li>Only list dates you're definitely available</li>
+        <li>Block dates in your calendar when unavailable</li>
+        <li>Don't accept bookings you're unsure about</li>
+        <li>Have a backup plan if something goes wrong</li>
+      </ul>
+      <div class="tip">💡 <strong>Best practice:</strong> If you think you might need to cancel, contact the guest first. They may be willing to change dates, which avoids a formal cancellation.</div>
+    `
+  },
+  {
+    id: 'guest-safety',
+    cat: 'safety',
+    tag: '🛡️ Safety & policies',
+    title: 'Keeping guests safe in your property',
+    preview: 'Essential safety measures every Rentleeys host should have in place.',
+    emoji: '🛡️',
+    bg: 'linear-gradient(135deg,#43e97b,#38f9d7)',
+    content: `
+      <p>Guest safety is the #1 priority. Make sure your property meets these basic safety standards.</p>
+      <h3>Must-have safety items</h3>
+      <ul>
+        <li>🔥 Working smoke detector (test before every stay)</li>
+        <li>🧯 Fire extinguisher (easily accessible)</li>
+        <li>💊 Basic first aid kit</li>
+        <li>🚪 Secure locks on all doors and windows</li>
+        <li>💡 Emergency lighting or flashlight</li>
+      </ul>
+      <h3>Emergency information</h3>
+      <p>Leave a printed card in the property with:</p>
+      <ul>
+        <li>📞 Emergency: 911</li>
+        <li>🏥 Nearest hospital name and address</li>
+        <li>🚒 Fire station nearest to property</li>
+        <li>📱 Your contact number</li>
+        <li>📱 Rentleeys support: support@rentleeys.com</li>
+      </ul>
+      <h3>Property security</h3>
+      <ul>
+        <li>Use a keypad or smart lock — never share physical keys</li>
+        <li>Change access codes between guests</li>
+        <li>No hidden cameras inside the property (strictly prohibited)</li>
+        <li>Outdoor security cameras are allowed — must be disclosed in listing</li>
+      </ul>
+      <div class="warning">⚠️ Hidden cameras inside your property are strictly prohibited and will result in immediate permanent ban from Rentleeys.</div>
+    `
+  },
+  {
+    id: 'grow-bookings',
+    cat: 'growth',
+    tag: '📈 Grow your business',
+    title: '10 ways to get more bookings on Rentleeys',
+    preview: 'Proven strategies to increase your visibility and booking rate.',
+    emoji: '📈',
+    bg: 'linear-gradient(135deg,#f093fb,#f5576c)',
+    content: `
+      <p>Want more bookings? Here are the 10 most effective strategies for Rentleeys hosts.</p>
+      <h3>1. Get your first 5 reviews fast</h3>
+      <p>Offer a small discount to your first guests in exchange for an honest review. Reviews are the #1 ranking factor.</p>
+      <h3>2. Respond instantly</h3>
+      <div class="tip">💡 Enable notifications and respond to booking requests within 1 hour. Fast response = higher ranking.</div>
+      <h3>3. Update your calendar regularly</h3>
+      <p>Keep your availability calendar accurate. Stale calendars hurt your ranking.</p>
+      <h3>4. Add more photos</h3>
+      <p>Listings with 15+ photos consistently outperform those with fewer. Add seasonal photos too.</p>
+      <h3>5. Write a detailed description</h3>
+      <p>Mention nearby attractions, public transport, malls, beaches, and restaurants. Help guests imagine staying there.</p>
+      <h3>6. Price competitively for weekdays</h3>
+      <p>Offer a 10-15% weekday discount to fill slower days and boost your overall booking rate.</p>
+      <h3>7. Offer longer stay discounts</h3>
+      <ul>
+        <li>Weekly stay: 10% off</li>
+        <li>Monthly stay: 20% off</li>
+      </ul>
+      <h3>8. Share on social media</h3>
+      <p>Share your Rentleeys listing on Facebook, Instagram, and community groups in your area.</p>
+      <h3>9. Get verified</h3>
+      <p>Complete your host profile with a photo and bio. Verified hosts with complete profiles get 25% more bookings.</p>
+      <h3>10. Collect and respond to reviews</h3>
+      <p>Always respond to reviews — both positive and negative. It shows you care and builds trust with future guests.</p>
+    `
+  },
+  {
+    id: 'house-rules',
+    cat: 'hospitality',
+    tag: '⭐ 5-star hospitality',
+    title: 'Setting house rules guests will respect',
+    preview: 'Clear, reasonable house rules protect your property and set guest expectations.',
+    emoji: '📜',
+    bg: 'linear-gradient(135deg,#4facfe,#00f2fe)',
+    content: `
+      <p>Good house rules protect your property while keeping guests comfortable.</p>
+      <h3>Essential house rules to include</h3>
+      <ul>
+        <li>✅ Check-in time (e.g. after 2 PM)</li>
+        <li>✅ Check-out time (e.g. before 11 AM)</li>
+        <li>✅ Maximum number of guests</li>
+        <li>✅ No smoking (inside or specify where allowed)</li>
+        <li>✅ Pets policy (yes/no, specify type)</li>
+        <li>✅ Parties and events policy</li>
+        <li>✅ Noise policy (quiet hours)</li>
+        <li>✅ Parking instructions</li>
+      </ul>
+      <h3>How to communicate rules</h3>
+      <ul>
+        <li>List rules clearly in your Rentleeys listing</li>
+        <li>Send rules in your welcome message</li>
+        <li>Post a laminated copy inside the property</li>
+        <li>Keep rules reasonable — overly strict rules deter bookings</li>
+      </ul>
+      <div class="tip">💡 Frame rules positively: "Please enjoy the outdoor area until 10 PM" instead of "No noise after 10 PM".</div>
+      <h3>What to do if rules are broken</h3>
+      <p>Contact Rentleeys support at <a href="mailto:support@rentleeys.com" style="color:var(--primary);">support@rentleeys.com</a> with evidence (photos, messages). We'll mediate and may deduct damages from the guest's security deposit.</p>
+    `
+  }
+];
+
+function renderArticles(articles) {
+  var grid = document.getElementById('articles-grid');
+  grid.innerHTML = articles.map(function(a) {
+    return '<div class="article-card" onclick="openArticle(\''+a.id+\')">'
+      +'<div class="article-img" style="background:'+a.bg+';">'+a.emoji+'</div>'
+      +'<div class="article-body">'
+      +'<div class="article-tag">'+a.tag+'</div>'
+      +'<div class="article-title">'+a.title+'</div>'
+      +'<div class="article-preview">'+a.preview+'</div>'
+      +'<div class="article-read">Read article →</div>'
+      +'</div></div>';
+  }).join('');
+}
+
+function filterArticles(cat, el) {
+  document.querySelectorAll('.topic-btn').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+  var filtered = cat === 'all' ? ARTICLES : ARTICLES.filter(function(a){return a.cat===cat;});
+  var titles = {
+    'all': ['All resources','Guides and tips for every stage of your hosting journey'],
+    'getting-started': ['Get started as a host','Everything you need to list your first property'],
+    'hospitality': ['Deliver 5-star hospitality','Tips for creating unforgettable guest experiences'],
+    'pricing': ['Pricing strategies','Set the right price and maximize your earnings'],
+    'safety': ['Safety & policies','Protect your guests, your property, and yourself'],
+    'growth': ['Grow your business','Strategies to increase bookings and earnings']
+  };
+  var t = titles[cat] || titles['all'];
+  document.getElementById('articles-title').textContent = t[0];
+  document.getElementById('articles-sub').textContent = t[1];
+  renderArticles(filtered);
+}
+
+function openArticle(id) {
+  var a = ARTICLES.find(function(x){return x.id===id;});
+  if (!a) return;
+  document.getElementById('modal-tag').textContent = a.tag;
+  document.getElementById('modal-title').textContent = a.title;
+  document.getElementById('modal-body').innerHTML = a.content;
+  document.getElementById('article-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeArticle() {
+  document.getElementById('article-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Init
+renderArticles(ARTICLES);
+
+// Check URL for direct article link
+var params = new URLSearchParams(window.location.search);
+if (params.get('article')) openArticle(params.get('article'));
+</script>
+</body>
+</html>

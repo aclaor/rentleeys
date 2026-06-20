@@ -606,23 +606,28 @@ function toggleAuth() {
 
 async function forgotPassword() {
   var email = document.getElementById('auth-email').value.trim();
+  if (!email) { showAuthErr('Please enter your email address first.'); return; }
   var errEl = document.getElementById('auth-err');
-  if (!email) {
-    errEl.textContent = 'Please enter your email address first.';
-    errEl.style.display = 'block';
-    return;
-  }
-  var result = await _db.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://rentleeys.com/dashboard.html'
-  });
-  if (result.error) {
-    errEl.textContent = result.error.message;
-    errEl.style.display = 'block';
-  } else {
-    errEl.style.background = '#f0fdf4';
-    errEl.style.color = '#166534';
-    errEl.style.borderColor = '#bbf7d0';
-    errEl.textContent = '✅ Password reset email sent! Check your inbox.';
+  try {
+    var result = await _db.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://rentleeys.com/dashboard.html'
+    });
+    if (result.error) {
+      // SMTP might be down - show manual support option
+      errEl.style.background = '#fef3c7';
+      errEl.style.color = '#92400e';
+      errEl.innerHTML = '⚠️ Could not send reset email automatically. Please email <a href="mailto:support@rentleeys.com?subject=Password Reset&body=Please reset password for: '+email+'" style="color:#92400e;font-weight:700;">support@rentleeys.com</a> to reset your password.';
+      errEl.style.display = 'block';
+    } else {
+      errEl.style.background = '#f0fdf4';
+      errEl.style.color = '#166534';
+      errEl.innerHTML = '✅ Password reset email sent! Check your inbox.';
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.style.background = '#fef3c7';
+    errEl.style.color = '#92400e';
+    errEl.innerHTML = '⚠️ Please email <a href="mailto:support@rentleeys.com?subject=Password Reset&body=Please reset password for: '+email+'" style="color:#92400e;font-weight:700;">support@rentleeys.com</a> to reset your password.';
     errEl.style.display = 'block';
   }
 }
@@ -641,38 +646,46 @@ function updateAuthModal() {
 async function handleAuth() {
   var email = document.getElementById('auth-email').value.trim();
   var pass  = document.getElementById('auth-pass').value;
-  var errEl = document.getElementById('auth-err');
-  errEl.textContent = '';
-  if (!email || !pass) { errEl.textContent = 'Please fill all fields.'; errEl.style.display="block"; return; }
-
+  clearAuthErr();
+  if (!email || !pass) { showAuthErr('Please fill all fields.'); return; }
   if (_authMode === 'signup') {
-    var name = document.getElementById('auth-name').value.trim();
+    var name = '';
+    var nEl = document.getElementById('auth-name');
+    if (nEl) name = nEl.value.trim();
     try {
-      var res = await _db.auth.signUp({
-        email: email,
-        password: pass,
-        options: { data: { full_name: name } }
-      });
-      if (res.error) { errEl.textContent = res.error.message; return; }
-      if (typeof gtag !== 'undefined') gtag('event', 'sign_up', { method: 'email' });
+      var res = await _db.auth.signUp({ email: email, password: pass, options: { data: { full_name: name } } });
+      if (res.error) { showAuthErr(res.error.message); return; }
       closeAuth();
-      alert('Account created! Check your email to verify.');
-    } catch(e) { errEl.textContent = e.message; }
+      alert('Account created! You can now sign in.');
+    } catch(e) { showAuthErr('Signup failed. Please try again.'); }
   } else {
     try {
       var res2 = await _db.auth.signInWithPassword({ email: email, password: pass });
-      if (res2.error) { errEl.textContent = 'Invalid email or password.'; return; }
-      if (typeof gtag !== 'undefined') gtag('event', 'login', { method: 'email' });
+      if (res2.error) { showAuthErr('Incorrect email or password. Please try again.'); return; }
       closeAuth();
       updateNavAuth();
       window.location.href = 'dashboard.html';
-    } catch(e) { errEl.textContent = e.message; }
+    } catch(e) { showAuthErr('Sign in failed. Please try again.'); }
   }
 }
 
-function trackEvent(name, params) {
-  if(typeof gtag !== 'undefined') gtag('event', name, params || {});
+function showAuthErr(msg) {
+  var el = document.getElementById('auth-err');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.background = '#fef2f2';
+  el.style.color = '#ef4444';
 }
+
+function clearAuthErr() {
+  var el = document.getElementById('auth-err');
+  if (!el) return;
+  el.textContent = '';
+  el.innerHTML = '';
+  el.style.display = 'none';
+}
+
 
 async function socialAuth(provider) {
   trackEvent('login', { method: provider });

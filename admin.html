@@ -618,7 +618,7 @@ function renderBookingsTable(items, tbodyId, compact) {
     var actions = b.status === 'pending'
       ? '<div class="action-btns"><button class="btn-approve" onclick="updateBookingStatus(''+b.id+'','confirmed')">✓ Confirm</button><button class="btn-reject" onclick="updateBookingStatus(''+b.id+'','cancelled')">✗ Cancel</button></div>'
       : b.status === 'confirmed'
-      ? '<div class="action-btns"><button class="btn-approve" onclick="updateBookingStatus(''+b.id+'','completed')">✓ Complete</button><button class="btn-reject" onclick="updateBookingStatus(''+b.id+'','cancelled')">✗ Cancel</button></div>'
+      ? '<div class="action-btns"><button class="btn-approve" onclick="markPaid(''+b.id+'',''+b.total_price+'')">💸 Pay Host</button><button class="btn-approve" onclick="updateBookingStatus(''+b.id+'','completed')">✓ Complete</button><button class="btn-reject" onclick="updateBookingStatus(''+b.id+'','cancelled')">✗ Cancel</button></div>'
       : '—';
     return '<tr>'
       +'<td class="td-main">'+(prop.title||'Unknown property')+'</td>'
@@ -677,6 +677,14 @@ async function loadHosts() {
   }).join('');
 }
 
+function markPaid(id, totalPrice) {
+  var hostPayout = (parseFloat(totalPrice) * 0.92).toFixed(2);
+  var confirmed = confirm('Pay host $'+hostPayout+' (92% of $'+totalPrice+')?
+
+After paying the host via PayPal/GCash, click OK to mark as completed.');
+  if (confirmed) updateBookingStatus(id, 'completed');
+}
+
 async function updateBookingStatus(id, status) {
   var { error } = await _db.from('rentleeys_bookings').update({status:status}).eq('id',id);
   if (error) { showToast('Error: '+error.message); return; }
@@ -698,13 +706,19 @@ function updateStats() {
   var total   = _allListings.length;
   var live    = _allListings.filter(function(l){return l.is_approved;}).length;
   var pending = _allListings.filter(function(l){return !l.is_approved;}).length;
-  var revenue = _allBookings.filter(function(b){return b.status==='completed';}).reduce(function(s,b){return s+(b.total_price||0);},0);
+  // Platform earns 8% of all confirmed/completed bookings
+  var totalBookingValue = _allBookings.filter(function(b){
+    return b.status==='confirmed'||b.status==='completed';
+  }).reduce(function(s,b){return s+(b.total_price||0);},0);
+  var platformRevenue = totalBookingValue * 0.08; // our 8% fee
 
   document.getElementById('s-total-listings').textContent = total;
   document.getElementById('s-live-listings').textContent = live;
   document.getElementById('s-pending').textContent = pending;
   document.getElementById('s-bookings').textContent = _allBookings.length;
-  document.getElementById('s-revenue').textContent = '₱'+Number(revenue).toLocaleString();
+  document.getElementById('s-revenue').textContent = '$'+Number(platformRevenue).toFixed(2);
+  var hostPayouts = totalBookingValue * 0.92;
+  document.getElementById('s-payouts') && (document.getElementById('s-payouts').textContent = '$'+Number(hostPayouts).toFixed(2));
 }
 
 // ── NAVIGATION ────────────────────────────────────────────

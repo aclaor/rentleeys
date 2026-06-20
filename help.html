@@ -99,26 +99,26 @@ footer{background:var(--text);color:#fff;padding:32px 24px;text-align:center;fon
   <div class="contact-sub">Choose the fastest way to reach us</div>
   <div class="contact-grid">
 
-    <a href="mailto:support@rentleeys.com" class="contact-card">
+    <div class="contact-card" onclick="openEmail('support@rentleeys.com','Support Request','Hi Rentleeys Team,%0A%0AI need help with...')">
       <div class="contact-icon">📧</div>
       <div class="contact-name">Email Support</div>
       <div class="contact-desc">Send us an email and we'll respond within 24 hours.</div>
       <span class="contact-badge badge-medium">Within 24 hours</span>
-    </a>
+    </div>
 
-    <div class="contact-card" onclick="document.getElementById('contact-form-section').scrollIntoView({behavior:'smooth'}); return false;">
+    <div class="contact-card" onclick="document.getElementById('contact-form-section').scrollIntoView({behavior:'smooth'})">
       <div class="contact-icon">📝</div>
       <div class="contact-name">Submit a request</div>
       <div class="contact-desc">Fill out our support form and track your request online.</div>
       <span class="contact-badge badge-medium">Within 24 hours</span>
     </div>
 
-    <a href="mailto:safety@rentleeys.com" class="contact-card" style="border-color:#fecaca;">
+    <div class="contact-card" onclick="openEmail('safety@rentleeys.com','URGENT Safety Issue','Hi Rentleeys,%0A%0AI have a safety concern...')" style="border-color:#fecaca;cursor:pointer;">
       <div class="contact-icon">🆘</div>
       <div class="contact-name">Safety issue</div>
       <div class="contact-desc">Report urgent safety concerns. We treat these as top priority.</div>
       <span class="contact-badge badge-fast" style="background:#fff5f5;color:var(--primary);">Priority response</span>
-    </a>
+    </div>
 
   </div>
 
@@ -211,7 +211,7 @@ footer{background:var(--text);color:#fff;padding:32px 24px;text-align:center;fon
       <h3>Safety issue during your stay?</h3>
       <p>If you feel unsafe or encounter an emergency, contact local authorities first. Then report to Rentleeys immediately — we're here 24/7 for urgent safety issues.</p>
     </div>
-    <button class="safety-btn" onclick="window.location.href='mailto:safety@rentleeys.com'">Get safety help →</button>
+    <button class="safety-btn" onclick="openEmail('safety@rentleeys.com','URGENT Safety Issue','Hi Rentleeys,%0A%0AI have a safety concern...')">Get safety help →</button>
   </div>
 </div>
 
@@ -279,6 +279,29 @@ function filterFAQ(cat, tabEl) {
   var filtered = cat === 'all' ? _faqs : _faqs.filter(function(f){return f.cat===cat;});
   renderFAQ(filtered);
   document.getElementById('faq-list').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function openEmail(to, subject, body) {
+  // Try mailto first
+  var mailto = 'mailto:' + to + '?subject=' + encodeURIComponent(subject) + '&body=' + body;
+  var a = document.createElement('a');
+  a.href = mailto;
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  // After short delay, if nothing opened, show Gmail link
+  setTimeout(function() {
+    var gmail = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + to
+      + '&su=' + encodeURIComponent(subject)
+      + '&body=' + body;
+    var msg = document.createElement('div');
+    msg.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:14px 20px;border-radius:10px;font-size:14px;z-index:999;text-align:center;';
+    msg.innerHTML = 'Email client not opening? <a href="' + gmail + '" target="_blank" style="color:#4ade80;font-weight:700;margin-left:6px;">Open Gmail →</a>';
+    document.body.appendChild(msg);
+    setTimeout(function() { document.body.removeChild(msg); }, 8000);
+  }, 1000);
 }
 
 function searchFAQ(q) {

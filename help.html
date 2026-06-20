@@ -106,7 +106,7 @@ footer{background:var(--text);color:#fff;padding:32px 24px;text-align:center;fon
       <span class="contact-badge badge-medium">Within 24 hours</span>
     </a>
 
-    <div class="contact-card" onclick="document.getElementById('contact-form-section').scrollIntoView({behavior:'smooth'})">
+    <div class="contact-card" onclick="document.getElementById('contact-form-section').scrollIntoView({behavior:'smooth'}); return false;">
       <div class="contact-icon">📝</div>
       <div class="contact-name">Submit a request</div>
       <div class="contact-desc">Fill out our support form and track your request online.</div>
@@ -211,7 +211,7 @@ footer{background:var(--text);color:#fff;padding:32px 24px;text-align:center;fon
       <h3>Safety issue during your stay?</h3>
       <p>If you feel unsafe or encounter an emergency, contact local authorities first. Then report to Rentleeys immediately — we're here 24/7 for urgent safety issues.</p>
     </div>
-    <a href="mailto:safety@rentleeys.com" class="safety-btn">Get safety help →</a>
+    <button class="safety-btn" onclick="window.location.href='mailto:safety@rentleeys.com'">Get safety help →</button>
   </div>
 </div>
 
@@ -306,28 +306,30 @@ async function submitRequest() {
   btn.textContent = 'Sending...';
   btn.disabled = true;
 
+  var msgHtml = message.split('\n').join('<br>');
+
   try {
-    // Try Brevo API first
+    var payload = {
+      sender: { name: name + ' via Rentleeys', email: 'hello@rentleeys.com' },
+      to: [{ email: 'support@rentleeys.com', name: 'Rentleeys Support' }],
+      replyTo: { email: email, name: name },
+      subject: '[' + topic.toUpperCase() + '] ' + name + ' (' + role + ')',
+      htmlContent: '<h2>New Support Request</h2>'
+        + '<p><strong>Name:</strong> ' + name + '</p>'
+        + '<p><strong>Email:</strong> ' + email + '</p>'
+        + '<p><strong>Role:</strong> ' + role + '</p>'
+        + '<p><strong>Topic:</strong> ' + topic + '</p>'
+        + '<hr><p><strong>Message:</strong></p>'
+        + '<p>' + msgHtml + '</p>'
+    };
+
     var response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'api-key': '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'
       },
-      body: JSON.stringify({
-        sender: { name: name + ' via Rentleeys', email: 'hello@rentleeys.com' },
-        to: [{ email: 'support@rentleeys.com', name: 'Rentleeys Support' }],
-        replyTo: { email: email, name: name },
-        subject: '[' + topic.toUpperCase() + '] ' + name + ' (' + role + ')',
-        htmlContent: '<h2>New Support Request</h2>'
-          + '<p><strong>Name:</strong> ' + name + '</p>'
-          + '<p><strong>Email:</strong> <a href="mailto:' + email + '">' + email + '</a></p>'
-          + '<p><strong>Role:</strong> ' + role + '</p>'
-          + '<p><strong>Topic:</strong> ' + topic + '</p>'
-          + '<hr><p><strong>Message:</strong></p>'
-          + '<p>' + message.replace(/
-/g, '<br>') + '</p>'
-      })
+      body: JSON.stringify(payload)
     });
 
     if (response.ok) {
@@ -335,32 +337,31 @@ async function submitRequest() {
       return;
     }
   } catch(e) {
-    console.log('Brevo failed, using mailto:', e);
+    console.log('Brevo failed:', e);
   }
 
-  // Always works fallback - open email client
-  var subject = encodeURIComponent('[' + topic + '] Message from ' + name);
-  var body = encodeURIComponent(
-    'Hi Rentleeys Support,' +
-    '\n\nName: ' + name +
-    '\nEmail: ' + email +
-    '\nI am a: ' + role +
-    '\nTopic: ' + topic +
-    '\n\nMessage:\n' + message +
-    '\n\n---\nSent from rentleeys.com/help.html'
+  // Fallback - open email client
+  var subj = encodeURIComponent('[' + topic + '] Message from ' + name);
+  var bod  = encodeURIComponent(
+    'Name: ' + name + '\n'
+    + 'Email: ' + email + '\n'
+    + 'Role: ' + role + '\n'
+    + 'Topic: ' + topic + '\n\n'
+    + 'Message:\n' + message
   );
-  window.open('mailto:support@rentleeys.com?subject=' + subject + '&body=' + body, '_blank');
+  window.open('mailto:support@rentleeys.com?subject=' + subj + '&body=' + bod, '_blank');
   showSuccess();
 
   btn.textContent = 'Send request →';
   btn.disabled = false;
 }
 
+
 function showSuccess() {
   document.getElementById('contact-form').style.display = 'none';
   document.getElementById('form-success').classList.add('show');
   document.getElementById('form-success').innerHTML = '✅ <strong>Request submitted!</strong><br><br>'
-    + 'We'll get back to you at your email within 24 hours.<br><br>'
+    + 'We will get back to you at your email within 24 hours.<br><br>'
     + 'You can also email us directly at <a href="mailto:support@rentleeys.com" style="color:var(--green);">support@rentleeys.com</a>';
 }
 

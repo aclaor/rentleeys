@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Messages — Rentleeys</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{--bg:#fff;--bg2:#f7f8fa;--border:#e5e7eb;--text:#111827;--text2:#6b7280;--text3:#9ca3af;--primary:#ff5a5f;--green:#00a651;--sans:'Plus Jakarta Sans',sans-serif;--body:'Inter',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* NAV */
+.nav{height:60px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;justify-content:space-between;flex-shrink:0;}
+.logo{font-family:var(--sans);font-size:18px;font-weight:800;text-decoration:none;color:var(--text);}
+.logo span{color:var(--primary);}
+
+/* LAYOUT */
+.messages-layout{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+.msg-sidebar{width:320px;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+@media(max-width:768px){.msg-sidebar{width:100%;} .msg-main{display:none;} .msg-sidebar.hidden{display:none;} .msg-main.show{display:flex;}}
+.sidebar-header{padding:16px 20px;border-bottom:1px solid var(--border);}
+.sidebar-title{font-family:var(--sans);font-size:18px;font-weight:800;margin-bottom:12px;}
+.msg-tabs{display:flex;gap:0;background:var(--bg2);border-radius:8px;padding:3px;}
+.msg-tab{flex:1;padding:7px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;text-align:center;color:var(--text2);transition:all .15s;}
+.msg-tab.active{background:#fff;color:var(--primary);box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+.conv-list{flex:1;overflow-y:auto;}
+.conv-item{display:flex;align-items:center;gap:12px;padding:14px 20px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s;}
+.conv-item:hover{background:var(--bg2);}
+.conv-item.active{background:#fff5f5;}
+.conv-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.conv-info{flex:1;overflow:hidden;}
+.conv-name{font-size:14px;font-weight:700;margin-bottom:2px;}
+.conv-preview{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.conv-meta{text-align:right;flex-shrink:0;}
+.conv-time{font-size:11px;color:var(--text3);margin-bottom:4px;}
+.conv-badge{background:var(--primary);color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-left:auto;}
+.conv-status{font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+.status-ongoing{background:#fef3c7;color:#92400e;}
+.status-resolved{background:#f3f4f6;color:var(--text2);}
+
+/* MAIN CHAT */
+.msg-main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.chat-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:#fff;}
+.chat-header-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;background:#fff5f5;}
+.chat-header-name{font-family:var(--sans);font-size:15px;font-weight:700;}
+.chat-header-status{font-size:12px;color:var(--green);}
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;background:#fafafa;}
+.msg-bubble{max-width:75%;padding:12px 16px;border-radius:18px;font-size:14px;line-height:1.5;}
+.msg-bubble.them{background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px;align-self:flex-start;}
+.msg-bubble.me{background:var(--primary);color:#fff;border-bottom-right-radius:4px;align-self:flex-end;}
+.msg-bubble.ai{background:#fff;border:1px solid #e0e7ff;border-bottom-left-radius:4px;align-self:flex-start;}
+.msg-time{font-size:11px;color:var(--text3);text-align:center;margin:4px 0;}
+.msg-sender{font-size:11px;font-weight:700;color:var(--text3);margin-bottom:4px;}
+.chat-input-area{padding:14px 20px;border-top:1px solid var(--border);background:#fff;display:flex;gap:10px;align-items:flex-end;}
+.chat-input{flex:1;border:1.5px solid var(--border);border-radius:24px;padding:10px 16px;font-size:14px;font-family:var(--body);outline:none;resize:none;min-height:44px;max-height:120px;line-height:1.5;}
+.chat-input:focus{border-color:var(--primary);}
+.send-btn{width:44px;height:44px;border-radius:50%;background:var(--primary);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.send-btn:hover{background:var(--primary2);}
+
+/* AI QUICK REPLIES */
+.quick-replies{display:flex;gap:8px;flex-wrap:wrap;padding:10px 20px;border-top:1px solid var(--border);background:#fff;}
+.quick-reply{border:1.5px solid var(--border);border-radius:20px;padding:7px 14px;font-size:13px;cursor:pointer;color:var(--text2);transition:all .15s;white-space:nowrap;}
+.quick-reply:hover{border-color:var(--primary);color:var(--primary);}
+
+/* EMPTY STATE */
+.empty-chat{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--text2);background:#fafafa;}
+.empty-icon{font-size:48px;}
+
+/* SUPPORT TICKET */
+.support-options{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+.support-opt{border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px;background:#fff;transition:all .15s;}
+.support-opt:hover{border-color:var(--primary);}
+.support-opt-icon{font-size:22px;width:40px;height:40px;border-radius:10px;background:var(--bg2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.support-opt-title{font-weight:700;font-size:14px;}
+.support-opt-wait{font-size:12px;color:var(--text2);}
+
+/* NEW MSG BTN */
+.new-msg-btn{margin:12px;padding:10px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="logo">rent<span>leeys</span></a>
+  <a href="/dashboard.html" style="font-size:13px;color:var(--text2);text-decoration:none;">← Dashboard</a>
+</nav>
+
+<div class="messages-layout">
+
+  <!-- SIDEBAR -->
+  <div class="msg-sidebar" id="msg-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">Messages</div>
+      <div class="msg-tabs">
+        <div class="msg-tab active" onclick="filterMsgs('all',this)">All</div>
+        <div class="msg-tab" onclick="filterMsgs('unread',this)">Unread</div>
+      </div>
+    </div>
+    <div class="conv-list" id="conv-list">
+      <!-- Conversations will load here -->
+    </div>
+    <button class="new-msg-btn" onclick="openSupportChat()">+ Contact Rentleeys Support</button>
+  </div>
+
+  <!-- MAIN CHAT AREA -->
+  <div class="msg-main" id="msg-main">
+    <div class="empty-chat" id="empty-chat">
+      <div class="empty-icon">💬</div>
+      <div style="font-family:var(--sans);font-size:16px;font-weight:700;">Your messages</div>
+      <div style="font-size:14px;text-align:center;max-width:240px;">Select a conversation or contact support</div>
+      <button onclick="openSupportChat()" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;">Contact Support</button>
+    </div>
+
+    <!-- CHAT VIEW (hidden by default) -->
+    <div id="chat-view" style="display:none;flex-direction:column;height:100%;">
+      <div class="chat-header">
+        <div class="chat-header-avatar" id="chat-avatar">🏠</div>
+        <div>
+          <div class="chat-header-name" id="chat-name">Support</div>
+          <div class="chat-header-status" id="chat-status">● Online</div>
+        </div>
+        <div style="margin-left:auto;font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;" id="chat-status-badge"></div>
+      </div>
+
+      <div class="chat-messages" id="chat-messages"></div>
+
+      <div class="quick-replies" id="quick-replies" style="display:none;"></div>
+
+      <div class="chat-input-area">
+        <textarea class="chat-input" id="chat-input" placeholder="Write a message..." rows="1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"
+          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+        <button class="send-btn" onclick="sendMessage()">↑</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SUPA_URL  = 'https://lvzwirglhdrutggaoyvm.supabase.co';
+const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2endpcmdsaGRydXRnZ2FveXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4Mjc0MzQsImV4cCI6MjA5NzQwMzQzNH0.55HME06oIExPfQ2KdgdBYbYQ4jGWzlfzDL_yXStc6zk';
+const _db = window.supabase.createClient(SUPA_URL, SUPA_ANON);
+var _user = null;
+var _activeChat = null;
+var _messages = [];
+var _aiMode = false;
+
+// Auth guard
+_db.auth.onAuthStateChange(function(event, session) {
+  if (!session) { window.location.href = '/'; return; }
+  _user = session.user;
+  loadConversations();
+});
+
+// ── CONVERSATIONS ─────────────────────────────────────────
+async function loadConversations() {
+  var convList = document.getElementById('conv-list');
+
+  // Load bookings as conversations (host-guest messaging)
+  var { data: bookings } = await _db.from('rentleeys_bookings')
+    .select('*, rentleeys_properties(title,images)')
+    .or('guest_id.eq.'+_user.id+',host_id.eq.'+_user.id)
+    .order('created_at', {ascending:false})
+    .limit(20);
+
+  var convs = [];
+
+  // Add support conversation always
+  convs.push({
+    id: 'support',
+    name: 'Rentleeys Support',
+    avatar: '🛡️',
+    preview: 'Hi! How can we help you today?',
+    time: 'Now',
+    status: 'ongoing',
+    unread: 0,
+    bg: '#fff5f5'
+  });
+
+  // Add booking conversations
+  if (bookings) {
+    bookings.forEach(function(b) {
+      var prop = b.rentleeys_properties || {};
+      var isGuest = b.guest_id === _user.id;
+      convs.push({
+        id: 'booking-'+b.id,
+        name: isGuest ? 'Host · '+prop.title : 'Guest booking',
+        avatar: prop.images && prop.images[0] ? null : '🏠',
+        avatarImg: prop.images && prop.images[0],
+        preview: b.message || 'Booking for '+b.check_in+' → '+b.check_out,
+        time: new Date(b.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}),
+        status: b.status,
+        unread: 0,
+        bookingId: b.id,
+        bg: '#fff'
+      });
+    });
+  }
+
+  convList.innerHTML = convs.map(function(c) {
+    var avatarHTML = c.avatarImg
+      ? '<img src="'+c.avatarImg+'" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">'
+      : '<div class="conv-avatar" style="background:'+c.bg+';">'+c.avatar+'</div>';
+    var statusBadge = c.status === 'ongoing' || c.status === 'pending' || c.status === 'confirmed'
+      ? '<span class="conv-status status-ongoing">'+c.status+'</span>'
+      : '<span class="conv-status status-resolved">'+c.status+'</span>';
+    return '<div class="conv-item" onclick="openChat(\''+c.id+'\')" id="conv-'+c.id+'">'
+      +avatarHTML
+      +'<div class="conv-info"><div class="conv-name">'+c.name+'</div><div class="conv-preview">'+c.preview+'</div></div>'
+      +'<div class="conv-meta"><div class="conv-time">'+c.time+'</div>'+statusBadge+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+// ── OPEN CHAT ─────────────────────────────────────────────
+function openChat(id) {
+  _activeChat = id;
+  document.querySelectorAll('.conv-item').forEach(function(c){c.classList.remove('active');});
+  var convEl = document.getElementById('conv-'+id);
+  if (convEl) convEl.classList.add('active');
+
+  document.getElementById('empty-chat').style.display = 'none';
+  document.getElementById('chat-view').style.display = 'flex';
+
+  if (id === 'support') {
+    openSupportChat();
+  } else {
+    openBookingChat(id.replace('booking-',''));
+  }
+}
+
+// ── SUPPORT AI CHAT ───────────────────────────────────────
+function openSupportChat() {
+  _aiMode = true;
+  _activeChat = 'support';
+  document.getElementById('empty-chat').style.display = 'none';
+  document.getElementById('chat-view').style.display = 'flex';
+  document.getElementById('chat-avatar').textContent = '🛡️';
+  document.getElementById('chat-name').textContent = 'Rentleeys Support';
+  document.getElementById('chat-status').textContent = '● AI Assistant + Human team';
+  document.getElementById('chat-status-badge').textContent = 'Ongoing';
+  document.getElementById('chat-status-badge').style.background = '#fef3c7';
+  document.getElementById('chat-status-badge').style.color = '#92400e';
+
+  var name = _user.user_metadata?.full_name || _user.email.split('@')[0];
+  _messages = [{
+    sender: 'ai',
+    text: 'Hi '+name+'! I\'m an AI assistant for Rentleeys. I can help with bookings, payments, and general questions. For urgent issues, I can connect you with our human team.\n\nWhat can I help you with today?',
+    time: new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+  }];
+  renderMessages();
+  showQuickReplies(['I have a booking issue','Payment question','Safety concern','Talk to a person']);
+}
+
+// ── BOOKING CHAT ──────────────────────────────────────────
+async function openBookingChat(bookingId) {
+  _aiMode = false;
+  document.getElementById('chat-avatar').textContent = '🏠';
+  document.getElementById('chat-name').textContent = 'Booking conversation';
+  document.getElementById('chat-status').textContent = '● Active';
+  document.getElementById('quick-replies').style.display = 'none';
+
+  // Load booking details
+  var { data } = await _db.from('rentleeys_bookings')
+    .select('*, rentleeys_properties(title)')
+    .eq('id', bookingId).single();
+
+  if (data) {
+    var prop = data.rentleeys_properties || {};
+    document.getElementById('chat-name').textContent = prop.title || 'Booking';
+  }
+
+  _messages = [{
+    sender: 'system',
+    text: 'Booking conversation for '+((data && data.rentleeys_properties) ? data.rentleeys_properties.title : 'property')+'\n'+
+      (data ? data.check_in+' → '+data.check_out : ''),
+    time: ''
+  }];
+
+  if (data && data.message) {
+    _messages.push({
+      sender: data.guest_id === _user.id ? 'me' : 'them',
+      text: data.message,
+      time: new Date(data.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+    });
+  }
+  renderMessages();
+}
+
+// ── SEND MESSAGE ──────────────────────────────────────────
+async function sendMessage() {
+  var input = document.getElementById('chat-input');
+  var text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = 'auto';
+
+  // Add user message
+  _messages.push({
+    sender: 'me',
+    text: text,
+    time: new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+  });
+  renderMessages();
+  document.getElementById('quick-replies').style.display = 'none';
+
+  if (_aiMode) {
+    // Show typing indicator
+    _messages.push({ sender: 'typing', text: '...', time: '' });
+    renderMessages();
+
+    // Call Claude AI via Anthropic API
+    setTimeout(async function() {
+      _messages.pop(); // remove typing
+      var aiResponse = await getAIResponse(text);
+      _messages.push({
+        sender: 'ai',
+        text: aiResponse.text,
+        time: new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+      });
+      renderMessages();
+      if (aiResponse.showOptions) showSupportOptions();
+      else if (aiResponse.quickReplies) showQuickReplies(aiResponse.quickReplies);
+    }, 800);
+  }
+}
+
+// ── AI RESPONSE (Claude API) ──────────────────────────────
+async function getAIResponse(userMessage) {
+  var lower = userMessage.toLowerCase();
+
+  // Safety issue
+  if (lower.includes('safety') || lower.includes('unsafe') || lower.includes('emergency') || lower.includes('danger')) {
+    return {
+      text: 'Your safety is our top priority. If there\'s an emergency in progress, please contact emergency services immediately (Philippines: 911).\n\nFor non-emergency safety issues, let me connect you with our team.',
+      showOptions: true
+    };
+  }
+
+  // Talk to human
+  if (lower.includes('person') || lower.includes('human') || lower.includes('agent') || lower.includes('talk to')) {
+    return {
+      text: 'Of course! Let me connect you with our support team. Choose how you\'d like to reach us:',
+      showOptions: true
+    };
+  }
+
+  // Try Claude API for intelligent responses
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 300,
+        system: 'You are a helpful customer support AI for Rentleeys, an affordable short-term rental platform similar to Airbnb but cheaper. You help guests and hosts with bookings, payments, cancellations, and general questions. Keep responses concise and friendly. If someone has a safety emergency, tell them to call 911 first. Key info: guest service fee is 8%, host fee is 2%, payouts happen within 24hrs of check-in, support email is support@rentleeys.com.',
+        messages: [{ role: 'user', content: userMessage }]
+      })
+    });
+    var data = await response.json();
+    if (data.content && data.content[0]) {
+      return {
+        text: data.content[0].text,
+        quickReplies: ['Tell me more', 'Contact support', 'Talk to a person']
+      };
+    }
+  } catch(e) {
+    console.log('AI fallback:', e);
+  }
+
+  // Fallback responses
+  if (lower.includes('cancel')) return { text: 'To cancel a booking, go to Dashboard → My Bookings → select your booking → Cancel. Refunds depend on the cancellation policy. Need more help?', quickReplies: ['What\'s the refund policy?','Talk to a person','I need to cancel urgently'] };
+  if (lower.includes('payment') || lower.includes('refund') || lower.includes('charge')) return { text: 'For payment issues, please check your Dashboard → My Bookings for the booking status. Refunds are processed within 5-7 business days. Would you like to speak with our team?', quickReplies: ['Check refund status','Talk to a person','Payment methods'] };
+  if (lower.includes('booking') || lower.includes('host') || lower.includes('listing')) return { text: 'I can help with booking issues! Could you tell me more about the specific problem? Or I can connect you with our support team who can look up your booking directly.', quickReplies: ['Talk to a person','Check my booking','Cancel booking'] };
+
+  return {
+    text: 'Thanks for reaching out! Our team would be best placed to help with this. Would you like to connect with a support agent?',
+    showOptions: true,
+    quickReplies: ['Yes, connect me','I have another question']
+  };
+}
+
+// ── RENDER MESSAGES ───────────────────────────────────────
+function renderMessages() {
+  var container = document.getElementById('chat-messages');
+  container.innerHTML = _messages.map(function(m) {
+    if (m.sender === 'system') {
+      return '<div style="text-align:center;font-size:12px;color:var(--text3);padding:8px;background:#f3f4f6;border-radius:8px;">'+(m.text.replace('\n','<br>'))+'</div>';
+    }
+    if (m.sender === 'typing') {
+      return '<div class="msg-bubble ai" style="padding:14px;"><div style="display:flex;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#ccc;animation:bounce 1s infinite;"></span><span style="width:6px;height:6px;border-radius:50%;background:#ccc;animation:bounce 1s infinite .2s;"></span><span style="width:6px;height:6px;border-radius:50%;background:#ccc;animation:bounce 1s infinite .4s;"></span></div></div>';
+    }
+    var senderLabel = m.sender === 'ai' ? '<div class="msg-sender">🛡️ Rentleeys Support</div>' : m.sender === 'them' ? '<div class="msg-sender">Host</div>' : '';
+    var cls = m.sender === 'me' ? 'me' : m.sender === 'ai' ? 'ai' : 'them';
+    var time = m.time ? '<div style="font-size:11px;color:'+(m.sender==='me'?'rgba(255,255,255,0.7)':'var(--text3)')+';margin-top:4px;">'+m.time+'</div>' : '';
+    return '<div style="display:flex;flex-direction:column;align-items:'+(m.sender==='me'?'flex-end':'flex-start')+';">'+senderLabel+'<div class="msg-bubble '+cls+'">'+m.text.replace(/\n/g,'<br>')+time+'</div></div>';
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+// ── QUICK REPLIES ─────────────────────────────────────────
+function showQuickReplies(replies) {
+  var qr = document.getElementById('quick-replies');
+  qr.style.display = 'flex';
+  qr.innerHTML = replies.map(function(r) {
+    return '<div class="quick-reply" onclick="sendQuickReply(\''+r+'\')">'+r+'</div>';
+  }).join('');
+}
+
+function sendQuickReply(text) {
+  document.getElementById('chat-input').value = text;
+  sendMessage();
+}
+
+// ── SUPPORT OPTIONS ───────────────────────────────────────
+function showSupportOptions() {
+  var msgEl = document.createElement('div');
+  msgEl.style.cssText = 'padding:0 0 12px;';
+  msgEl.innerHTML = '<div class="support-options">'
+    +'<div class="support-opt" onclick="window.open(\'mailto:support@rentleeys.com\',\'_blank\')">'
+    +'<div class="support-opt-icon">📧</div>'
+    +'<div><div class="support-opt-title">Email us</div><div class="support-opt-wait">Response: within 24 hours</div></div>'
+    +'</div>'
+    +'<div class="support-opt" onclick="window.open(\'mailto:safety@rentleeys.com\',\'_blank\')">'
+    +'<div class="support-opt-icon">🆘</div>'
+    +'<div><div class="support-opt-title">Safety issue</div><div class="support-opt-wait">Priority response</div></div>'
+    +'</div>'
+    +'<div class="support-opt" onclick="window.location.href=\'/help.html\'">'
+    +'<div class="support-opt-icon">📋</div>'
+    +'<div><div class="support-opt-title">Help Center</div><div class="support-opt-wait">Browse FAQs and articles</div></div>'
+    +'</div>'
+    +'</div>';
+
+  document.getElementById('chat-messages').appendChild(msgEl);
+  document.getElementById('chat-messages').scrollTop = 99999;
+}
+
+function filterMsgs(type, el) {
+  document.querySelectorAll('.msg-tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+}
+
+// Bounce animation for typing
+var style = document.createElement('style');
+style.textContent = '@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}';
+document.head.appendChild(style);
+</script>
+</body>
+</html>

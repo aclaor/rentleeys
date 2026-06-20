@@ -617,29 +617,43 @@ function toggleAuth() {
 
 async function forgotPassword() {
   var email = document.getElementById('auth-email').value.trim();
-  if (!email) { showAuthErr('Please enter your email address first.'); return; }
   var errEl = document.getElementById('auth-err');
+
+  // Show options to user
+  errEl.style.background = '#eff6ff';
+  errEl.style.color = '#1e40af';
+  errEl.style.display = 'block';
+
+  if (!email) {
+    errEl.innerHTML = 'To reset your password:<br>'
+      + '1. Sign in with <strong>Continue with Google</strong> instead<br>'
+      + '2. Or email us at <strong>support@rentleeys.com</strong>';
+    return;
+  }
+
+  // Try Supabase reset - works only if SMTP is configured
   try {
     var result = await _db.auth.resetPasswordForEmail(email, {
       redirectTo: 'https://rentleeys.com/dashboard.html'
     });
     if (result.error) {
-      // SMTP might be down - show manual support option
-      errEl.style.background = '#fef3c7';
-      errEl.style.color = '#92400e';
-      errEl.innerHTML = '⚠️ Could not send reset email automatically. Please email <a href="mailto:support@rentleeys.com?subject=Password Reset&body=Please reset password for: '+email+'" style="color:#92400e;font-weight:700;">support@rentleeys.com</a> to reset your password.';
-      errEl.style.display = 'block';
+      errEl.style.background = '#eff6ff';
+      errEl.style.color = '#1e40af';
+      errEl.innerHTML = 'Password reset requested for <strong>' + email + '</strong>.<br>'
+        + 'If you do not receive an email within 5 minutes, please '
+        + '<a href="mailto:support@rentleeys.com?subject=Password Reset Request&body=Please reset password for: ' + encodeURIComponent(email) + '" '
+        + 'style="color:#1e40af;font-weight:700;">contact support</a>.';
     } else {
       errEl.style.background = '#f0fdf4';
       errEl.style.color = '#166534';
-      errEl.innerHTML = '✅ Password reset email sent! Check your inbox.';
-      errEl.style.display = 'block';
+      errEl.innerHTML = '✅ Reset email sent to <strong>' + email + '</strong>! Check your inbox and spam folder.';
     }
   } catch(e) {
-    errEl.style.background = '#fef3c7';
-    errEl.style.color = '#92400e';
-    errEl.innerHTML = '⚠️ Please email <a href="mailto:support@rentleeys.com?subject=Password Reset&body=Please reset password for: '+email+'" style="color:#92400e;font-weight:700;">support@rentleeys.com</a> to reset your password.';
-    errEl.style.display = 'block';
+    errEl.style.background = '#eff6ff';
+    errEl.style.color = '#1e40af';
+    errEl.innerHTML = 'To reset your password, email us at '
+      + '<a href="mailto:support@rentleeys.com?subject=Password Reset&body=Please reset password for: ' + encodeURIComponent(email) + '" '
+      + 'style="color:#1e40af;font-weight:700;">support@rentleeys.com</a>';
   }
 }
 

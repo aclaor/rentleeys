@@ -302,14 +302,58 @@ async function submitRequest() {
     return;
   }
 
-  // Send to support email via Supabase edge function or just show success
-  // For now, open email client with pre-filled content
-  var subject = encodeURIComponent('['+topic.toUpperCase()+'] Support request from '+name+' ('+role+')');
-  var body = encodeURIComponent('Name: '+name+'\nEmail: '+email+'\nRole: '+role+'\nTopic: '+topic+'\n\nMessage:\n'+message);
-  window.open('mailto:support@rentleeys.com?subject='+subject+'&body='+body);
+  var btn = document.querySelector('.submit-btn');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
 
-  document.getElementById('contact-form').style.display = 'none';
-  document.getElementById('form-success').classList.add('show');
+  try {
+    // Send via Brevo API
+    var response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'api-key': 'xsmtpsib-d37b70199941391ec6e86897d62f845cfc8ebb3a29b143e0eeb8b0ff62ed956e-TNQqbra171nZHyf6'
+      },
+      body: JSON.stringify({
+        sender: { name: 'Rentleeys Help Center', email: 'hello@rentleeys.com' },
+        to: [{ email: 'support@rentleeys.com', name: 'Rentleeys Support' }],
+        replyTo: { email: email, name: name },
+        subject: '['+topic.toUpperCase()+'] Support request from '+name+' ('+role+')',
+        htmlContent: '<h2>New Support Request</h2>'
+          +'<p><strong>Name:</strong> '+name+'</p>'
+          +'<p><strong>Email:</strong> <a href="mailto:'+email+'">'+email+'</a></p>'
+          +'<p><strong>Role:</strong> '+role+'</p>'
+          +'<p><strong>Topic:</strong> '+topic+'</p>'
+          +'<hr>'
+          +'<p><strong>Message:</strong></p>'
+          +'<p>'+message.replace(/\n/g,'<br>')+'</p>'
+          +'<hr>'
+          +'<p style="color:#6b7280;font-size:12px;">Sent from Rentleeys Help Center</p>'
+      })
+    });
+
+    if (response.ok) {
+      document.getElementById('contact-form').style.display = 'none';
+      document.getElementById('form-success').classList.add('show');
+    } else {
+      // Fallback to mailto
+      var subject = encodeURIComponent('['+topic.toUpperCase()+'] Support from '+name);
+      var body = encodeURIComponent('Name: '+name+'\nEmail: '+email+'\nRole: '+role+'\nTopic: '+topic+'\n\nMessage:\n'+message);
+      window.location.href = 'mailto:support@rentleeys.com?subject='+subject+'&body='+body;
+      document.getElementById('contact-form').style.display = 'none';
+      document.getElementById('form-success').classList.add('show');
+    }
+  } catch(e) {
+    // Fallback to mailto if API fails
+    var subject = encodeURIComponent('['+topic.toUpperCase()+'] Support from '+name);
+    var body = encodeURIComponent('Name: '+name+'\nEmail: '+email+'\nRole: '+role+'\nTopic: '+topic+'\n\nMessage:\n'+message);
+    window.location.href = 'mailto:support@rentleeys.com?subject='+subject+'&body='+body;
+    document.getElementById('contact-form').style.display = 'none';
+    document.getElementById('form-success').classList.add('show');
+  }
+
+  btn.textContent = 'Send request →';
+  btn.disabled = false;
 }
 
 // Init

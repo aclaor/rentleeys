@@ -418,35 +418,52 @@ var ARTICLES = [
 
 function renderArticles(articles) {
   var grid = document.getElementById('articles-grid');
-  grid.innerHTML = articles.map(function(a) {
-    return '<div class="article-card" onclick="openArticle(\''+a.id+\')">'
-      +'<div class="article-img" style="background:'+a.bg+';">'+a.emoji+'</div>'
-      +'<div class="article-body">'
-      +'<div class="article-tag">'+a.tag+'</div>'
-      +'<div class="article-title">'+a.title+'</div>'
-      +'<div class="article-preview">'+a.preview+'</div>'
-      +'<div class="article-read">Read article →</div>'
-      +'</div></div>';
-  }).join('');
+  if (!articles || articles.length === 0) {
+    grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2);">No articles found.</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < articles.length; i++) {
+    var a = articles[i];
+    html += '<div class="article-card" data-id="' + a.id + '">'
+      + '<div class="article-img" style="background:' + a.bg + ';">' + a.emoji + '</div>'
+      + '<div class="article-body">'
+      + '<div class="article-tag">' + a.tag + '</div>'
+      + '<div class="article-title">' + a.title + '</div>'
+      + '<div class="article-preview">' + a.preview + '</div>'
+      + '<div class="article-read">Read article →</div>'
+      + '</div></div>';
+  }
+  grid.innerHTML = html;
+
+  // Add click handlers after rendering
+  grid.querySelectorAll('.article-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      openArticle(this.getAttribute('data-id'));
+    });
+  });
 }
 
+
 function filterArticles(cat, el) {
-  document.querySelectorAll('.topic-btn').forEach(function(b){b.classList.remove('active');});
-  el.classList.add('active');
-  var filtered = cat === 'all' ? ARTICLES : ARTICLES.filter(function(a){return a.cat===cat;});
+  document.querySelectorAll('.topic-btn').forEach(function(b){ b.classList.remove('active'); });
+  if (el) el.classList.add('active');
+  var filtered = cat === 'all' ? ARTICLES : ARTICLES.filter(function(a){ return a.cat === cat; });
   var titles = {
-    'all': ['All resources','Guides and tips for every stage of your hosting journey'],
-    'getting-started': ['Get started as a host','Everything you need to list your first property'],
-    'hospitality': ['Deliver 5-star hospitality','Tips for creating unforgettable guest experiences'],
-    'pricing': ['Pricing strategies','Set the right price and maximize your earnings'],
-    'safety': ['Safety & policies','Protect your guests, your property, and yourself'],
-    'growth': ['Grow your business','Strategies to increase bookings and earnings']
+    'all': ['All resources', 'Guides and tips for every stage of your hosting journey'],
+    'getting-started': ['Get started as a host', 'Everything you need to list your first property'],
+    'hospitality': ['Deliver 5-star hospitality', 'Tips for creating unforgettable guest experiences'],
+    'pricing': ['Pricing strategies', 'Set the right price and maximize your earnings'],
+    'safety': ['Safety & policies', 'Protect your guests, your property, and yourself'],
+    'growth': ['Grow your business', 'Strategies to increase bookings and earnings']
   };
   var t = titles[cat] || titles['all'];
   document.getElementById('articles-title').textContent = t[0];
   document.getElementById('articles-sub').textContent = t[1];
   renderArticles(filtered);
+  document.getElementById('articles-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
 
 function openArticle(id) {
   var a = ARTICLES.find(function(x){return x.id===id;});

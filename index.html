@@ -698,13 +698,15 @@ function clearAuthErr() {
 }
 
 
+function trackEvent(n,p){ if(typeof gtag!=="undefined") gtag("event",n,p||{}); }
+
 async function socialAuth(provider) {
-  trackEvent('login', { method: provider });
-  var { error } = await _db.auth.signInWithOAuth({
+  if (typeof gtag !== 'undefined') gtag('event', 'login', { method: provider });
+  var result = await _db.auth.signInWithOAuth({
     provider: provider,
     options: { redirectTo: 'https://rentleeys.com/dashboard.html' }
   });
-  if (error) document.getElementById('auth-err').textContent = error.message;
+  if (result.error) { showAuthErr(result.error.message); }
 }
 
 // ── SEARCH ────────────────────────────────────────────────

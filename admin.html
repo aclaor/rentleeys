@@ -643,6 +643,12 @@ function renderBookingsTable(items, tbodyId, compact) {
 }
 
 
+function markPaid(id, totalPrice) {
+  var payout = (parseFloat(totalPrice) * 0.92).toFixed(2);
+  var msg = 'Pay host ' + payout + ' (92% of ' + totalPrice + ')? Send via PayPal or GCash, then click OK to mark as completed.';
+  if (confirm(msg)) updateBookingStatus(id, 'completed');
+}
+
 async function updateBookingStatus(id, status) {
   var { error } = await _db.from('rentleeys_bookings').update({status:status}).eq('id',id);
   if (error) { showToast('Error: '+error.message); return; }

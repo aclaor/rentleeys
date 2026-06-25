@@ -563,17 +563,7 @@ function populateReview() {
   }
 }
 
-function openBooking() {
-  if (!_user) { alert('Please sign in to book this property.'); window.location.href = '/?login=1'; return; }
-  var cin  = document.getElementById('checkin').value;
-  var cout = document.getElementById('checkout').value;
-  var d1   = new Date(cin), d2 = new Date(cout);
-  var nights = Math.max(1, Math.round((d2-d1)/(1000*60*60*24)));
-  var sym  = _property.currency === 'PHP' ? '₱' : '$';
-  var total = _property.price_per_night * nights;
-  document.getElementById('book-summary').innerHTML = '<strong>'+_property.title+'</strong><br>'+cin+' → '+cout+' ('+nights+' nights)<br>Total: <strong>'+sym+Number(total).toLocaleString()+'</strong>';
-  document.getElementById('book-modal').style.display = 'flex';
-}
+// duplicate openBooking removed
 
 function trackEvent(name, params) {
   if(typeof gtag !== 'undefined') gtag('event', name, params || {});

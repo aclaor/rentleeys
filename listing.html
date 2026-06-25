@@ -603,8 +603,35 @@ async function confirmBooking(paymentId) {
       message:     msg
     });
     if (error) throw error;
+
+    // Send confirmation emails via Cloudflare Worker
+    try {
+      var cin2  = document.getElementById('checkin').value;
+      var cout2 = document.getElementById('checkout').value;
+      var nights2 = Math.max(1, Math.round((new Date(cout2)-new Date(cin2))/(1000*60*60*24)));
+      var guests2 = document.getElementById('book-guests').value;
+      fetch('https://rentleeys-email.alexclaor.workers.dev/send-booking-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guest_email:       _user.email,
+          guest_name:        _user.user_metadata && _user.user_metadata.full_name || _user.email.split('@')[0],
+          property_title:    _property.title,
+          property_location: _property.location || '',
+          check_in:          cin2,
+          check_out:         cout2,
+          guests:            guests2,
+          nights:            nights2,
+          total:             parseFloat(total2 ? total2.toFixed(2) : '0'),
+          currency:          _property.currency || 'PHP',
+          pay_method:        _payMethod || 'gcash',
+          booking_id:        data && data[0] && data[0].id || ''
+        })
+      }).catch(function(e){ console.log('Email error:', e); });
+    } catch(emailErr) { console.log('Email send error:', emailErr); }
+
     document.getElementById('book-modal').style.display = 'none';
-    alert('🎉 Payment successful! Your booking is confirmed. Check your dashboard for details.');
+    alert('🎉 Booking request sent! Check your email for confirmation details.');
     window.location.href = 'dashboard.html';
   } catch(e) {
     err.textContent = 'Error: ' + e.message;

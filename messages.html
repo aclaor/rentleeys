@@ -172,46 +172,61 @@ _db.auth.onAuthStateChange(function(event, session) {
 async function loadConversations() {
   var convList = document.getElementById('conv-list');
 
-  // Load bookings as conversations (host-guest messaging)
-  var { data: bookings } = await _db.from('rentleeys_bookings')
-    .select('*, rentleeys_properties(title,images)')
+  // Load bookings AND direct property messages
+  var bookingsRes = await _db.from('rentleeys_bookings')
+    .select('*, rentleeys_properties(title,images,host_id)')
     .or('guest_id.eq.'+_user.id+',host_id.eq.'+_user.id)
-    .order('created_at', {ascending:false})
-    .limit(20);
+    .order('created_at', {ascending:false}).limit(20);
+
+  var propMsgsRes = await _db.from('rentleeys_messages')
+    .select('*, rentleeys_properties(title,images,host_id)')
+    .is('booking_id', null)
+    .order('created_at', {ascending:false}).limit(20);
+
+  var bookings = bookingsRes.data || [];
+  var propMsgs = propMsgsRes.data || [];
 
   var convs = [];
 
-  // Add support conversation always
+  // Support always first
   convs.push({
-    id: 'support',
-    name: 'Rentleeys Support',
-    avatar: '🛡️',
-    preview: 'Hi! How can we help you today?',
-    time: 'Now',
-    status: 'ongoing',
-    unread: 0,
-    bg: '#fff5f5'
+    id: 'support', name: 'Rentleeys Support', avatar: '🛡️',
+    preview: 'Hi! How can we help you today?', time: 'Now',
+    status: 'ongoing', unread: 0, bg: '#fff5f5'
   });
 
-  // Add booking conversations
-  if (bookings) {
-    bookings.forEach(function(b) {
-      var prop = b.rentleeys_properties || {};
-      var isGuest = b.guest_id === _user.id;
-      convs.push({
-        id: 'booking-'+b.id,
-        name: isGuest ? 'Host · '+prop.title : 'Guest booking',
-        avatar: prop.images && prop.images[0] ? null : '🏠',
-        avatarImg: prop.images && prop.images[0],
-        preview: b.message || 'Booking for '+b.check_in+' → '+b.check_out,
-        time: new Date(b.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}),
-        status: b.status,
-        unread: 0,
-        bookingId: b.id,
-        bg: '#fff'
-      });
+  // Booking conversations
+  bookings.forEach(function(b) {
+    var prop = b.rentleeys_properties || {};
+    var isGuest = b.guest_id === _user.id;
+    convs.push({
+      id: 'booking-'+b.id,
+      name: isGuest ? 'Host · '+prop.title : 'Guest · '+prop.title,
+      avatar: prop.images && prop.images[0] ? null : '🏠',
+      avatarImg: prop.images && prop.images[0],
+      preview: b.message || 'Booking for '+b.check_in+' → '+b.check_out,
+      time: new Date(b.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}),
+      status: b.status, unread: 0, bookingId: b.id, bg: '#fff'
     });
-  }
+  });
+
+  // Direct property message threads (deduplicated by property)
+  var seenProps = {};
+  propMsgs.forEach(function(m) {
+    if (!m.property_id || seenProps[m.property_id]) return;
+    if (m.sender_id !== _user.id && m.receiver_id !== _user.id) return;
+    seenProps[m.property_id] = true;
+    var prop = m.rentleeys_properties || {};
+    var isHost = prop.host_id === _user.id;
+    convs.push({
+      id: 'prop-'+m.property_id,
+      name: isHost ? 'Guest inquiry · '+prop.title : 'Host · '+prop.title,
+      avatar: prop.images && prop.images[0] ? null : '💬',
+      avatarImg: prop.images && prop.images[0],
+      preview: m.body, time: new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}),
+      status: 'inquiry', unread: 0, propertyId: m.property_id, bg: '#fff'
+    });
+  });
 
   convList.innerHTML = convs.map(function(c) {
     var avatarHTML = c.avatarImg
@@ -240,6 +255,8 @@ function openChat(id) {
 
   if (id === 'support') {
     openSupportChat();
+  } else if (id.startsWith('prop-')) {
+    openDirectMessage(id.replace('prop-',''));
   } else {
     openBookingChat(id.replace('booking-',''));
   }
@@ -365,10 +382,11 @@ async function openDirectMessage(propertyId) {
 }
 
 // ── BOOKING CHAT (real DB messages) ──────────────────────
-var _currentBookingId  = null;
-var _currentPropertyId = null;
-var _currentHostId     = null;
-var _msgSubscription   = null;
+var _currentBookingId    = null;
+var _currentPropertyId  = null;
+var _currentHostId       = null;
+var _currentOtherUserId  = null;
+var _msgSubscription     = null;
 
 async function openBookingChat(bookingId) {
   _aiMode = false;
@@ -384,6 +402,7 @@ async function openBookingChat(bookingId) {
     var prop = booking.rentleeys_properties || {};
     var isGuest = booking.guest_id === _user.id;
     var otherLabel = isGuest ? 'Host' : 'Guest';
+    _currentOtherUserId = isGuest ? booking.host_id : booking.guest_id;
     document.getElementById('chat-avatar').textContent = '🏠';
     document.getElementById('chat-name').textContent   = prop.title || 'Booking';
     document.getElementById('chat-status').textContent = '● '+otherLabel+' · '+booking.check_in+' → '+booking.check_out;
@@ -468,10 +487,11 @@ async function sendMessage() {
       created_at: new Date().toISOString()
     };
     if (_currentBookingId) {
-      msgData.booking_id = _currentBookingId;
+      msgData.booking_id  = _currentBookingId;
+      msgData.receiver_id = _currentOtherUserId || null;
     } else {
-      msgData.property_id  = _currentPropertyId;
-      msgData.receiver_id  = _currentHostId;
+      msgData.property_id = _currentPropertyId;
+      msgData.receiver_id = _currentHostId;
     }
     await _db.from('rentleeys_messages').insert(msgData);
     return;

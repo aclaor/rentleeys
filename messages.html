@@ -1,31 +1,4 @@
-var seenPropMsgs = {};
-  var propIdList = [];
-  propMsgs.forEach(function(m) {
-    if (m.property_id && !seenPropMsgs[m.property_id]) {
-      seenPropMsgs[m.property_id] = m;
-      propIdList.push(m.property_id);
-    }
-  });
-  if (propIdList.length > 0) {
-    var { data: propDets } = await _db.from('rentleeys_properties')
-      .select('id,title,images,host_id').in('id', propIdList);
-    var propMap = {};
-    (propDets || []).forEach(function(p){ propMap[p.id] = p; });
-    Object.keys(seenPropMsgs).forEach(function(pid) {
-      var m    = seenPropMsgs[pid];
-      var prop = propMap[pid] || {};
-      var isHost = prop.host_id === _user.id;
-      convs.push({
-        id: 'prop-'+pid,
-        name: isHost ? 'Guest inquiry · '+(prop.title||'Property') : 'Host · '+(prop.title||'Property'),
-        avatar: prop.images && prop.images[0] ? null : '💬',
-        avatarImg: prop.images && prop.images[0],
-        preview: m.body,
-        time: new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}),
-        status: 'inquiry', unread: 0, propertyId: pid, bg: '#fff'
-      });
-    });
-  }<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -246,8 +219,34 @@ async function loadConversations() {
   });
 
   // Direct property message threads (deduplicated by property)
-  var seenProps = {};
+  var seenPropMsgs = {};
+  var propIdList = [];
   propMsgs.forEach(function(m) {
+    if (m.property_id && !seenPropMsgs[m.property_id]) {
+      seenPropMsgs[m.property_id] = m;
+      propIdList.push(m.property_id);
+    }
+  });
+  if (propIdList.length > 0) {
+    var { data: propDets } = await _db.from('rentleeys_properties')
+      .select('id,title,images,host_id').in('id', propIdList);
+    var propMap = {};
+    (propDets || []).forEach(function(p){ propMap[p.id] = p; });
+    Object.keys(seenPropMsgs).forEach(function(pid) {
+      var m    = seenPropMsgs[pid];
+      var prop = propMap[pid] || {};
+      var isHost = prop.host_id === _user.id;
+      convs.push({
+        id: 'prop-'+pid,
+        name: isHost ? 'Guest inquiry · '+(prop.title||'Property') : 'Host · '+(prop.title||'Property'),
+        avatar: prop.images && prop.images[0] ? null : '💬',
+        avatarImg: prop.images && prop.images[0],
+        preview: m.body,
+        time: new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}),
+        status: 'inquiry', unread: 0, propertyId: pid, bg: '#fff'
+      });
+    });
+  }  propMsgs.forEach(function(m) {
     if (!m.property_id || seenProps[m.property_id]) return;
     if (m.sender_id !== _user.id && m.receiver_id !== _user.id) return;
     seenProps[m.property_id] = true;

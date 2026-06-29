@@ -1,53 +1,4 @@
-// ── EMAIL NOTIFICATION ───────────────────────────────────
-async function sendMessageNotification(msgData) {
-  try {
-    var receiverId = msgData.receiver_id;
-    if (!receiverId && msgData.booking_id) {
-      var { data: bk } = await _db.from('rentleeys_bookings')
-        .select('guest_id, host_id').eq('id', msgData.booking_id).single();
-      if (bk) receiverId = bk.guest_id === _user.id ? bk.host_id : bk.guest_id;
-    }
-    if (!receiverId) return;
-
-    // Get receiver info from rentleeys_hosts
-    var { data: hostData } = await _db.from('rentleeys_hosts')
-      .select('full_name, email').eq('user_id', receiverId).maybeSingle();
-
-    var receiverEmail = hostData && hostData.email ? hostData.email : null;
-    var receiverName  = hostData && hostData.full_name ? hostData.full_name : 'there';
-    if (!receiverEmail) { console.log('No email for receiver'); return; }
-
-    var senderName = (_user.user_metadata && _user.user_metadata.full_name) || _user.email.split('@')[0];
-    var preview    = msgData.body.length > 120 ? msgData.body.slice(0,120)+'...' : msgData.body;
-
-    await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': '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'
-      },
-      body: JSON.stringify({
-        sender: { name: 'Rentleeys', email: 'no-reply@rentleeys.com' },
-        to: [{ email: receiverEmail, name: receiverName }],
-        subject: 'New message from ' + senderName + ' on Rentleeys',
-        htmlContent:
-          '<div style="font-family:sans-serif;max-width:500px;margin:auto;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">' +
-          '<div style="background:#ff5a5f;padding:24px;">' +
-          '<h2 style="color:#fff;margin:0;font-size:22px;">You have a new message</h2></div>' +
-          '<div style="background:#fff;padding:28px;">' +
-          '<p style="color:#111827;font-size:15px;margin:0 0 8px;">Hi <strong>' + receiverName + '</strong>,</p>' +
-          '<p style="color:#6b7280;font-size:14px;margin:0 0 20px;"><strong>' + senderName + '</strong> sent you a message on Rentleeys:</p>' +
-          '<div style="background:#fff5f5;border-left:4px solid #ff5a5f;padding:16px;border-radius:6px;font-size:14px;color:#374151;margin-bottom:24px;line-height:1.6;">' + preview + '</div>' +
-          '<a href="https://rentleeys.com/messages.html" style="display:inline-block;background:#ff5a5f;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">Reply now</a>' +
-          '<p style="color:#9ca3af;font-size:12px;margin-top:24px;">You received this because someone messaged you on Rentleeys.</p>' +
-          '</div></div>'
-      })
-    });
-    console.log('Notification sent to', receiverEmail);
-  } catch(e) {
-    console.log('Email notification failed (non-critical):', e.message);
-  }
-}<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -689,6 +640,56 @@ function showSupportOptions() {
 function filterMsgs(type, el) {
   document.querySelectorAll('.msg-tab').forEach(function(t){t.classList.remove('active');});
   el.classList.add('active');
+}
+
+// ── EMAIL NOTIFICATION ───────────────────────────────────
+async function sendMessageNotification(msgData) {
+  try {
+    var receiverId = msgData.receiver_id;
+    if (!receiverId && msgData.booking_id) {
+      var bkRes = await _db.from('rentleeys_bookings')
+        .select('guest_id, host_id').eq('id', msgData.booking_id).single();
+      var bk = bkRes.data;
+      if (bk) receiverId = bk.guest_id === _user.id ? bk.host_id : bk.guest_id;
+    }
+    if (!receiverId) return;
+    var hostRes = await _db.from('rentleeys_hosts')
+      .select('full_name, email').eq('user_id', receiverId).maybeSingle();
+    var hostData = hostRes.data;
+    var receiverEmail = hostData && hostData.email ? hostData.email : null;
+    var receiverName  = hostData && hostData.full_name ? hostData.full_name : 'there';
+    if (!receiverEmail) { console.log('No email for receiver'); return; }
+    var senderName = (_user.user_metadata && _user.user_metadata.full_name) || _user.email.split('@')[0];
+    var preview    = msgData.body.length > 120 ? msgData.body.slice(0,120)+'...' : msgData.body;
+    var T = function(tag, style, content) {
+      return '\x3C' + tag + (style ? ' style="' + style + '"' : '') + '\x3E' + (content || '') + '\x3C/' + tag + '\x3E';
+    };
+    var html =
+      T('div','font-family:sans-serif;max-width:500px;margin:auto;',
+        T('div','background:#ff5a5f;padding:20px 24px;border-radius:12px 12px 0 0;',
+          T('h2','color:#fff;margin:0;font-size:20px;','New Message from Rentleeys')
+        ) +
+        T('div','background:#fff;border:1px solid #e5e7eb;border-top:none;padding:24px;border-radius:0 0 12px 12px;',
+          T('p','margin:0 0 8px;color:#111827;','Hi ' + T('strong','',receiverName) + ',') +
+          T('p','margin:0 0 16px;color:#6b7280;font-size:14px;',T('strong','',senderName) + ' sent you a message:') +
+          T('div','background:#f9fafb;border-left:3px solid #ff5a5f;padding:14px;border-radius:4px;color:#374151;font-size:14px;margin-bottom:20px;', preview) +
+          '\x3Ca href="https://rentleeys.com/messages.html" style="background:#ff5a5f;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block;"\x3EReply on Rentleeys\x3C/a\x3E'
+        )
+      );
+    await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'api-key': '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' },
+      body: JSON.stringify({
+        sender: { name: 'Rentleeys', email: 'no-reply@rentleeys.com' },
+        to: [{ email: receiverEmail, name: receiverName }],
+        subject: 'New message from ' + senderName + ' on Rentleeys',
+        htmlContent: html
+      })
+    });
+    console.log('Notification sent to', receiverEmail);
+  } catch(e) {
+    console.log('Email notification failed (non-critical):', e.message);
+  }
 }
 
 // Bounce animation for typing

@@ -246,21 +246,7 @@ async function loadConversations() {
         status: 'inquiry', unread: 0, propertyId: pid, bg: '#fff'
       });
     });
-  }  propMsgs.forEach(function(m) {
-    if (!m.property_id || seenProps[m.property_id]) return;
-    if (m.sender_id !== _user.id && m.receiver_id !== _user.id) return;
-    seenProps[m.property_id] = true;
-    var prop = m.rentleeys_properties || {};
-    var isHost = prop.host_id === _user.id;
-    convs.push({
-      id: 'prop-'+m.property_id,
-      name: isHost ? 'Guest inquiry · '+prop.title : 'Host · '+prop.title,
-      avatar: prop.images && prop.images[0] ? null : '💬',
-      avatarImg: prop.images && prop.images[0],
-      preview: m.body, time: new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}),
-      status: 'inquiry', unread: 0, propertyId: m.property_id, bg: '#fff'
-    });
-  });
+  }
 
   convList.innerHTML = convs.map(function(c) {
     var avatarHTML = c.avatarImg

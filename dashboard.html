@@ -567,6 +567,154 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(function(){t.classList.remove('show');}, 3000);
 }
+
+// ── CALENDAR ─────────────────────────────────────────────
+var _calDate      = new Date();
+var _calPropId    = null;
+var _blockedDates = new Set();
+var _bookedDates  = new Set();
+
+async function initCalendarPage() {
+  var sel = document.getElementById('cal-listing-select');
+  if (!sel) return;
+  var { data: props } = await _db.from('rentleeys_properties')
+    .select('id,title').eq('host_id', _user.id);
+  if (props && props.length > 0) {
+    sel.innerHTML = '<option value="">Select a listing...</option>' +
+      props.map(function(l){ return '<option value="'+l.id+'">'+l.title+'</option>'; }).join('');
+  }
+}
+
+async function loadCalendar() {
+  var sel = document.getElementById('cal-listing-select');
+  _calPropId = sel ? sel.value : null;
+  var container = document.getElementById('cal-container');
+  if (!_calPropId) { if(container) container.style.display='none'; return; }
+  if(container) container.style.display='block';
+  await fetchCalendarData();
+  renderCalendar();
+}
+
+async function fetchCalendarData() {
+  if (!_calPropId) return;
+  var y = _calDate.getFullYear(), m = _calDate.getMonth();
+  var from = new Date(y,m,1).toISOString().split('T')[0];
+  var to   = new Date(y,m+1,0).toISOString().split('T')[0];
+  var [bRes, bookedRes] = await Promise.all([
+    _db.from('rentleeys_blocked_dates').select('date').eq('property_id',_calPropId).gte('date',from).lte('date',to),
+    _db.from('rentleeys_bookings').select('check_in,check_out').eq('property_id',_calPropId).eq('status','confirmed').or('check_in.lte.'+to+',check_out.gte.'+from)
+  ]);
+  _blockedDates = new Set((bRes.data||[]).map(function(d){ return d.date; }));
+  _bookedDates  = new Set();
+  (bookedRes.data||[]).forEach(function(b) {
+    var d = new Date(b.check_in), end = new Date(b.check_out);
+    while (d < end) { _bookedDates.add(d.toISOString().split('T')[0]); d.setDate(d.getDate()+1); }
+  });
+}
+
+function renderCalendar() {
+  var y = _calDate.getFullYear(), m = _calDate.getMonth();
+  var titleEl = document.getElementById('cal-title');
+  if (titleEl) titleEl.textContent = new Date(y,m,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var firstDay = new Date(y,m,1).getDay();
+  var daysInMonth = new Date(y,m+1,0).getDate();
+  var today = new Date().toISOString().split('T')[0];
+  var html = days.map(function(d){ return '<div class="cal-day-label">'+d+'</div>'; }).join('');
+  for (var i=0;i<firstDay;i++) html += '<div class="cal-day empty"></div>';
+  for (var day=1;day<=daysInMonth;day++) {
+    var ds = y+'-'+String(m+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+    var cls = 'cal-day';
+    var isPast = ds < today;
+    if (isPast) cls += ' past';
+    else if (_bookedDates.has(ds)) cls += ' booked';
+    else if (_blockedDates.has(ds)) cls += ' blocked';
+    if (ds === today) cls += ' today';
+    var oc = (!isPast && !_bookedDates.has(ds)) ? 'onclick="calToggle(this)" data-date="'+ds+'"' : '';
+    html += '<div class="'+cls+'" '+oc+' title="'+ds+'">'+day+'</div>';
+  }
+  var grid = document.getElementById('cal-grid');
+  if (grid) grid.innerHTML = html;
+}
+
+function calToggle(el) { toggleDate(el.getAttribute("data-date")); }
+async function toggleDate(ds) {
+  if (!_calPropId) return;
+  if (_blockedDates.has(ds)) {
+    await _db.from('rentleeys_blocked_dates').delete().eq('property_id',_calPropId).eq('date',ds);
+    _blockedDates.delete(ds);
+  } else {
+    await _db.from('rentleeys_blocked_dates').insert({property_id:_calPropId, host_id:_user.id, date:ds});
+    _blockedDates.add(ds);
+  }
+  renderCalendar();
+}
+
+async function changeMonth(dir) {
+  _calDate.setMonth(_calDate.getMonth()+dir);
+  await fetchCalendarData();
+  renderCalendar();
+}
+
+// ── ID VERIFICATION ───────────────────────────────────────
+var _idFileUrl = null;
+
+async function initVerificationPage() {
+  var { data: hostData } = await _db.from('rentleeys_hosts')
+    .select('id_verified,id_photo_url').eq('user_id',_user.id).maybeSingle();
+  var badge     = document.getElementById('verif-status-badge');
+  var uploadArea = document.getElementById('verif-upload-area');
+  var submitBtn  = document.getElementById('submit-verif-btn');
+  if (!badge) return;
+  if (hostData && hostData.id_verified) {
+    badge.className = 'verif-badge verified';
+    badge.textContent = '✅ Verified';
+    if (uploadArea) uploadArea.style.display = 'none';
+    if (submitBtn) submitBtn.style.display = 'none';
+  } else if (hostData && hostData.id_photo_url) {
+    badge.className = 'verif-badge pending';
+    badge.textContent = '⏳ Pending review';
+    var preview = document.getElementById('id-preview');
+    if (preview) { preview.src = hostData.id_photo_url; preview.style.display = 'block'; }
+    if (uploadArea) uploadArea.style.display = 'none';
+    if (submitBtn) submitBtn.style.display = 'none';
+  }
+}
+
+async function handleIdUpload(input) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 5*1024*1024) { showToast('File too large — max 5MB'); return; }
+  var preview = document.getElementById('id-preview');
+  if (file.type.startsWith('image/') && preview) {
+    var reader = new FileReader();
+    reader.onload = function(e){ preview.src=e.target.result; preview.style.display='block'; };
+    reader.readAsDataURL(file);
+  }
+  var path = 'id-docs/'+_user.id+'-'+Date.now()+'-'+file.name;
+  var { data, error } = await _db.storage.from('post-media').upload(path, file, {upsert:true});
+  if (error) { showToast('Upload failed: '+error.message); return; }
+  var { data: pub } = _db.storage.from('post-media').getPublicUrl(path);
+  _idFileUrl = pub.publicUrl;
+  var btn = document.getElementById('submit-verif-btn');
+  if (btn) btn.style.display = 'block';
+  showToast('ID uploaded — click Submit to send for review');
+}
+
+async function submitVerification() {
+  if (!_idFileUrl) { showToast('Please upload your ID first'); return; }
+  var { error } = await _db.from('rentleeys_hosts').upsert({
+    user_id:_user.id, id_photo_url:_idFileUrl, id_verified:false
+  }, {onConflict:'user_id'});
+  if (error) { showToast('Error: '+error.message); return; }
+  var badge = document.getElementById('verif-status-badge');
+  if (badge) { badge.className='verif-badge pending'; badge.textContent='⏳ Pending review'; }
+  var ua = document.getElementById('verif-upload-area');
+  var sb = document.getElementById('submit-verif-btn');
+  if (ua) ua.style.display='none';
+  if (sb) sb.style.display='none';
+  showToast('✅ Submitted! We will review within 24 hours.');
+}
 </script>
 </body>
 </html>  <!-- CALENDAR -->

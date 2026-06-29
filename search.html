@@ -138,6 +138,24 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
       </div>
     </div>
 
+    <div class="filter-section">
+      <div class="filter-title">Stay length</div>
+      <div class="filter-chips">
+        <div class="filter-chip active" onclick="toggleFilter(this,'stay','any')" data-val="any">Any</div>
+        <div class="filter-chip" onclick="toggleFilter(this,'stay','7')" data-val="7">📅 Weekly</div>
+        <div class="filter-chip" onclick="toggleFilter(this,'stay','30')" data-val="30">🗓️ Monthly</div>
+        <div class="filter-chip" onclick="toggleFilter(this,'stay','90')" data-val="90">📆 3+ months</div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">Monthly rate</div>
+      <div class="price-range">
+        <input class="price-input" id="monthly-max" type="number" placeholder="Max ₱/mo" />
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;">Only shows listings with a monthly rate set</div>
+    </div>
+
     <button class="filter-btn" onclick="applyFilters()">Apply Filters</button>
     <button class="clear-btn" onclick="clearFilters()">Clear all filters</button>
   </div>
@@ -173,12 +191,13 @@ const SUPA_URL  = 'https://lvzwirglhdrutggaoyvm.supabase.co';
 const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2endpcmdsaGRydXRnZ2FveXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4Mjc0MzQsImV4cCI6MjA5NzQwMzQzNH0.55HME06oIExPfQ2KdgdBYbYQ4jGWzlfzDL_yXStc6zk';
 const _db = window.supabase.createClient(SUPA_URL, SUPA_ANON);
 
-var _filters = { type:'all', beds:'any', amenities:[], priceMin:null, priceMax:null };
+var _filters = { type:'all', beds:'any', stay:'any', amenities:[], priceMin:null, priceMax:null };
 var _searchQuery = '';
 
 // Read URL params
 var _params = new URLSearchParams(window.location.search);
 _searchQuery = _params.get('location') || '';
+var _minStayParam = _params.get('min_stay') || ''; if (_minStayParam) _filters.stay = _minStayParam;
 if (_searchQuery) document.getElementById('nav-search').value = _searchQuery;
 
 var EMOJIS = {apartment:'🏢',house:'🏡',room:'🛏️',villa:'🏰',condo:'🏙️',cabin:'🛖'};
@@ -202,7 +221,7 @@ function toggleAmenityFilter(el, val) {
 function applyFilters() { loadResults(); }
 
 function clearFilters() {
-  _filters = {type:'all',beds:'any',amenities:[],priceMin:null,priceMax:null};
+  _filters = {type:'all',beds:'any',stay:'any',amenities:[],priceMin:null,priceMax:null};
   document.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active');});
   document.querySelectorAll('.filter-chip[data-val="all"], .filter-chip[data-val="any"]').forEach(function(c){c.classList.add('active');});
   document.getElementById('price-min').value = '';
@@ -233,6 +252,14 @@ async function loadResults() {
     if (_filters.beds === '3') query = query.gte('bedrooms', 3);
     else query = query.eq('bedrooms', parseInt(_filters.beds));
   }
+
+  // Stay length filter — filter by minimum_stay
+  if (_filters.stay && _filters.stay !== 'any') {
+    query = query.lte('minimum_stay', parseInt(_filters.stay));
+  }
+  // Monthly rate max filter
+  var monthlyMax = parseFloat(document.getElementById('monthly-max') ? document.getElementById('monthly-max').value : '');
+  if (!isNaN(monthlyMax) && monthlyMax > 0) query = query.lte('price_per_month', monthlyMax).not('price_per_month', 'is', null);
 
   var priceMin = parseFloat(document.getElementById('price-min').value);
   var priceMax = parseFloat(document.getElementById('price-max').value);
@@ -273,7 +300,10 @@ async function loadResults() {
       +'<div class="prop-title">'+p.title+'</div>'
       +'<div class="prop-meta"><span>👥 '+p.max_guests+' guests</span><span>🛏️ '+p.bedrooms+' bed</span><span>🚿 '+p.bathrooms+' bath</span></div>'
       +'<div class="prop-footer"><div class="prop-price"><strong>'+sym+Number(p.price_per_night).toLocaleString()+'</strong> <span>/ night</span></div>'
-      +'<div class="prop-rating">⭐ '+rating+'</div></div></div></a>';
+      +'<div style="display:flex;align-items:center;gap:5px;">'
+      +(p.price_per_month ? '<span style="font-size:10px;background:#fff0f4;color:#ff5a5f;border-radius:4px;padding:2px 6px;font-weight:700;">'+sym+Number(p.price_per_month).toLocaleString()+'/mo</span>' : '')
+      +(p.minimum_stay && p.minimum_stay > 1 ? '<span style="font-size:10px;background:#f0f9ff;color:#0369a1;border-radius:4px;padding:2px 6px;font-weight:600;">'+p.minimum_stay+'+ nights</span>' : '')
+      +'<div class="prop-rating" style="margin-left:auto;">⭐ '+rating+'</div></div></div></div></a>';
   }).join('');
 }
 

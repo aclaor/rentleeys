@@ -367,26 +367,13 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
           </div>
 
           <div style="background:var(--bg2);border-radius:12px;padding:20px;margin-bottom:16px;">
-            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;">Estimated earnings (30 days at 70% occupancy):</div>
-            <div class="calc-row"><span>21 nights × <span id="calc-price">₱0</span></span><span id="calc-gross">₱0</span></div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;" id="calc-title">Estimated earnings (30 days at 70% occupancy):</div>
+            <div class="calc-row"><span id="calc-label">21 nights × <span id="calc-price">₱0</span></span><span id="calc-gross">₱0</span></div>
             <div class="calc-row"><span>Rentleeys fee (0% first 3 months!)</span><span style="color:var(--green);">₱0</span></div>
             <div class="calc-row total"><span>Your estimated earnings</span><span id="calc-net" style="color:var(--green);">₱0</span></div>
           </div>
 
-          <div class="field">
-            <label>Minimum stay (nights)</label>
-            <select id="f-minstay">
-              <option value="1" selected>1 night</option>
-              <option value="2">2 nights</option>
-              <option value="3">3 nights</option>
-              <option value="7">7 nights</option>
-            </select>
-          </div>
-
-          <div class="form-nav">
-            <button class="btn-prev" onclick="goStep(2)">← Back</button>
-            <button class="btn-next" onclick="goStep(4)">Next: Photos →</button>
-          </div>
+          
         </div>
 
         <!-- STEP 4: Photos -->
@@ -569,17 +556,34 @@ function setPricingType(val) {
 }
 
 function updateCalc() {
-  var _pt3 = document.querySelector('input[name="pricing-type"]:checked');
+  var _pt3   = document.querySelector('input[name="pricing-type"]:checked');
   var _ptype3 = _pt3 ? _pt3.value : 'nightly';
   var nightlyVal = document.getElementById('f-price') && document.getElementById('f-price').value ? parseFloat(document.getElementById('f-price').value) : 0;
   var monthlyVal = document.getElementById('f-price-month') && document.getElementById('f-price-month').value ? parseFloat(document.getElementById('f-price-month').value) : 0;
-  var price = (_ptype3 === 'monthly') ? Math.round(monthlyVal / 30) : nightlyVal;
   var curr = document.getElementById('f-currency').value;
-  var sym = curr === 'PHP' ? '₱' : curr === 'USD' ? '$' : curr === 'SGD' ? 'S$' : 'A$';
-  var gross = price * 21;
-  document.getElementById('calc-price').textContent = sym + price.toLocaleString();
-  document.getElementById('calc-gross').textContent = sym + gross.toLocaleString();
-  document.getElementById('calc-net').textContent = sym + gross.toLocaleString();
+  var sym  = curr === 'PHP' ? '₱' : curr === 'USD' ? '$' : curr === 'SGD' ? 'S$' : 'A$';
+  var titleEl = document.getElementById('calc-title');
+  var labelEl = document.getElementById('calc-label');
+  if (_ptype3 === 'monthly' && monthlyVal > 0) {
+    if (titleEl) titleEl.textContent = 'Estimated earnings per month:';
+    if (labelEl) labelEl.textContent = '1 month × ' + sym + monthlyVal.toLocaleString();
+    document.getElementById('calc-price').textContent = '';
+    document.getElementById('calc-gross').textContent = sym + monthlyVal.toLocaleString();
+    document.getElementById('calc-net').textContent   = sym + monthlyVal.toLocaleString();
+  } else if (_ptype3 === 'both' && monthlyVal > 0) {
+    if (titleEl) titleEl.textContent = 'Estimated monthly earnings:';
+    if (labelEl) labelEl.textContent = '1 month × ' + sym + monthlyVal.toLocaleString();
+    document.getElementById('calc-price').textContent = '';
+    document.getElementById('calc-gross').textContent = sym + monthlyVal.toLocaleString();
+    document.getElementById('calc-net').textContent   = sym + monthlyVal.toLocaleString();
+  } else {
+    var gross = nightlyVal * 21;
+    if (titleEl) titleEl.textContent = 'Estimated earnings (30 days at 70% occupancy):';
+    if (labelEl) labelEl.textContent = '21 nights × ' + sym + nightlyVal.toLocaleString();
+    document.getElementById('calc-price').textContent = '';
+    document.getElementById('calc-gross').textContent = sym + gross.toLocaleString();
+    document.getElementById('calc-net').textContent   = sym + gross.toLocaleString();
+  }
 }
 
 function updateSideCalc(val) {

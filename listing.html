@@ -651,6 +651,16 @@ async function confirmBooking(paymentId) {
   }
 }
 
+function messageHost() {
+  if (!_user) {
+    if (typeof openAuth === 'function') openAuth('login');
+    else window.location.href = '/?login=1';
+    return;
+  }
+  var propId = new URLSearchParams(window.location.search).get('id');
+  window.location.href = 'messages.html?property_id=' + propId;
+}
+
 window.addEventListener('DOMContentLoaded', loadListing);
 </script>
 </body>

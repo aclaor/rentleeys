@@ -343,18 +343,28 @@ async function openDirectMessage(propertyId) {
   document.getElementById('chat-view').style.display = 'flex';
   document.getElementById('quick-replies').style.display = 'none';
 
+  var isHost = prop.host_id === _user.id;
   _currentHostId = prop.host_id;
 
-  // Load any pre-booking messages
+  // Load ALL messages for this property
   var { data: msgs } = await _db.from('rentleeys_messages')
     .select('*')
     .eq('property_id', propertyId)
-    .or('sender_id.eq.'+_user.id+',receiver_id.eq.'+_user.id)
     .order('created_at', { ascending: true });
+
+  // Figure out who the other party is
+  // If I'm the host, the guest is whoever sent/received first
+  // If I'm the guest, the other party is the host
+  if (isHost && msgs && msgs.length > 0) {
+    // Find the guest from the messages
+    var firstMsg = msgs[0];
+    var guestId = firstMsg.sender_id !== _user.id ? firstMsg.sender_id : firstMsg.receiver_id;
+    if (guestId) _currentHostId = guestId; // reuse var to mean "other party"
+  }
 
   _messages = [{
     sender: 'system',
-    text: 'Start a conversation about ' + (prop.title || 'this property') + '. The host will reply here.',
+    text: (isHost ? 'Guest inquiry about ' : 'Start a conversation about ') + (prop.title || 'this property') + (isHost ? '' : '. The host will reply here.'),
     time: ''
   }];
 

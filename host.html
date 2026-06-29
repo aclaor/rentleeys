@@ -556,6 +556,15 @@ function setPricingType(val) {
   var sm = document.getElementById('section-monthly');
   if (sn) sn.style.display = (val === 'monthly') ? 'none' : 'block';
   if (sm) sm.style.display = (val === 'nightly') ? 'none' : 'block';
+  // Auto-set minimum stay dropdown to match pricing type
+  var minStay = document.getElementById('f-min-stay');
+  if (minStay) {
+    if (val === 'monthly' && parseInt(minStay.value) < 30) {
+      minStay.value = '30'; // 1 month minimum
+    } else if (val === 'nightly' && parseInt(minStay.value) >= 30) {
+      minStay.value = '1'; // reset to any
+    }
+  }
   updateCalc();
 }
 
@@ -667,7 +676,14 @@ async function submitListing() {
       })(),
       price_per_week:   document.getElementById('f-price-week') && document.getElementById('f-price-week').value ? parseFloat(document.getElementById('f-price-week').value) : null,
       price_per_month:  document.getElementById('f-price-month') && document.getElementById('f-price-month').value ? parseFloat(document.getElementById('f-price-month').value) : null,
-      minimum_stay:     parseInt(document.getElementById('f-min-stay').value) || 1,
+      minimum_stay:     (function(){
+        var pt = document.querySelector('input[name="pricing-type"]:checked');
+        var ptype = pt ? pt.value : 'nightly';
+        var selected = parseInt(document.getElementById('f-min-stay').value) || 1;
+        // If monthly-only and host left minimum stay below 30, force it to 30
+        if (ptype === 'monthly' && selected < 30) return 30;
+        return selected;
+      })(),
       currency:         document.getElementById('f-currency').value,
       max_guests:     parseInt(document.getElementById('f-guests').value),
       bedrooms:       parseInt(document.getElementById('f-beds').value),

@@ -450,6 +450,10 @@ async function loadListings() {
 
 async function deleteListing(id) {
   if (!confirm('Delete this listing? This cannot be undone.')) return;
+  // Delete linked bookings first to avoid foreign key constraint error
+  var { error: bookingErr } = await _db.from('rentleeys_bookings').delete().eq('property_id', id);
+  if (bookingErr) { showToast('Error removing bookings: ' + bookingErr.message); return; }
+  // Now delete the property
   var { error } = await _db.from('rentleeys_properties').delete().eq('id', id).eq('host_id', _user.id);
   if (error) { showToast('Error: ' + error.message); return; }
   showToast('Listing deleted');

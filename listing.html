@@ -268,11 +268,13 @@ async function loadListing() {
 
   // Set default dates
   var tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
-  var nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate()+7);
+  var defaultOut = new Date(); 
+  defaultOut.setDate(defaultOut.getDate() + (data.price_per_month && data.minimum_stay >= 30 ? 30 : 7));
   var cin  = tomorrow.toISOString().split('T')[0];
-  var cout = nextWeek.toISOString().split('T')[0];
-  var nights = 6;
-  var total  = data.price_per_night * nights;
+  var cout = defaultOut.toISOString().split('T')[0];
+  var isMonthly = data.price_per_month && data.minimum_stay >= 30;
+  var nights = isMonthly ? 30 : 6;
+  var total  = isMonthly ? data.price_per_month : data.price_per_night * nights;
 
   document.getElementById('listing-content').innerHTML = `
     ${galleryHTML}
@@ -321,7 +323,13 @@ async function loadListing() {
 
       <!-- BOOKING CARD -->
       <div class="booking-card">
-        <div class="booking-price">${sym}${Number(data.price_per_night).toLocaleString()} <span>/ night</span></div>
+        <div class="booking-price">
+          ${data.price_per_month && data.minimum_stay >= 30
+            ? sym+Number(data.price_per_month).toLocaleString()+'<span> / month</span>'
+            : sym+Number(data.price_per_night).toLocaleString()+'<span> / night</span>'
+          }
+        </div>
+        ${data.minimum_stay > 1 ? '<div style="font-size:12px;color:var(--text2);margin-bottom:4px;">Minimum stay: '+data.minimum_stay+' nights</div>' : ''}
         <div class="date-row">
           <div class="date-field">
             <div class="date-label">Check in</div>
@@ -357,10 +365,14 @@ function updatePrice() {
   var d1 = new Date(cin), d2 = new Date(cout);
   var nights = Math.max(1, Math.round((d2-d1)/(1000*60*60*24)));
   var sym      = _property.currency === 'PHP' ? '₱' : '$';
-  var subtotal = _property.price_per_night * nights;
+  var isMonthlyProp = _property.price_per_month && _property.minimum_stay >= 30;
+  var months   = isMonthlyProp ? Math.max(1, Math.round(nights/30)) : 0;
+  var subtotal = isMonthlyProp ? _property.price_per_month * months : _property.price_per_night * nights;
   var fee      = subtotal * 0.08;
   var total    = subtotal + fee;
-  document.getElementById('price-label').textContent    = sym+Number(_property.price_per_night).toLocaleString()+' × '+nights+' night'+(nights>1?'s':'');
+  document.getElementById('price-label').textContent = isMonthlyProp
+    ? sym+Number(_property.price_per_month).toLocaleString()+' × '+months+' month'+(months>1?'s':'')
+    : sym+Number(_property.price_per_night).toLocaleString()+' × '+nights+' night'+(nights>1?'s':'');
   document.getElementById('price-subtotal').textContent = sym+Number(subtotal).toLocaleString();
   document.getElementById('price-fee') && (document.getElementById('price-fee').textContent = sym+fee.toFixed(2));
   document.getElementById('price-total').textContent    = sym+total.toFixed(2);

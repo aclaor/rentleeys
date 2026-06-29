@@ -523,7 +523,12 @@ function validateStep(n) {
     if (!document.getElementById('f-city').value.trim()) { alert('Please add a city.'); return false; }
   }
   if (n === 3) {
-    if (!document.getElementById('f-price').value) { alert('Please set a price.'); return false; }
+    var _pt2 = document.querySelector('input[name="pricing-type"]:checked');
+    var _ptype2 = _pt2 ? _pt2.value : 'nightly';
+    var _hasN = document.getElementById('f-price') && document.getElementById('f-price').value;
+    var _hasM = document.getElementById('f-price-month') && document.getElementById('f-price-month').value;
+    if (_ptype2 === 'monthly' && !_hasM) { alert('Please enter a monthly rate.'); return false; }
+    if (_ptype2 !== 'monthly' && !_hasN) { alert('Please enter a nightly price.'); return false; }
   }
   return true;
 }
@@ -564,7 +569,11 @@ function setPricingType(val) {
 }
 
 function updateCalc() {
-  var price = parseFloat(document.getElementById('f-price').value) || 0;
+  var _pt3 = document.querySelector('input[name="pricing-type"]:checked');
+  var _ptype3 = _pt3 ? _pt3.value : 'nightly';
+  var nightlyVal = document.getElementById('f-price') && document.getElementById('f-price').value ? parseFloat(document.getElementById('f-price').value) : 0;
+  var monthlyVal = document.getElementById('f-price-month') && document.getElementById('f-price-month').value ? parseFloat(document.getElementById('f-price-month').value) : 0;
+  var price = (_ptype3 === 'monthly') ? Math.round(monthlyVal / 30) : nightlyVal;
   var curr = document.getElementById('f-currency').value;
   var sym = curr === 'PHP' ? '₱' : curr === 'USD' ? '$' : curr === 'SGD' ? 'S$' : 'A$';
   var gross = price * 21;

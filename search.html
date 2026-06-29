@@ -256,7 +256,7 @@ async function loadResults() {
 
   var sort = document.getElementById('sort-select').value;
   var query = _db.from('rentleeys_properties')
-    .select('*')
+    .select('*, rentleeys_reviews(rating)')
     .eq('is_approved', true)
     .eq('is_available', true);
 
@@ -306,7 +306,11 @@ async function loadResults() {
     var emoji = EMOJIS[p.property_type] || '🏠';
     var color = COLORS[i % COLORS.length];
     var sym = p.currency === 'PHP' ? '₱' : '$';
-    var rating = (4.5 + Math.random()*0.4).toFixed(1);
+    var reviews = p.rentleeys_reviews || [];
+    var rating = reviews.length > 0
+      ? (reviews.reduce(function(s,r){return s+(r.rating||0);},0)/reviews.length).toFixed(1)
+      : null;
+    var ratingHTML = rating ? '&#11088; '+rating+' ('+reviews.length+')' : 'New';
     return '<a class="prop-card" href="listing.html?id='+p.id+'">'
       +'<div class="prop-img" style="background:'+(p.images&&p.images[0]?'none':color)+';">'
       +(p.images&&p.images[0]?'<img src="'+p.images[0]+'" style="width:100%;height:100%;object-fit:cover;">':'<span style="font-size:48px;">'+emoji+'</span>')

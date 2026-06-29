@@ -347,6 +347,7 @@ async function loadListing() {
           </select>
         </div>
         <button class="book-btn" onclick="openBooking()">Request to book</button>
+        <button onclick="messageHost()" style="width:100%;background:#fff;color:var(--primary);border:2px solid var(--primary);border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);margin-bottom:4px;">💬 Message Host</button>
         <div class="price-breakdown">
           <div class="price-row"><span id="price-label">${sym}${Number(data.price_per_night).toLocaleString()} × ${nights} nights</span><span id="price-subtotal">${sym}${Number(total).toLocaleString()}</span></div>
           <div class="price-row"><span>Service fee (8%)</span><span id="price-fee">${sym}${Number(total*0.08).toFixed(2)}</span></div>

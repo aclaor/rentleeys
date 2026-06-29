@@ -394,6 +394,15 @@ footer {
       <span class="search-label">Guests</span>
       <input class="search-input" id="search-guests" placeholder="1 guest" />
     </div>
+    <div class="search-field">
+      <span class="search-label">Stay length</span>
+      <select class="search-input" id="search-stay" style="border:none;outline:none;background:none;font-size:13px;color:var(--text2);width:100%;cursor:pointer;">
+        <option value="">Any</option>
+        <option value="7">Weekly (7+ nights)</option>
+        <option value="30">Monthly (30+ nights)</option>
+        <option value="90">Long-term (3+ months)</option>
+      </select>
+    </div>
     <button class="search-btn" onclick="doSearch()">
       🔍 Search
     </button>
@@ -821,8 +830,10 @@ function doSearch() {
   var cin   = document.getElementById('search-checkin').value;
   var cout  = document.getElementById('search-checkout').value;
   var guests= document.getElementById('search-guests').value.trim();
+  var stay  = document.getElementById('search-stay') ? document.getElementById('search-stay').value : '';
   var params = new URLSearchParams();
   if(loc)    params.set('location', loc);
+  if(stay)   params.set('min_stay', stay);
   if(cin)    params.set('checkin', cin);
   if(cout)   params.set('checkout', cout);
   if(guests) params.set('guests', guests);
@@ -884,7 +895,11 @@ async function loadFeaturedListings() {
               <strong>${p.currency === 'PHP' ? '₱' : '$'}${Number(p.price_per_night).toLocaleString()}</strong>
               <span>/ night</span>
             </div>
-            <div class="prop-rating">⭐ ${rating}</div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              ${p.price_per_month ? '<span style="font-size:10px;background:#fff0f4;color:#ff5a5f;border-radius:4px;padding:2px 6px;font-weight:700;">₱'+Number(p.price_per_month).toLocaleString()+'/mo</span>' : ''}
+              ${p.minimum_stay && p.minimum_stay > 1 ? '<span style="font-size:10px;background:#f0f9ff;color:#0369a1;border-radius:4px;padding:2px 6px;font-weight:600;">'+p.minimum_stay+'+ nights</span>' : ''}
+              <div class="prop-rating" style="margin-left:auto;">⭐ ${rating}</div>
+            </div>
           </div>
         </div>
       </a>`;

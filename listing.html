@@ -54,6 +54,19 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 .amenities-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
 .amenity-item{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text2);padding:12px;border:1px solid var(--border);border-radius:10px;}
 .reviews-list{display:flex;flex-direction:column;gap:20px;}
+.review-form{background:var(--bg2);border-radius:14px;padding:20px;margin-bottom:20px;border:1.5px solid var(--border);}
+.review-form-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;}
+.star-select{display:flex;gap:6px;margin-bottom:14px;}
+.star-select span{font-size:28px;cursor:pointer;color:#d1d5db;transition:.15s;line-height:1;}
+.star-select span.active{color:#f59e0b;}
+.review-textarea{width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--body);resize:vertical;min-height:80px;outline:none;box-sizing:border-box;margin-bottom:12px;}
+.review-textarea:focus{border-color:var(--primary);}
+.review-submit-btn{background:var(--primary);color:#fff;border:none;border-radius:10px;padding:11px 24px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;}
+.review-submit-btn:hover{background:var(--primary2);}
+.avg-rating{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.avg-score{font-size:40px;font-weight:800;color:var(--text);line-height:1;}
+.avg-stars{color:#f59e0b;font-size:18px;}
+.avg-count{font-size:13px;color:var(--text2);}
 .review-item{padding:20px;background:var(--bg2);border-radius:12px;}
 .review-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
 .review-avatar{width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
@@ -235,7 +248,24 @@ async function loadListing() {
 
   document.title = data.title + ' — Rentleeys';
   var sym = data.currency === 'PHP' ? '₱' : '$';
-  var rating = (4.5 + Math.random()*0.4).toFixed(1);
+  var rating = avgRating > 0 ? avgRating : (4.5 + Math.random()*0.4).toFixed(1);
+  // Check if current user has a completed booking for this property and hasn't reviewed yet
+  var canReview = false;
+  var _userBookingId = null;
+  if (_user) {
+    var { data: myBookings } = await _db.from('rentleeys_bookings')
+      .select('id,check_out').eq('property_id', id).eq('guest_id', _user.id)
+      .eq('status','confirmed').order('created_at',{ascending:false}).limit(1);
+    if (myBookings && myBookings.length > 0) {
+      var checkOut = new Date(myBookings[0].check_out);
+      if (checkOut <= new Date()) {
+        // Check they haven't already reviewed
+        var { data: myReview } = await _db.from('rentleeys_reviews')
+          .select('id').eq('property_id', id).eq('guest_id', _user.id).maybeSingle();
+        if (!myReview) { canReview = true; _userBookingId = myBookings[0].id; }
+      }
+    }
+  }
   var hostName = (host && host.full_name) ? host.full_name : 'Host';
   var hostInitial = hostName.charAt(0).toUpperCase();
   var amenities = data.amenities || [];
@@ -260,11 +290,21 @@ async function loadListing() {
   }
   galleryHTML += '</div>';
 
-  var reviewsHTML = reviews && reviews.length > 0
+  var avgRating = 0;
+  if (reviews && reviews.length > 0) {
+    avgRating = (reviews.reduce(function(s,r){ return s + (r.rating||0); }, 0) / reviews.length).toFixed(1);
+  }
+  var avgHTML = reviews && reviews.length > 0
+    ? '<div class="avg-rating"><div class="avg-score">'+avgRating+'</div><div><div class="avg-stars">'+'★'.repeat(Math.round(avgRating))+'☆'.repeat(5-Math.round(avgRating))+'</div><div class="avg-count">'+reviews.length+' review'+(reviews.length>1?'s':'')+'</div></div></div>'
+    : '';
+  reviewsHTML = avgHTML + (reviews && reviews.length > 0
     ? reviews.map(function(r) {
-        return '<div class="review-item"><div class="review-header"><div class="review-avatar">G</div><div><div class="review-name">Guest</div><div class="review-date">'+new Date(r.created_at).toLocaleDateString('en-US',{month:'long',year:'numeric'})+'</div></div></div><div class="review-stars">'+('★').repeat(r.rating)+('☆').repeat(5-r.rating)+'</div><div class="review-text">'+r.comment+'</div></div>';
+        var gName = r.guest_name || 'Guest';
+        var gInit = gName.charAt(0).toUpperCase();
+        var stars = '\u2605'.repeat(r.rating||5) + '\u2606'.repeat(5-(r.rating||5));
+        return '<div class="review-item"><div class="review-header"><div class="review-avatar">'+gInit+'</div><div><div class="review-name">'+gName+'</div><div class="review-date">'+new Date(r.created_at).toLocaleDateString('en-US',{month:'long',year:'numeric'})+'</div></div><div style="margin-left:auto;color:#f59e0b;font-size:13px;">'+stars+'</div></div><div class="review-text">'+r.comment+'</div></div>';
       }).join('')
-    : '<div style="text-align:center;padding:32px;color:var(--text2);background:var(--bg2);border-radius:12px;"><div style="font-size:32px;margin-bottom:8px;">💬</div><div>No reviews yet — be the first guest!</div></div>';
+    : '<div style="text-align:center;padding:32px;color:var(--text2);">No reviews yet — be the first guest!</div>')
 
   // Set default dates
   var tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
@@ -319,6 +359,19 @@ async function loadListing() {
         <div class="divider"></div>
         <div class="section-title">Guest reviews</div>
         <div class="reviews-list">${reviewsHTML}</div>
+        ${canReview ? `
+        <div class="review-form" id="review-form">
+          <div class="review-form-title">Share your experience</div>
+          <div class="star-select" id="star-select">
+            <span onclick="setRating(1)" data-v="1">★</span>
+            <span onclick="setRating(2)" data-v="2">★</span>
+            <span onclick="setRating(3)" data-v="3">★</span>
+            <span onclick="setRating(4)" data-v="4">★</span>
+            <span onclick="setRating(5)" data-v="5">★</span>
+          </div>
+          <textarea class="review-textarea" id="review-text" placeholder="How was your stay? What did you love about this place?"></textarea>
+          <button class="review-submit-btn" onclick="submitReview()">Submit review</button>
+        </div>` : ''}
       </div>
 
       <!-- BOOKING CARD -->
@@ -649,6 +702,36 @@ async function confirmBooking(paymentId) {
   } catch(e) {
     err.textContent = 'Error: ' + e.message;
   }
+}
+
+// ── REVIEWS ──────────────────────────────────────────────
+var _selectedRating = 0;
+
+function setRating(val) {
+  _selectedRating = val;
+  document.querySelectorAll('#star-select span').forEach(function(s, i) {
+    s.classList.toggle('active', i < val);
+  });
+}
+
+async function submitReview() {
+  if (!_selectedRating) { showToast('Please select a star rating', 'error'); return; }
+  var comment = document.getElementById('review-text').value.trim();
+  if (!comment) { showToast('Please write something about your stay', 'error'); return; }
+  var guestName = (_user.user_metadata && _user.user_metadata.full_name) || _user.email.split('@')[0];
+  var propId = new URLSearchParams(window.location.search).get('id');
+  var { error } = await _db.from('rentleeys_reviews').insert({
+    property_id: propId,
+    guest_id:    _user.id,
+    guest_name:  guestName,
+    rating:      _selectedRating,
+    comment:     comment,
+    created_at:  new Date().toISOString()
+  });
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+  document.getElementById('review-form').innerHTML =
+    '<div style="text-align:center;padding:20px;color:var(--primary);font-weight:700;">✅ Thank you for your review!</div>';
+  showToast('Review submitted!', 'success');
 }
 
 function messageHost() {

@@ -1,4 +1,31 @@
-<!DOCTYPE html>
+var seenPropMsgs = {};
+  var propIdList = [];
+  propMsgs.forEach(function(m) {
+    if (m.property_id && !seenPropMsgs[m.property_id]) {
+      seenPropMsgs[m.property_id] = m;
+      propIdList.push(m.property_id);
+    }
+  });
+  if (propIdList.length > 0) {
+    var { data: propDets } = await _db.from('rentleeys_properties')
+      .select('id,title,images,host_id').in('id', propIdList);
+    var propMap = {};
+    (propDets || []).forEach(function(p){ propMap[p.id] = p; });
+    Object.keys(seenPropMsgs).forEach(function(pid) {
+      var m    = seenPropMsgs[pid];
+      var prop = propMap[pid] || {};
+      var isHost = prop.host_id === _user.id;
+      convs.push({
+        id: 'prop-'+pid,
+        name: isHost ? 'Guest inquiry · '+(prop.title||'Property') : 'Host · '+(prop.title||'Property'),
+        avatar: prop.images && prop.images[0] ? null : '💬',
+        avatarImg: prop.images && prop.images[0],
+        preview: m.body,
+        time: new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}),
+        status: 'inquiry', unread: 0, propertyId: pid, bg: '#fff'
+      });
+    });
+  }<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -181,14 +208,15 @@ async function loadConversations() {
 
   // Load bookings AND direct property messages
   var bookingsRes = await _db.from('rentleeys_bookings')
-    .select('*, rentleeys_properties(title,images,host_id)')
+    .select('id,guest_id,host_id,check_in,check_out,status,message,created_at,rentleeys_properties(title,images)')
     .or('guest_id.eq.'+_user.id+',host_id.eq.'+_user.id)
     .order('created_at', {ascending:false}).limit(20);
 
   var propMsgsRes = await _db.from('rentleeys_messages')
-    .select('*, rentleeys_properties(title,images,host_id)')
+    .select('id,body,created_at,property_id,sender_id,receiver_id')
     .is('booking_id', null)
-    .order('created_at', {ascending:false}).limit(20);
+    .or('sender_id.eq.'+_user.id+',receiver_id.eq.'+_user.id)
+    .order('created_at',{ascending:false}).limit(20);
 
   var bookings = bookingsRes.data || [];
   var propMsgs = propMsgsRes.data || [];

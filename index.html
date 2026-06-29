@@ -62,18 +62,38 @@ body { background:var(--bg); color:var(--text); font-family:var(--body); line-he
 
 /* ── HERO ────────────────────────────────────────────────── */
 .hero {
-  background:linear-gradient(180deg, #fff5f5 0%, #fff 100%);
-  padding:72px 24px 56px;
-  text-align:center;
+  position:relative;
+  min-height:520px;
+  display:flex;
+  align-items:center;
+  overflow:hidden;
+  padding:0;
+  text-align:left;
+}
+.hero-bg {
+  position:absolute;
+  inset:0;
+  background:url('https://plus.unsplash.com/premium_photo-1682889762731-375a6b22d794?w=1800&q=85') center/cover no-repeat;
+  filter:brightness(.42);
+  z-index:0;
+}
+.hero-content {
+  position:relative;
+  z-index:2;
+  width:100%;
+  max-width:1200px;
+  margin:0 auto;
+  padding:80px 32px 90px;
 }
 .hero-badge {
   display:inline-flex; align-items:center; gap:6px;
-  background:#fff; border:1px solid var(--border);
+  background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3);
+  backdrop-filter:blur(8px);
   border-radius:20px; padding:6px 14px;
-  font-size:13px; color:var(--text2); font-weight:500;
-  margin-bottom:24px; box-shadow:var(--shadow);
+  font-size:13px; color:#fff; font-weight:600;
+  margin-bottom:20px;
 }
-.hero-badge span { color:var(--primary); font-weight:700; }
+.hero-badge span { color:#ffb3b5; font-weight:700; }
 .hero h1 {
   font-family:var(--sans); font-size:clamp(32px,5vw,56px);
   font-weight:800; color:var(--text); line-height:1.15;
@@ -82,8 +102,8 @@ body { background:var(--bg); color:var(--text); font-family:var(--body); line-he
 }
 .hero h1 em { color:var(--primary); font-style:normal; }
 .hero p {
-  font-size:18px; color:var(--text2); max-width:480px;
-  margin:0 auto 40px; line-height:1.7;
+  font-size:18px; color:rgba(255,255,255,0.85); max-width:480px;
+  margin:0 0 40px; line-height:1.7;
 }
 
 /* ── SEARCH BOX ──────────────────────────────────────────── */
@@ -298,6 +318,8 @@ footer {
 
 <!-- HERO -->
 <section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
   <div class="hero-badge">🌏 <span>Now available in Philippines</span> and 50+ countries</div>
   <h1>Find your perfect stay<br>at <em>half the price</em></h1>
   <p>Verified homes, apartments, and rooms from local hosts. No hidden fees. No price gouging.</p>
@@ -338,6 +360,7 @@ footer {
       <div class="stat-num">0% <span style="font-size:16px;color:var(--text2);">host fee</span></div>
       <div class="stat-label">for first 3 months</div>
     </div>
+  </div>
   </div>
 </section>
 

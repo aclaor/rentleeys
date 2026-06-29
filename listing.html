@@ -54,6 +54,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 .amenities-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
 .amenity-item{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text2);padding:12px;border:1px solid var(--border);border-radius:10px;}
 .reviews-list{display:flex;flex-direction:column;gap:20px;}
+.host-verified-badge{display:inline-flex;align-items:center;gap:4px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700;margin-left:8px;}
+.cal-blocked{background:#fef2f2!important;color:#ef4444!important;cursor:not-allowed!important;}
+.cal-booked{background:#fef3c7!important;color:#92400e!important;cursor:not-allowed!important;}
 .review-form{background:var(--bg2);border-radius:14px;padding:20px;margin-bottom:20px;border:1.5px solid var(--border);}
 .review-form-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;}
 .star-select{display:flex;gap:6px;margin-bottom:14px;}
@@ -244,6 +247,18 @@ async function loadListing() {
   _property = data;
 
   var { data: host } = await _db.from('rentleeys_hosts').select('*').eq('user_id', data.host_id).single();
+  var _todayStr = new Date().toISOString().split('T')[0];
+  var _futureDate = new Date(); _futureDate.setMonth(_futureDate.getMonth()+6);
+  var _futureStr = _futureDate.toISOString().split('T')[0];
+  var { data: blocked } = await _db.from('rentleeys_blocked_dates')
+    .select('date').eq('property_id', id).gte('date', _todayStr).lte('date', _futureStr);
+  var { data: bookedRanges } = await _db.from('rentleeys_bookings')
+    .select('check_in,check_out').eq('property_id', id).eq('status','confirmed').gte('check_out', _todayStr);
+  var _unavailableDates = new Set((blocked||[]).map(function(d){ return d.date; }));
+  (bookedRanges||[]).forEach(function(b) {
+    var d = new Date(b.check_in), end = new Date(b.check_out);
+    while (d < end) { _unavailableDates.add(d.toISOString().split('T')[0]); d.setDate(d.getDate()+1); }
+  });
   var { data: reviews } = await _db.from('rentleeys_reviews').select('*').eq('property_id', id).order('created_at', {ascending:false}).limit(5);
 
   document.title = data.title + ' — Rentleeys';
@@ -267,6 +282,7 @@ async function loadListing() {
     }
   }
   var hostName = (host && host.full_name) ? host.full_name : 'Host';
+  var hostVerified = host && host.id_verified;
   var hostInitial = hostName.charAt(0).toUpperCase();
   var amenities = data.amenities || [];
 
@@ -339,7 +355,7 @@ async function loadListing() {
         <div class="host-row">
           <div class="host-avatar">${hostInitial}</div>
           <div>
-            <div class="host-name">Hosted by ${hostName}</div>
+            <div class="host-name">Hosted by ${hostName}${hostVerified ? '<span class="host-verified-badge">&#x2705; Verified</span>' : ''}</div>
             <div class="host-joined">Member since ${host ? new Date(host.joined_at).getFullYear() : '2026'}</div>
           </div>
         </div>
@@ -409,6 +425,27 @@ async function loadListing() {
         <div class="no-charge">Secure payment via PayPal</div>
       </div>
     </div>`;
+}
+
+function isDateUnavailable(dateStr) {
+  return typeof _unavailableDates !== 'undefined' && _unavailableDates.has(dateStr);
+}
+
+function validateDates() {
+  var cin  = document.getElementById('checkin').value;
+  var cout = document.getElementById('checkout').value;
+  if (!cin || !cout) return true;
+  var d = new Date(cin);
+  var end = new Date(cout);
+  while (d < end) {
+    var ds = d.toISOString().split('T')[0];
+    if (isDateUnavailable(ds)) {
+      showToast('Some dates in your selection are unavailable. Please choose different dates.', 'error');
+      return false;
+    }
+    d.setDate(d.getDate()+1);
+  }
+  return true;
 }
 
 function updatePrice() {
@@ -493,6 +530,7 @@ var _payNow = true;
 var _payMethod = 'paypal';
 
 function openBooking() {
+  if (!validateDates()) return;
   if (!_user) { alert('Please sign in to book this property.'); window.location.href = '/'; return; }
   _bookStep = 1;
   _payNow   = true;

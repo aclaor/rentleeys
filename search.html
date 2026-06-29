@@ -31,6 +31,21 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
 
 /* LAYOUT */
 .search-layout{display:grid;grid-template-columns:300px 1fr;gap:0;min-height:calc(100vh - 64px);}
+.map-panel{position:sticky;top:64px;height:calc(100vh - 64px);display:none;}
+.map-panel.active{display:block;}
+#map{width:100%;height:100%;}
+.view-toggle{display:flex;gap:8px;margin-bottom:16px;}
+.view-btn{padding:8px 18px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);transition:.15s;}
+.view-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+.map-price-pin{background:var(--primary);color:#fff;padding:4px 8px;border-radius:6px;font-size:12px;font-weight:700;white-space:nowrap;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.leaflet-popup-content-wrapper{border-radius:12px!important;padding:0!important;overflow:hidden;}
+.leaflet-popup-content{margin:0!important;width:220px!important;}
+.map-card{padding:12px;}
+.map-card-img{width:100%;height:110px;object-fit:cover;display:block;}
+.map-card-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.map-card-loc{font-size:11px;color:var(--text3);margin-bottom:6px;}
+.map-card-price{font-size:14px;font-weight:800;color:var(--text);}
+.map-card-btn{display:block;text-align:center;padding:8px;background:var(--primary);color:#fff;text-decoration:none;font-size:12px;font-weight:700;margin-top:8px;border-radius:8px;}
 @media(max-width:768px){.search-layout{grid-template-columns:1fr;} .filters-panel{display:none;}}
 
 /* FILTERS */
@@ -161,7 +176,8 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
   </div>
 
   <!-- RESULTS -->
-  <div class="results-panel">
+  <div class="map-panel" id="map-panel"><div id="map"></div></div>
+<div class="results-panel">
     <div class="results-header">
       <div class="results-count" id="results-count">Searching...</div>
       <select class="sort-select" id="sort-select" onchange="loadResults()">
@@ -310,6 +326,98 @@ async function loadResults() {
       +'<div class="prop-rating" style="margin-left:auto;">⭐ '+rating+'</div></div></div></div></a>';
   }).join('');
 }
+
+// ── MAP ──────────────────────────────────────────────────
+var _map = null;
+var _markers = [];
+var _currentView = 'list';
+var _mapInitialized = false;
+
+function switchView(view) {
+  _currentView = view;
+  var mapPanel   = document.getElementById('map-panel');
+  var resultsGrid = document.getElementById('results-grid');
+  var btnList    = document.getElementById('btn-list');
+  var btnMap     = document.getElementById('btn-map');
+  if (view === 'map') {
+    mapPanel.classList.add('active');
+    if (resultsGrid) resultsGrid.style.display = 'none';
+    btnMap.classList.add('active');
+    btnList.classList.remove('active');
+    if (!_mapInitialized) initMap();
+    else if (_map) { _map.invalidateSize(); addMarkersToMap(_lastData); }
+  } else {
+    mapPanel.classList.remove('active');
+    if (resultsGrid) resultsGrid.style.display = '';
+    btnList.classList.add('active');
+    btnMap.classList.remove('active');
+  }
+}
+
+function initMap() {
+  if (typeof L === 'undefined') {
+    var script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    script.onload = function() { setupMap(); };
+    document.head.appendChild(script);
+  } else { setupMap(); }
+}
+
+function setupMap() {
+  _mapInitialized = true;
+  _map = L.map('map').setView([12.8797, 121.7740], 6); // Philippines center
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 18
+  }).addTo(_map);
+  setTimeout(function(){ _map.invalidateSize(); }, 100);
+  if (_lastData) addMarkersToMap(_lastData);
+}
+
+function addMarkersToMap(data) {
+  if (!_map || !data) return;
+  // Clear old markers
+  _markers.forEach(function(m){ _map.removeLayer(m); });
+  _markers = [];
+  var bounds = [];
+  data.forEach(function(p) {
+    var lat = parseFloat(p.latitude);
+    var lng = parseFloat(p.longitude);
+    if (!lat || !lng) return;
+    var sym = p.currency === 'PHP' ? '₱' : '$';
+    var price = p.price_per_month && p.minimum_stay >= 30
+      ? sym + Number(p.price_per_month).toLocaleString() + '/mo'
+      : sym + Number(p.price_per_night).toLocaleString() + '/night';
+    // Price pin icon
+    var icon = L.divIcon({
+      className: '',
+      html: '<div class="map-price-pin">' + price + '</div>',
+      iconAnchor: [0, 0]
+    });
+    var marker = L.marker([lat, lng], { icon: icon });
+    // Popup card
+    var imgHtml = p.images && p.images[0]
+      ? '<img class="map-card-img" src="' + p.images[0] + '" alt="' + p.title + '">'
+      : '<div style="width:100%;height:110px;background:linear-gradient(135deg,#ffecd2,#fcb69f);display:flex;align-items:center;justify-content:center;font-size:36px;">🏠</div>';
+    var popup = '<div class="map-card">'
+      + imgHtml
+      + '<div style="padding:10px;">'
+      + '<div class="map-card-title">' + p.title + '</div>'
+      + '<div class="map-card-loc">📍 ' + (p.city||'') + ', ' + (p.country||'Philippines') + '</div>'
+      + '<div class="map-card-price">' + price + '</div>'
+      + '<a class="map-card-btn" href="listing.html?id=' + p.id + '">View listing</a>'
+      + '</div></div>';
+    marker.bindPopup(popup, { maxWidth: 220, minWidth: 220 });
+    marker.addTo(_map);
+    _markers.push(marker);
+    bounds.push([lat, lng]);
+  });
+  if (bounds.length > 0) {
+    _map.fitBounds(bounds, { padding: [40, 40], maxZoom: 13 });
+  }
+}
+
+var _lastData = null;
 
 window.addEventListener('DOMContentLoaded', loadResults);
 </script>

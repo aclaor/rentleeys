@@ -747,20 +747,71 @@ async function submitVerification() {
   <!-- ID VERIFICATION -->
   <div class="page" id="page-verification">
     <div class="page-header">
-      <div class="page-title">ID Verification 🪪</div>
+      <div class="page-title">ID Verification 🪩</div>
       <div class="page-sub">Verify your identity to build trust with guests</div>
     </div>
-    <div class="verif-card">
-      <div id="verif-status-badge" class="verif-badge unverified">⚠️ Not verified</div>
-      <p style="font-size:14px;color:var(--text2);margin-bottom:20px;line-height:1.6;">Verified hosts get a ✅ badge on their listings and receive more bookings. Upload a government-issued ID (passport, driver's license, or national ID).</p>
-      <div id="verif-upload-area" class="verif-upload" onclick="document.getElementById('id-file-input').click()">
-        <div style="font-size:32px;margin-bottom:8px;">📄</div>
-        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">Upload your ID</div>
-        <div style="font-size:12px;color:var(--text2);">JPG, PNG or PDF · Max 5MB</div>
+
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:24px;max-width:880px;align-items:start;">
+
+      <div class="verif-card">
+        <div id="verif-status-badge" class="verif-badge unverified">⚠️ Not verified</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">Upload a government-issued ID</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:22px;line-height:1.6;">Accepted: passport, driver’s license, national ID, or any government photo ID.</div>
+
+        <div id="verif-upload-area" class="verif-upload" onclick="document.getElementById('id-file-input').click()">
+          <div style="width:60px;height:60px;background:var(--primary-light);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:28px;">🪩</div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">Click to upload your ID</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">JPG, PNG or PDF · Max 5MB</div>
+          <div style="display:inline-block;padding:9px 22px;background:var(--primary);color:#fff;border-radius:9px;font-size:13px;font-weight:700;">Choose file</div>
+        </div>
+
+        <input id="id-file-input" type="file" accept="image/*,.pdf" style="display:none;" onchange="handleIdUpload(this)">
+        <img id="id-preview" class="verif-preview" style="display:none;">
+        <button id="submit-verif-btn" onclick="submitVerification()" class="verif-submit-btn" style="display:none;">Submit for verification →</button>
+
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-top:16px;padding:12px 16px;background:var(--bg2);border-radius:10px;">
+          <span style="font-size:18px;flex-shrink:0;">🔒</span>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6;">Your ID is reviewed within 24 hours and is <strong>never shared</strong> with guests or third parties.</div>
+        </div>
       </div>
-      <input id="id-file-input" type="file" accept="image/*,.pdf" style="display:none;" onchange="handleIdUpload(this)">
-      <img id="id-preview" class="verif-preview" style="display:none;">
-      <button id="submit-verif-btn" onclick="submitVerification()" style="display:none;width:100%;padding:13px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">Submit for verification</button>
-      <div style="font-size:12px;color:var(--text2);margin-top:12px;">📋 Your ID is reviewed by our team within 24 hours. We never share your ID with guests.</div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:22px;">
+          <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;">Why get verified?</div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <div style="width:36px;height:36px;background:#fff0f4;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">✅</div>
+              <div><div style="font-size:13px;font-weight:600;color:var(--text);">Verified badge on listings</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">Guests trust verified hosts more</div></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <div style="width:36px;height:36px;background:#f0fdf4;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">📈</div>
+              <div><div style="font-size:13px;font-weight:600;color:var(--text);">More bookings</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">Verified listings rank higher in search</div></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <div style="width:36px;height:36px;background:#eff6ff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">🛡️</div>
+              <div><div style="font-size:13px;font-weight:600;color:var(--text);">Safer community</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">Keeps Rentleeys trustworthy for everyone</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:22px;">
+          <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;">How it works</div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;gap:12px;align-items:center;">
+              <div style="width:30px;height:30px;background:var(--primary);border-radius:50%;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+              <div style="font-size:13px;color:var(--text);">Upload a clear photo of your ID</div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;">
+              <div style="width:30px;height:30px;background:var(--primary);border-radius:50%;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+              <div style="font-size:13px;color:var(--text);">Our team reviews within 24 hours</div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;">
+              <div style="width:30px;height:30px;background:var(--primary);border-radius:50%;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
+              <div style="font-size:13px;color:var(--text);">Get your ✅ verified badge on all listings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>

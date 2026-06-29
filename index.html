@@ -84,6 +84,57 @@ body { background:var(--bg); color:var(--text); font-family:var(--body); line-he
   max-width:1200px;
   margin:0 auto;
   padding:80px 32px 90px;
+  display:grid;
+  grid-template-columns:1fr 360px;
+  gap:48px;
+  align-items:center;
+}
+.hero-left { min-width:0; }
+.hero-card {
+  background:#fff;
+  border-radius:18px;
+  padding:28px 24px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.22);
+  flex-shrink:0;
+}
+.hero-card-eye {
+  font-size:11px; font-weight:700; color:var(--primary);
+  letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;
+}
+.hero-card h2 {
+  font-family:var(--sans); font-size:20px; font-weight:800;
+  color:var(--text); margin-bottom:4px;
+}
+.hero-card-sub {
+  font-size:13px; color:var(--text2); margin-bottom:18px; line-height:1.5;
+}
+.hero-check-list {
+  list-style:none; display:flex; flex-direction:column;
+  gap:10px; margin-bottom:20px;
+}
+.hero-check-list li {
+  display:flex; align-items:center; gap:10px;
+  font-size:14px; color:var(--text);
+}
+.hero-check-icon {
+  width:20px; height:20px; border-radius:50%;
+  background:var(--primary-light); border:1.5px solid #fecdd9;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--primary); font-size:10px; flex-shrink:0;
+}
+.hero-card-btn {
+  width:100%; padding:13px; border-radius:10px;
+  background:var(--primary); color:#fff; border:none;
+  font-size:14px; font-weight:700; cursor:pointer;
+  font-family:var(--sans); margin-bottom:8px; transition:.2s;
+}
+.hero-card-btn:hover { background:var(--primary2); }
+.hero-card-note {
+  text-align:center; font-size:12px; color:var(--text3);
+}
+@media(max-width:900px) {
+  .hero-content { grid-template-columns:1fr; }
+  .hero-card { max-width:480px; }
 }
 .hero-badge {
   display:inline-flex; align-items:center; gap:6px;
@@ -320,6 +371,7 @@ footer {
 <section class="hero">
   <div class="hero-bg"></div>
   <div class="hero-content">
+  <div class="hero-left">
   <div class="hero-badge">🌏 <span>Now available in Philippines</span> and 50+ countries</div>
   <h1>Find your perfect stay<br>at <em>half the price</em></h1>
   <p>Verified homes, apartments, and rooms from local hosts. No hidden fees. No price gouging.</p>
@@ -361,7 +413,24 @@ footer {
       <div class="stat-label">for first 3 months</div>
     </div>
   </div>
+  </div><!-- end hero-left -->
+
+  <!-- HOST CARD -->
+  <div class="hero-card">
+    <div class="hero-card-eye">For Property Owners</div>
+    <h2>List Your Property Free</h2>
+    <p class="hero-card-sub">Join hosts earning $15,000+/month.</p>
+    <ul class="hero-check-list">
+      <li><div class="hero-check-icon">&#10003;</div>100% free to list</li>
+      <li><div class="hero-check-icon">&#10003;</div>0% host fee for 3 months</li>
+      <li><div class="hero-check-icon">&#10003;</div>No commission. No hidden fees.</li>
+      <li><div class="hero-check-icon">&#10003;</div>Live in 24 hours</li>
+    </ul>
+    <button class="hero-card-btn" onclick="window.location.href='host.html'">Sign Up as a Host</button>
+    <p class="hero-card-note">It only takes 2 minutes!</p>
   </div>
+
+  </div><!-- end hero-content -->
 </section>
 
 <!-- FEATURED LISTINGS -->
@@ -413,7 +482,7 @@ footer {
   <div class="section-header">
     <div class="section-eyebrow">Explore</div>
     <div class="section-title">Top destinations</div>
-    <div class="section-sub">From ₱500/night in the Philippines to budget stays worldwide</div>
+    <div class="section-sub">From $500/night in the Philippines to budget stays worldwide</div>
   </div>
   <div class="dest-grid">
     <a class="dest-card" onclick="searchCity('Manila')">
@@ -489,7 +558,7 @@ footer {
   <div class="reviews-grid">
     <div class="review-card">
       <div class="review-stars">★★★★★</div>
-      <div class="review-text">"Found a beautiful condo in Makati for ₱1,200/night. Airbnb wanted ₱2,800 for the same area. Absolutely love Rentleeys!"</div>
+      <div class="review-text">"Found a beautiful condo in Makati for $1,200/night. Airbnb wanted $2,800 for the same area. Absolutely love Rentleeys!"</div>
       <div class="review-author">
         <div class="review-avatar">MR</div>
         <div><div class="review-name">Maria R.</div><div class="review-location">Manila, Philippines</div></div>
@@ -812,7 +881,7 @@ async function loadFeaturedListings() {
           </div>
           <div style="display:flex;align-items:center;">
             <div class="prop-price">
-              <strong>${p.currency === 'PHP' ? '₱' : '$'}${Number(p.price_per_night).toLocaleString()}</strong>
+              <strong>${p.currency === 'PHP' ? '$' : '$'}${Number(p.price_per_night).toLocaleString()}</strong>
               <span>/ night</span>
             </div>
             <div class="prop-rating">⭐ ${rating}</div>

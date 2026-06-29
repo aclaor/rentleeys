@@ -248,6 +248,19 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
           </div>
           <div class="field-row">
             <div class="field">
+              <label>Latitude <span style="font-weight:400;color:var(--text2);font-size:12px;">(for map pin)</span></label>
+              <input id="f-lat" type="number" step="any" placeholder="e.g. 14.5995" />
+            </div>
+            <div class="field">
+              <label>Longitude <span style="font-weight:400;color:var(--text2);font-size:12px;">(for map pin)</span></label>
+              <input id="f-lng" type="number" step="any" placeholder="e.g. 120.9842" />
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--text2);background:var(--bg2);border-radius:8px;padding:10px 14px;margin-bottom:8px;">
+            💡 Find your coordinates: go to <a href="https://maps.google.com" target="_blank" style="color:var(--primary);">Google Maps</a>, right-click your property, and copy the coordinates shown.
+          </div>
+          <div class="field-row">
+            <div class="field">
               <label>City *</label>
               <input id="f-city" placeholder="e.g. Makati City" />
             </div>
@@ -661,7 +674,9 @@ async function submitListing() {
       title:          document.getElementById('f-title').value.trim(),
       description:    document.getElementById('f-desc').value.trim(),
       property_type:  _type,
-      address:        document.getElementById('f-address').value.trim(),
+      address:       document.getElementById('f-address').value.trim(),
+      latitude:      document.getElementById('f-lat').value ? parseFloat(document.getElementById('f-lat').value) : null,
+      longitude:     document.getElementById('f-lng').value ? parseFloat(document.getElementById('f-lng').value) : null,
       city:           document.getElementById('f-city').value.trim(),
       province:       document.getElementById('f-province').value.trim(),
       country:        document.getElementById('f-country').value,

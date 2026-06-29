@@ -155,7 +155,17 @@ var _aiMode = false;
 _db.auth.onAuthStateChange(function(event, session) {
   if (!session) { window.location.href = '/'; return; }
   _user = session.user;
-  loadConversations();
+  loadConversations().then(function() {
+    // If coming from a listing page, auto-open that conversation
+    var params = new URLSearchParams(window.location.search);
+    var bookingId = params.get('booking_id');
+    var propertyId = params.get('property_id');
+    if (bookingId) {
+      openChat('booking-' + bookingId);
+    } else if (propertyId) {
+      openPropertyChat(propertyId);
+    }
+  });
 });
 
 // ── CONVERSATIONS ─────────────────────────────────────────
@@ -258,39 +268,179 @@ function openSupportChat() {
   showQuickReplies(['I have a booking issue','Payment question','Safety concern','Talk to a person']);
 }
 
-// ── BOOKING CHAT ──────────────────────────────────────────
-async function openBookingChat(bookingId) {
+// ── PROPERTY CHAT (before booking) ───────────────────────
+async function openPropertyChat(propertyId) {
+  // Check if there's already a booking for this property
+  var { data: existing } = await _db.from('rentleeys_bookings')
+    .select('id')
+    .eq('property_id', propertyId)
+    .or('guest_id.eq.'+_user.id+',host_id.eq.'+_user.id)
+    .limit(1)
+    .maybeSingle();
+
+  if (existing) {
+    // Use existing booking chat
+    openChat('booking-' + existing.id);
+  } else {
+    // No booking yet — check for a pre-booking message thread
+    var { data: thread } = await _db.from('rentleeys_messages')
+      .select('booking_id')
+      .eq('property_id', propertyId)
+      .eq('sender_id', _user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (thread) {
+      openChat('booking-' + thread.booking_id);
+    } else {
+      // Open a new direct message UI
+      openDirectMessage(propertyId);
+    }
+  }
+}
+
+async function openDirectMessage(propertyId) {
   _aiMode = false;
+  _currentBookingId = null;
+  _currentPropertyId = propertyId;
+
+  // Load property details
+  var { data: prop } = await _db.from('rentleeys_properties')
+    .select('title, host_id, images')
+    .eq('id', propertyId).single();
+
+  if (!prop) return;
+
   document.getElementById('chat-avatar').textContent = '🏠';
-  document.getElementById('chat-name').textContent = 'Booking conversation';
-  document.getElementById('chat-status').textContent = '● Active';
+  document.getElementById('chat-name').textContent   = prop.title || 'Property';
+  document.getElementById('chat-status').textContent = '● Message before booking';
+  document.getElementById('chat-status-badge').textContent = 'Pre-booking';
+  document.getElementById('empty-chat').style.display = 'none';
+  document.getElementById('chat-view').style.display = 'flex';
   document.getElementById('quick-replies').style.display = 'none';
 
-  // Load booking details
-  var { data } = await _db.from('rentleeys_bookings')
-    .select('*, rentleeys_properties(title)')
-    .eq('id', bookingId).single();
+  _currentHostId = prop.host_id;
 
-  if (data) {
-    var prop = data.rentleeys_properties || {};
-    document.getElementById('chat-name').textContent = prop.title || 'Booking';
-  }
+  // Load any pre-booking messages
+  var { data: msgs } = await _db.from('rentleeys_messages')
+    .select('*')
+    .eq('property_id', propertyId)
+    .or('sender_id.eq.'+_user.id+',receiver_id.eq.'+_user.id)
+    .order('created_at', { ascending: true });
 
   _messages = [{
     sender: 'system',
-    text: 'Booking conversation for '+((data && data.rentleeys_properties) ? data.rentleeys_properties.title : 'property')+'\n'+
-      (data ? data.check_in+' → '+data.check_out : ''),
+    text: 'Start a conversation about ' + (prop.title || 'this property') + '. The host will reply here.',
     time: ''
   }];
 
-  if (data && data.message) {
-    _messages.push({
-      sender: data.guest_id === _user.id ? 'me' : 'them',
-      text: data.message,
-      time: new Date(data.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+  if (msgs) {
+    msgs.forEach(function(m) {
+      _messages.push({
+        sender: m.sender_id === _user.id ? 'me' : 'them',
+        text: m.body,
+        time: new Date(m.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+      });
     });
   }
   renderMessages();
+
+  // Realtime subscription
+  if (_msgSubscription) _db.removeChannel(_msgSubscription);
+  _msgSubscription = _db.channel('prop-msgs-'+propertyId)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public',
+      table: 'rentleeys_messages',
+      filter: 'property_id=eq.'+propertyId
+    }, function(payload) {
+      var m = payload.new;
+      if (m.sender_id !== _user.id) {
+        _messages.push({
+          sender: 'them', text: m.body,
+          time: new Date(m.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+        });
+        renderMessages();
+      }
+    }).subscribe();
+}
+
+// ── BOOKING CHAT (real DB messages) ──────────────────────
+var _currentBookingId  = null;
+var _currentPropertyId = null;
+var _currentHostId     = null;
+var _msgSubscription   = null;
+
+async function openBookingChat(bookingId) {
+  _aiMode = false;
+  _currentBookingId = bookingId;
+  document.getElementById('quick-replies').style.display = 'none';
+
+  // Load booking + property details
+  var { data: booking } = await _db.from('rentleeys_bookings')
+    .select('*, rentleeys_properties(title,images)')
+    .eq('id', bookingId).single();
+
+  if (booking) {
+    var prop = booking.rentleeys_properties || {};
+    var isGuest = booking.guest_id === _user.id;
+    var otherLabel = isGuest ? 'Host' : 'Guest';
+    document.getElementById('chat-avatar').textContent = '🏠';
+    document.getElementById('chat-name').textContent   = prop.title || 'Booking';
+    document.getElementById('chat-status').textContent = '● '+otherLabel+' · '+booking.check_in+' → '+booking.check_out;
+    document.getElementById('chat-status-badge').textContent = booking.status || 'pending';
+  }
+
+  // Load existing messages from rentleeys_messages
+  var { data: msgs } = await _db.from('rentleeys_messages')
+    .select('*')
+    .eq('booking_id', bookingId)
+    .order('created_at', { ascending: true });
+
+  _messages = [];
+
+  // Show initial booking message as system note
+  if (booking && booking.message) {
+    _messages.push({
+      sender: 'system',
+      text: '📋 Booking request: ' + booking.message,
+      time: new Date(booking.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+    });
+  }
+
+  // Add all real messages
+  if (msgs) {
+    msgs.forEach(function(m) {
+      _messages.push({
+        sender: m.sender_id === _user.id ? 'me' : 'them',
+        text: m.body,
+        time: new Date(m.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+      });
+    });
+  }
+
+  renderMessages();
+
+  // Subscribe to new messages in real-time
+  if (_msgSubscription) _db.removeChannel(_msgSubscription);
+  _msgSubscription = _db.channel('msgs-'+bookingId)
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'rentleeys_messages',
+      filter: 'booking_id=eq.'+bookingId
+    }, function(payload) {
+      var m = payload.new;
+      // Only add if not from us (we added it optimistically)
+      if (m.sender_id !== _user.id) {
+        _messages.push({
+          sender: 'them',
+          text: m.body,
+          time: new Date(m.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+        });
+        renderMessages();
+      }
+    })
+    .subscribe();
 }
 
 // ── SEND MESSAGE ──────────────────────────────────────────
@@ -301,7 +451,7 @@ async function sendMessage() {
   input.value = '';
   input.style.height = 'auto';
 
-  // Add user message
+  // Add optimistic message to UI
   _messages.push({
     sender: 'me',
     text: text,
@@ -309,6 +459,23 @@ async function sendMessage() {
   });
   renderMessages();
   document.getElementById('quick-replies').style.display = 'none';
+
+  // If real booking or property chat — save to DB
+  if (!_aiMode && (_currentBookingId || _currentPropertyId)) {
+    var msgData = {
+      sender_id:  _user.id,
+      body:       text,
+      created_at: new Date().toISOString()
+    };
+    if (_currentBookingId) {
+      msgData.booking_id = _currentBookingId;
+    } else {
+      msgData.property_id  = _currentPropertyId;
+      msgData.receiver_id  = _currentHostId;
+    }
+    await _db.from('rentleeys_messages').insert(msgData);
+    return;
+  }
 
   if (_aiMode) {
     // Show typing indicator

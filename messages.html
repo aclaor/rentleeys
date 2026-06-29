@@ -319,20 +319,8 @@ async function openPropertyChat(propertyId) {
     // Use existing booking chat
     openChat('booking-' + existing.id);
   } else {
-    // No booking yet — check for a pre-booking message thread
-    var { data: thread } = await _db.from('rentleeys_messages')
-      .select('booking_id')
-      .eq('property_id', propertyId)
-      .eq('sender_id', _user.id)
-      .limit(1)
-      .maybeSingle();
-
-    if (thread) {
-      openChat('booking-' + thread.booking_id);
-    } else {
-      // Open a new direct message UI
-      openDirectMessage(propertyId);
-    }
+    // No booking — go straight to direct message UI
+    openDirectMessage(propertyId);
   }
 }
 
@@ -419,6 +407,10 @@ var _currentOtherUserId  = null;
 var _msgSubscription     = null;
 
 async function openBookingChat(bookingId) {
+  if (!bookingId || bookingId === 'null') {
+    console.warn('openBookingChat called with null id');
+    return;
+  }
   _aiMode = false;
   _currentBookingId = bookingId;
   document.getElementById('quick-replies').style.display = 'none';

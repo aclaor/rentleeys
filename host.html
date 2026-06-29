@@ -299,48 +299,71 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
           <div class="form-title">Set your price</div>
           <div class="form-sub">You can always change this later. We recommend starting competitively.</div>
 
-          <div class="field-row">
-            <div class="field">
-              <label>Currency</label>
-              <select id="f-currency" onchange="updateCalc()">
-                <option value="PHP" selected>Philippine Peso (₱)</option>
-                <option value="USD">US Dollar ($)</option>
-                <option value="SGD">Singapore Dollar (S$)</option>
-                <option value="AUD">Australian Dollar (A$)</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Price per night *</label>
-              <input id="f-price" type="number" placeholder="1500" min="0" oninput="updateCalc()" />
+          <!-- CURRENCY -->
+          <div class="field" style="margin-bottom:20px;">
+            <label>Currency</label>
+            <select id="f-currency" onchange="updateCalc()">
+              <option value="PHP" selected>Philippine Peso (&#8369;)</option>
+              <option value="USD">US Dollar ($)</option>
+              <option value="SGD">Singapore Dollar (S$)</option>
+              <option value="AUD">Australian Dollar (A$)</option>
+            </select>
+          </div>
+
+          <!-- PRICING TYPE -->
+          <div style="margin-bottom:20px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">How do you want to price your property?</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <label id="lbl-nightly" style="display:flex;align-items:flex-start;gap:10px;padding:14px 16px;border:2px solid var(--primary);border-radius:12px;cursor:pointer;flex:1;min-width:140px;background:var(--primary-light);">
+                <input type="radio" name="pricing-type" value="nightly" id="pt-nightly" checked onchange="setPricingType(this.value)" style="margin-top:2px;accent-color:var(--primary);">
+                <div><div style="font-size:13px;font-weight:700;color:var(--text);">Per night</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">Short stays, flexible bookings</div></div>
+              </label>
+              <label id="lbl-monthly" style="display:flex;align-items:flex-start;gap:10px;padding:14px 16px;border:2px solid var(--border);border-radius:12px;cursor:pointer;flex:1;min-width:140px;">
+                <input type="radio" name="pricing-type" value="monthly" id="pt-monthly" onchange="setPricingType(this.value)" style="margin-top:2px;accent-color:var(--primary);">
+                <div><div style="font-size:13px;font-weight:700;color:var(--text);">Monthly only</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">OJT, students, long-term stays</div></div>
+              </label>
+              <label id="lbl-both" style="display:flex;align-items:flex-start;gap:10px;padding:14px 16px;border:2px solid var(--border);border-radius:12px;cursor:pointer;flex:1;min-width:140px;">
+                <input type="radio" name="pricing-type" value="both" id="pt-both" onchange="setPricingType(this.value)" style="margin-top:2px;accent-color:var(--primary);">
+                <div><div style="font-size:13px;font-weight:700;color:var(--text);">Both</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">Nightly + long-term discounts</div></div>
+              </label>
             </div>
           </div>
 
-          <!-- LONG-TERM PRICING -->
-          <div style="background:var(--bg2);border-radius:12px;padding:20px;margin-bottom:16px;">
-            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">Long-term discounts <span style="font-size:12px;font-weight:400;color:var(--text2);">(optional — attract weekly & monthly guests)</span></div>
-            <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">OJT students and remote workers often stay 1–4 months. Offer a discount to fill your calendar.</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
-              <div class="field" style="margin:0;">
-                <label style="font-size:12px;">Weekly rate <span style="color:var(--text3);">(7 nights)</span></label>
-                <input id="f-price-week" type="number" placeholder="e.g. 8000" min="0" style="margin-top:4px;" />
-              </div>
-              <div class="field" style="margin:0;">
-                <label style="font-size:12px;">Monthly rate <span style="color:var(--text3);">(30 nights)</span></label>
-                <input id="f-price-month" type="number" placeholder="e.g. 25000" min="0" style="margin-top:4px;" />
-              </div>
-              <div class="field" style="margin:0;">
-                <label style="font-size:12px;">Minimum stay</label>
-                <select id="f-min-stay" style="margin-top:4px;">
-                  <option value="1">1 night (any)</option>
-                  <option value="3">3 nights</option>
-                  <option value="7">1 week</option>
-                  <option value="14">2 weeks</option>
-                  <option value="30">1 month</option>
-                  <option value="60">2 months</option>
-                  <option value="90">3 months</option>
-                </select>
-              </div>
+          <!-- NIGHTLY (shown for nightly + both) -->
+          <div id="section-nightly" style="margin-bottom:16px;">
+            <div class="field">
+              <label>Price per night</label>
+              <input id="f-price" type="number" placeholder="e.g. 1500" min="0" oninput="updateCalc()" />
+              <div style="font-size:11px;color:var(--text3);margin-top:4px;">For 1-6 night stays</div>
             </div>
+            <div class="field" style="margin-top:12px;">
+              <label>Weekly rate <span style="font-weight:400;color:var(--text2);font-size:12px;">(optional — 7+ nights)</span></label>
+              <input id="f-price-week" type="number" placeholder="e.g. 8000 for 7 nights" min="0" />
+              <div style="font-size:11px;color:var(--text3);margin-top:4px;">Leave blank to use nightly x 7</div>
+            </div>
+          </div>
+
+          <!-- MONTHLY (shown for monthly + both) -->
+          <div id="section-monthly" style="display:none;margin-bottom:16px;">
+            <div class="field">
+              <label>Monthly rate <span style="font-weight:400;color:var(--text2);font-size:12px;">(28-31 nights)</span></label>
+              <input id="f-price-month" type="number" placeholder="e.g. 25000 per month" min="0" oninput="updateCalc()" />
+              <div style="font-size:11px;color:var(--text3);margin-top:4px;">OJT and long-term guests see this rate</div>
+            </div>
+          </div>
+
+          <!-- MINIMUM STAY -->
+          <div class="field" style="margin-bottom:16px;">
+            <label>Minimum stay</label>
+            <select id="f-min-stay">
+              <option value="1">1 night (any length welcome)</option>
+              <option value="3">3 nights minimum</option>
+              <option value="7">1 week minimum</option>
+              <option value="14">2 weeks minimum</option>
+              <option value="30">1 month minimum</option>
+              <option value="60">2 months minimum</option>
+              <option value="90">3 months minimum</option>
+            </select>
           </div>
 
           <div style="background:var(--bg2);border-radius:12px;padding:20px;margin-bottom:16px;">
@@ -520,6 +543,26 @@ function toggleAmenity(el, amenity) {
   }
 }
 
+function setPricingType(val) {
+  var labels = {nightly:'lbl-nightly', monthly:'lbl-monthly', both:'lbl-both'};
+  Object.keys(labels).forEach(function(k) {
+    var lbl = document.getElementById(labels[k]);
+    if (!lbl) return;
+    if (k === val) {
+      lbl.style.borderColor = 'var(--primary)';
+      lbl.style.background  = 'var(--primary-light)';
+    } else {
+      lbl.style.borderColor = 'var(--border)';
+      lbl.style.background  = '';
+    }
+  });
+  var sn = document.getElementById('section-nightly');
+  var sm = document.getElementById('section-monthly');
+  if (sn) sn.style.display = (val === 'monthly') ? 'none' : 'block';
+  if (sm) sm.style.display = (val === 'nightly') ? 'none' : 'block';
+  updateCalc();
+}
+
 function updateCalc() {
   var price = parseFloat(document.getElementById('f-price').value) || 0;
   var curr = document.getElementById('f-currency').value;
@@ -576,6 +619,20 @@ async function submitListing() {
   btn.textContent = 'Submitting...';
   btn.disabled = true;
 
+  // Validate pricing
+  var _pt = document.querySelector('input[name="pricing-type"]:checked');
+  var _ptype = _pt ? _pt.value : 'nightly';
+  var _hasNightly = document.getElementById('f-price') && document.getElementById('f-price').value;
+  var _hasMonthly = document.getElementById('f-price-month') && document.getElementById('f-price-month').value;
+  if (_ptype === 'monthly' && !_hasMonthly) {
+    btn.textContent = 'Submit listing'; btn.disabled = false;
+    alert('Please enter a monthly rate.'); return;
+  }
+  if (_ptype !== 'monthly' && !_hasNightly) {
+    btn.textContent = 'Submit listing'; btn.disabled = false;
+    alert('Please enter a nightly price.'); return;
+  }
+
   try {
     var listingData = {
       host_id:        _user.id,
@@ -586,9 +643,17 @@ async function submitListing() {
       city:           document.getElementById('f-city').value.trim(),
       province:       document.getElementById('f-province').value.trim(),
       country:        document.getElementById('f-country').value,
-      price_per_night:  parseFloat(document.getElementById('f-price').value),
-      price_per_week:   document.getElementById('f-price-week').value  ? parseFloat(document.getElementById('f-price-week').value)  : null,
-      price_per_month:  document.getElementById('f-price-month').value ? parseFloat(document.getElementById('f-price-month').value) : null,
+      price_per_night:  (function(){
+        var ptype = document.querySelector('input[name="pricing-type"]:checked');
+        var pt = ptype ? ptype.value : 'nightly';
+        var nightly = document.getElementById('f-price') && document.getElementById('f-price').value;
+        var monthly  = document.getElementById('f-price-month') && document.getElementById('f-price-month').value;
+        if (nightly) return parseFloat(nightly);
+        if (monthly) return Math.round(parseFloat(monthly)/30);
+        return 0;
+      })(),
+      price_per_week:   document.getElementById('f-price-week') && document.getElementById('f-price-week').value ? parseFloat(document.getElementById('f-price-week').value) : null,
+      price_per_month:  document.getElementById('f-price-month') && document.getElementById('f-price-month').value ? parseFloat(document.getElementById('f-price-month').value) : null,
       minimum_stay:     parseInt(document.getElementById('f-min-stay').value) || 1,
       currency:         document.getElementById('f-currency').value,
       max_guests:     parseInt(document.getElementById('f-guests').value),

@@ -373,11 +373,7 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
             <div class="calc-row total"><span>Your estimated earnings</span><span id="calc-net" style="color:var(--green);">₱0</span></div>
           </div>
 
-          <div class="form-nav">
-            <button class="btn-prev" onclick="goStep(2)">← Back</button>
-            <button class="btn-next" onclick="goStep(4)">Next: Photos →</button>
-          </div>
-
+          
         </div>
 
         <!-- STEP 4: Photos -->
@@ -560,7 +556,7 @@ function setPricingType(val) {
 }
 
 function updateCalc() {
-  var _pt3   = document.querySelector('input[name="pricing-type"]:checked');
+  var _pt3    = document.querySelector('input[name="pricing-type"]:checked');
   var _ptype3 = _pt3 ? _pt3.value : 'nightly';
   var nightlyVal = document.getElementById('f-price') && document.getElementById('f-price').value ? parseFloat(document.getElementById('f-price').value) : 0;
   var monthlyVal = document.getElementById('f-price-month') && document.getElementById('f-price-month').value ? parseFloat(document.getElementById('f-price-month').value) : 0;
@@ -568,25 +564,21 @@ function updateCalc() {
   var sym  = curr === 'PHP' ? '₱' : curr === 'USD' ? '$' : curr === 'SGD' ? 'S$' : 'A$';
   var titleEl = document.getElementById('calc-title');
   var labelEl = document.getElementById('calc-label');
-  if (_ptype3 === 'monthly' && monthlyVal > 0) {
+  var grossEl = document.getElementById('calc-gross');
+  var netEl   = document.getElementById('calc-net');
+
+  if ((_ptype3 === 'monthly' || _ptype3 === 'both') && monthlyVal > 0) {
     if (titleEl) titleEl.textContent = 'Estimated earnings per month:';
-    if (labelEl) labelEl.textContent = '1 month × ' + sym + monthlyVal.toLocaleString();
-    document.getElementById('calc-price').textContent = '';
-    document.getElementById('calc-gross').textContent = sym + monthlyVal.toLocaleString();
-    document.getElementById('calc-net').textContent   = sym + monthlyVal.toLocaleString();
-  } else if (_ptype3 === 'both' && monthlyVal > 0) {
-    if (titleEl) titleEl.textContent = 'Estimated monthly earnings:';
-    if (labelEl) labelEl.textContent = '1 month × ' + sym + monthlyVal.toLocaleString();
-    document.getElementById('calc-price').textContent = '';
-    document.getElementById('calc-gross').textContent = sym + monthlyVal.toLocaleString();
-    document.getElementById('calc-net').textContent   = sym + monthlyVal.toLocaleString();
+    // Use innerHTML so we control the full label without destroying nested spans
+    if (labelEl) labelEl.innerHTML = '1 month &times; ' + sym + monthlyVal.toLocaleString() + '<span id="calc-price"></span>';
+    if (grossEl) grossEl.textContent = sym + monthlyVal.toLocaleString();
+    if (netEl)   netEl.textContent   = sym + monthlyVal.toLocaleString();
   } else {
     var gross = nightlyVal * 21;
     if (titleEl) titleEl.textContent = 'Estimated earnings (30 days at 70% occupancy):';
-    if (labelEl) labelEl.textContent = '21 nights × ' + sym + nightlyVal.toLocaleString();
-    document.getElementById('calc-price').textContent = '';
-    document.getElementById('calc-gross').textContent = sym + gross.toLocaleString();
-    document.getElementById('calc-net').textContent   = sym + gross.toLocaleString();
+    if (labelEl) labelEl.innerHTML = '21 nights &times; ' + sym + nightlyVal.toLocaleString() + '<span id="calc-price"></span>';
+    if (grossEl) grossEl.textContent = sym + gross.toLocaleString();
+    if (netEl)   netEl.textContent   = sym + gross.toLocaleString();
   }
 }
 

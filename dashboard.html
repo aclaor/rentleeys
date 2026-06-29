@@ -440,7 +440,9 @@ async function loadListings() {
       +'<div class="listing-card-body">'+status
       +'<div class="listing-card-title">'+p.title+'</div>'
       +'<div class="listing-card-meta">📍 '+p.city+' · '+p.bedrooms+' bed · '+p.max_guests+' guests</div>'
-      +'<div class="listing-card-price">'+sym+Number(p.price_per_night).toLocaleString()+'/night</div>'
+      +(p.price_per_month && p.minimum_stay >= 30
+        ? '<div class="listing-card-price">'+sym+Number(p.price_per_month).toLocaleString()+'/month</div>'
+        : '<div class="listing-card-price">'+sym+Number(p.price_per_night).toLocaleString()+'/night</div>')
       +'<div class="listing-card-actions">'
       +'<button class="btn-sm btn-edit" onclick="window.location.href=\'listing.html?id='+p.id+'\'">View</button>'
       +'<button class="btn-sm btn-delete" onclick="deleteListing(\''+p.id+'\')">Delete</button>'

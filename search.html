@@ -299,7 +299,11 @@ async function loadResults() {
       +'<div class="prop-location">📍 '+p.city+', '+p.country+'</div>'
       +'<div class="prop-title">'+p.title+'</div>'
       +'<div class="prop-meta"><span>👥 '+p.max_guests+' guests</span><span>🛏️ '+p.bedrooms+' bed</span><span>🚿 '+p.bathrooms+' bath</span></div>'
-      +'<div class="prop-footer"><div class="prop-price"><strong>'+sym+Number(p.price_per_night).toLocaleString()+'</strong> <span>/ night</span></div>'
+      +'<div class="prop-footer"><div class="prop-price">'
+      +(p.price_per_month && p.minimum_stay >= 30
+        ? '<strong>'+sym+Number(p.price_per_month).toLocaleString()+'</strong> <span>/ month</span>'
+        : '<strong>'+sym+Number(p.price_per_night).toLocaleString()+'</strong> <span>/ night</span>')
+      +'</div>'
       +'<div style="display:flex;align-items:center;gap:5px;">'
       +(p.price_per_month ? '<span style="font-size:10px;background:#fff0f4;color:#ff5a5f;border-radius:4px;padding:2px 6px;font-weight:700;">'+sym+Number(p.price_per_month).toLocaleString()+'/mo</span>' : '')
       +(p.minimum_stay && p.minimum_stay > 1 ? '<span style="font-size:10px;background:#f0f9ff;color:#0369a1;border-radius:4px;padding:2px 6px;font-weight:600;">'+p.minimum_stay+'+ nights</span>' : '')

@@ -701,6 +701,7 @@ async function submitListing() {
     await _db.from('rentleeys_hosts').upsert({
       user_id:   _user.id,
       full_name: _user.user_metadata?.full_name || _user.email,
+      email:     _user.email,
       joined_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
 

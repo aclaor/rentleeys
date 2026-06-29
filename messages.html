@@ -169,6 +169,13 @@ _db.auth.onAuthStateChange(function(event, session) {
 });
 
 // ── CONVERSATIONS ─────────────────────────────────────────
+function filterMsgs(type, el) {
+  document.querySelectorAll('.msg-tab').forEach(function(t) { t.classList.remove('active'); });
+  if (el) el.classList.add('active');
+  // For now just reload — can filter by unread in future
+  loadConversations();
+}
+
 async function loadConversations() {
   var convList = document.getElementById('conv-list');
 
@@ -493,7 +500,9 @@ async function sendMessage() {
       msgData.property_id = _currentPropertyId;
       msgData.receiver_id = _currentHostId;
     }
-    await _db.from('rentleeys_messages').insert(msgData);
+    var { data: savedMsg } = await _db.from('rentleeys_messages').insert(msgData).select().single();
+    // Send email notification to the other party
+    sendMessageNotification(msgData);
     return;
   }
 
@@ -610,11 +619,11 @@ function showSupportOptions() {
   var msgEl = document.createElement('div');
   msgEl.style.cssText = 'padding:0 0 12px;';
   msgEl.innerHTML = '<div class="support-options">'
-    +'<div class="support-opt" onclick="window.location.href='mailto:support@rentleeys.com'">'
+    +'<div class="support-opt" onclick="window.location.href=&quot;mailto:support@rentleeys.com&quot;">'
     +'<div class="support-opt-icon">📧</div>'
     +'<div><div class="support-opt-title">Email us</div><div class="support-opt-wait">Response: within 24 hours</div></div>'
     +'</div>'
-    +'<div class="support-opt" onclick="window.location.href='mailto:safety@rentleeys.com'">'
+    +'<div class="support-opt" onclick="window.location.href=&quot;mailto:safety@rentleeys.com&quot;">'
     +'<div class="support-opt-icon">🆘</div>'
     +'<div><div class="support-opt-title">Safety issue</div><div class="support-opt-wait">Priority response</div></div>'
     +'</div>'

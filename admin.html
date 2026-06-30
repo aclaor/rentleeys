@@ -136,6 +136,20 @@ tr:hover td{background:var(--bg3);}
 .login-input:focus{border-color:var(--border2);}
 .login-btn{width:100%;background:var(--primary);color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);}
 .login-err{color:var(--red);font-size:13px;margin-bottom:8px;min-height:18px;}
+
+.verif-card-admin{background:#fff;border:1.5px solid var(--border);border-radius:16px;overflow:hidden;}
+.verif-card-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.verif-name{font-size:14px;font-weight:700;color:var(--text);}
+.verif-email{font-size:11px;color:var(--text2);margin-top:2px;}
+.verif-badge-sm{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.verif-badge-sm.pending{background:#fef3c7;color:#92400e;}
+.verif-badge-sm.verified{background:#f0fdf4;color:#16a34a;}
+.verif-id-img{width:100%;height:170px;object-fit:cover;display:block;background:var(--bg2);cursor:pointer;}
+.verif-actions{display:flex;gap:8px;padding:12px 16px;}
+.btn-approve{flex:1;padding:10px;background:#16a34a;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-approve:hover{background:#15803d;}
+.btn-reject{flex:1;padding:10px;background:#fff;color:#dc2626;border:1.5px solid #fecaca;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-reject:hover{background:#fef2f2;}
 </style>
 </head>
 <body>
@@ -198,6 +212,9 @@ tr:hover td{background:var(--bg3);}
       </div>
       <div class="nav-item" onclick="showPage('hosts')" id="nav-hosts">
         <span class="nav-icon">🏡</span> Hosts
+      </div>
+      <div class="nav-item" onclick="showPage('verifications')" id="nav-verifications">
+        <span class="nav-icon">🪩</span> ID Verifications
       </div>
 
       <div class="nav-label">Platform</div>
@@ -695,6 +712,7 @@ function showPage(page) {
   if (page === 'bookings') loadBookings();
   if (page === 'users') loadUsers();
   if (page === 'hosts') loadHosts();
+  if (page === 'verifications') loadVerifications();
 }
 
 function closePropModal() {
@@ -709,5 +727,19 @@ function showToast(msg) {
   setTimeout(function(){t.classList.remove('show');}, 3000);
 }
 </script>
+
+  <div class="page" id="page-verifications" style="display:none;">
+    <div class="topbar">
+      <div><div class="page-title">🪩 ID Verifications</div><div class="page-sub">Review and approve host ID submissions</div></div>
+    </div>
+    <div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;">
+      <div class="stat-card"><div class="stat-num" id="verif-pending-count">—</div><div class="stat-label">Pending</div></div>
+      <div class="stat-card"><div class="stat-num" id="verif-approved-count">—</div><div class="stat-label">Approved</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;" id="verif-grid">
+      <div style="color:var(--text2);padding:48px;grid-column:1/-1;text-align:center;">Select ID Verifications from the menu to load</div>
+    </div>
+  </div>
+
 </body>
 </html>

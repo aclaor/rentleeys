@@ -174,10 +174,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
         <div style="flex:1;"><div style="font-weight:600;font-size:14px;">Bank transfer</div><div style="font-size:12px;color:#9ca3af;">BDO, BPI, Metrobank</div></div>
         <div style="width:18px;height:18px;border-radius:50%;border:2px solid #e5e7eb;" id="pm-bank-dot"></div>
       </div>
+      <div onclick="pickPayMethod('card')" id="pm-card" style="border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:22px;">💳</span>
+        <div style="flex:1;"><div style="font-weight:600;font-size:14px;">Credit / Debit card</div><div style="font-size:12px;color:#9ca3af;">Visa, Mastercard — powered by PayMongo</div></div>
+        <div style="width:18px;height:18px;border-radius:50%;border:2px solid #e5e7eb;" id="pm-card-dot"></div>
+      </div>
     </div>
     <div id="gcash-info" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;margin-bottom:12px;font-size:13px;color:#166534;">📱 Send to GCash: <strong>+63 968 891 7516</strong><br>Account: <strong>Rentleeys</strong><br>Reference: shown after booking</div>
     <div id="bank-info" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:12px;font-size:13px;color:#1e40af;">🏦 BPI Account: <strong>4249127979</strong><br>Account name: <strong>Rentleeys</strong><br>Reference: shown after booking</div>
-    <div style="display:flex;gap:10px;"><button onclick="goBS(1)" style="flex:1;background:none;border:1.5px solid #e5e7eb;border-radius:12px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;">Back</button><button onclick="goBS(3)" style="flex:2;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);">Next</button></div>
+    <div id="card-info" style="display:none;background:#fefce8;border:1px solid #fde68a;border-radius:10px;padding:14px;margin-bottom:12px;font-size:13px;color:#92400e;">💳 You will be redirected to PayMongo's secure checkout to complete your payment by card.</div>
+    <div style="display:flex;gap:10px;"><button onclick="goBS(1)" style="flex:1;background:none;border:1.5px solid #e5e7eb;border-radius:12px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;">Back</button><button onclick="if(_payMethod==='card'){initiateCardPayment();}else{goBS(3);}" style="flex:2;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);">Next</button></div>
   </div>
 
   <!-- STEP 3: Message -->
@@ -216,6 +222,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
       <button onclick="confirmBooking(null)" style="width:100%;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);margin-bottom:10px;">Confirm booking request 🏠</button>
     </div>
     <button onclick="goBS(3)" style="width:100%;background:none;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px;font-size:14px;cursor:pointer;margin-bottom:10px;">Back</button>
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;gap:8px;">
+        <input id="promo-input" placeholder="Promo code (optional)" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;outline:none;"/>
+        <button onclick="applyPromo()" style="padding:10px 16px;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text);">Apply</button>
+      </div>
+      <div id="promo-msg" style="font-size:12px;margin-top:6px;display:none;"></div>
+    </div>
     <p style="font-size:12px;color:#9ca3af;text-align:center;">By confirming you agree to our <a href="/pages.html?page=cancellation" style="color:var(--primary);">Cancellation Policy</a> and <a href="/terms.html" style="color:var(--primary);">Terms</a>.</p>
   </div>
 
@@ -373,6 +386,21 @@ async function loadListing() {
         </div>` : ''}
 
         <div class="divider"></div>
+        <div class="section-title">Cancellation Policy</div>
+        <div style="background:var(--bg2);border-radius:12px;padding:16px;margin-bottom:8px;">
+          ${(function(){
+            var p = data.cancellation_policy || 'flexible';
+            var policies = {
+              flexible: { icon:'🟢', title:'Flexible', desc:'Full refund if cancelled at least 24 hours before check-in.' },
+              moderate: { icon:'🟡', title:'Moderate', desc:'Full refund if cancelled at least 5 days before check-in.' },
+              strict:   { icon:'🟠', title:'Strict', desc:'50% refund if cancelled at least 7 days before check-in. No refund after that.' },
+              'non-refundable': { icon:'🔴', title:'Non-refundable', desc:'No refund on cancellation.' }
+            };
+            var pol = policies[p] || policies.flexible;
+            return '<div style="display:flex;gap:10px;align-items:center;"><span style="font-size:20px;">'+pol.icon+'</span><div><div style="font-size:14px;font-weight:700;color:var(--text);">'+pol.title+'</div><div style="font-size:13px;color:var(--text2);margin-top:2px;">'+pol.desc+'</div></div></div>';
+          })()}
+        </div>
+        <div class="divider"></div>
         <div class="section-title">Guest reviews</div>
         <div class="reviews-list">${reviewsHTML}</div>
         ${canReview ? `
@@ -420,6 +448,7 @@ async function loadListing() {
         <div class="price-breakdown">
           <div class="price-row"><span id="price-label">${sym}${Number(data.price_per_night).toLocaleString()} × ${nights} nights</span><span id="price-subtotal">${sym}${Number(total).toLocaleString()}</span></div>
           <div class="price-row"><span>Service fee (8%)</span><span id="price-fee">${sym}${Number(total*0.08).toFixed(2)}</span></div>
+          <div class="price-row" id="price-discount-row" style="display:none;color:#16a34a;"><span>Promo discount</span><span id="price-discount"></span></div>
           <div class="price-row total"><span>Total</span><span id="price-total">${sym}${Number(total*1.08).toFixed(2)}</span></div>
         </div>
         <div class="no-charge">Secure payment via PayPal</div>
@@ -460,7 +489,12 @@ function updatePrice() {
   var months   = isMonthlyProp ? Math.max(1, Math.round(nights/30)) : 0;
   var subtotal = isMonthlyProp ? _property.price_per_month * months : _property.price_per_night * nights;
   var fee      = subtotal * 0.08;
-  var total    = subtotal + fee;
+  var discount = 0;
+  if (typeof _promoDiscount !== 'undefined' && _promoDiscount > 0) {
+    discount = typeof _promoType !== 'undefined' && _promoType === 'percent'
+      ? subtotal * (_promoDiscount/100) : _promoDiscount;
+  }
+  var total    = subtotal + fee - discount;
   document.getElementById('price-label').textContent = isMonthlyProp
     ? sym+Number(_property.price_per_month).toLocaleString()+' × '+months+' month'+(months>1?'s':'')
     : sym+Number(_property.price_per_night).toLocaleString()+' × '+nights+' night'+(nights>1?'s':'');
@@ -584,10 +618,13 @@ function selectPayNow(val) {
 
 function pickPayMethod(method) {
   _payMethod = method;
-  ['gcash','bank'].forEach(function(m) {
-    document.getElementById('pm-'+m).style.border = m===method ? '2px solid var(--primary)' : '1.5px solid #e5e7eb';
-    document.getElementById('pm-'+m+'-dot').style.background = m===method ? 'var(--primary)' : '';
-    document.getElementById(m+'-info').style.display = m===method ? 'block' : 'none';
+  ['gcash','bank','card'].forEach(function(m) {
+    var el   = document.getElementById('pm-'+m);
+    var dot  = document.getElementById('pm-'+m+'-dot');
+    var info = document.getElementById(m+'-info');
+    if (el)   el.style.border       = m===method ? '2px solid var(--primary)' : '1.5px solid #e5e7eb';
+    if (dot)  dot.style.background  = m===method ? 'var(--primary)' : '';
+    if (info) info.style.display    = m===method ? 'block' : 'none';
   });
 }
 
@@ -671,6 +708,43 @@ function populateReview() {
 
 function trackEvent(name, params) {
   if(typeof gtag !== 'undefined') gtag('event', name, params || {});
+}
+
+// ── PAYMONGO ─────────────────────────────────────────────
+var PAYMONGO_PUBLIC = 'pk_test_yKutRVdHcC1VTuXWiUDRKBSf'; // Replace with your live key
+
+async function initiateCardPayment() {
+  var total = parseFloat(document.getElementById('price-total').textContent.replace(/[^0-9.]/g,''));
+  if (!total || total <= 0) { showToast('Invalid amount', 'error'); return; }
+  var cin  = document.getElementById('checkin').value;
+  var cout = document.getElementById('checkout').value;
+  var propId = new URLSearchParams(window.location.search).get('id');
+  var desc = (_property ? _property.title : 'Rentleeys booking') + ' | ' + cin + ' to ' + cout;
+
+  try {
+    showToast('Redirecting to secure payment...', 'success');
+    // Create PayMongo payment link via Cloudflare Worker
+    var res = await fetch('https://rentleeys-email.alexclaor.workers.dev/create-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount:      Math.round(total * 100), // in centavos
+        currency:    'PHP',
+        description: desc,
+        property_id: propId,
+        redirect_url: window.location.href + '&payment=success'
+      })
+    });
+    var data = await res.json();
+    if (data && data.checkout_url) {
+      window.location.href = data.checkout_url;
+    } else {
+      throw new Error(data.error || 'Payment creation failed');
+    }
+  } catch(e) {
+    showToast('Payment error: ' + e.message, 'error');
+    console.error('PayMongo error:', e);
+  }
 }
 
 async function confirmBooking(paymentId) {
@@ -770,6 +844,39 @@ async function submitReview() {
   document.getElementById('review-form').innerHTML =
     '<div style="text-align:center;padding:20px;color:var(--primary);font-weight:700;">✅ Thank you for your review!</div>';
   showToast('Review submitted!', 'success');
+}
+
+// ── PROMO CODE ───────────────────────────────────────────
+var _promoDiscount = 0;
+var _promoCode = '';
+
+async function applyPromo() {
+  var code = (document.getElementById('promo-input').value||'').toUpperCase().trim();
+  var msgEl = document.getElementById('promo-msg');
+  if (!code) return;
+  var propId = new URLSearchParams(window.location.search).get('id');
+  var today = new Date().toISOString().split('T')[0];
+  var { data: promo } = await _db.from('rentleeys_promo_codes')
+    .select('*')
+    .eq('code', code)
+    .or('valid_from.is.null,valid_from.lte.'+today)
+    .or('valid_until.is.null,valid_until.gte.'+today)
+    .maybeSingle();
+  if (!promo) {
+    if(msgEl){ msgEl.style.display='block'; msgEl.style.color='#dc2626'; msgEl.textContent='Invalid or expired code.'; }
+    _promoDiscount=0; _promoCode=''; updatePrice(); return;
+  }
+  if (promo.max_uses > 0 && promo.times_used >= promo.max_uses) {
+    if(msgEl){ msgEl.style.display='block'; msgEl.style.color='#dc2626'; msgEl.textContent='This code has reached its usage limit.'; }
+    _promoDiscount=0; _promoCode=''; updatePrice(); return;
+  }
+  _promoCode = promo.code;
+  _promoDiscount = promo.discount_type==='percent' ? promo.discount_value : -promo.discount_value;
+  _promoType = promo.discount_type;
+  _promoValue = promo.discount_value;
+  if(msgEl){ msgEl.style.display='block'; msgEl.style.color='#16a34a';
+    msgEl.textContent='✅ '+promo.discount_value+(promo.discount_type==='percent'?'%':'₱')+' discount applied!'; }
+  updatePrice();
 }
 
 function messageHost() {

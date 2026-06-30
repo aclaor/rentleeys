@@ -116,22 +116,26 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
 .auth-gate-icon{font-size:48px;margin-bottom:16px;}
 .auth-gate-title{font-family:var(--sans);font-size:20px;font-weight:800;margin-bottom:8px;}
 .auth-gate-sub{font-size:14px;color:var(--text2);margin-bottom:24px;}
-</style>
+#lang-menu.open{display:block!important;}</style>
 </head>
 <body>
 
 <nav class="nav">
   <a href="/" class="nav-logo">rent<span>leeys</span></a>
   <div style="display:flex;gap:10px;align-items:center;">
+    <div style="position:relative;">
+      <button id="lang-toggle" onclick="toggleLang()" style="background:none;border:1.5px solid var(--border);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);">🌐 <span id="lang-label">EN</span></button>
+      <div id="lang-menu" style="display:none;position:absolute;top:38px;right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:6px;min-width:100px;z-index:300;"></div>
+    </div>
     <span id="nav-user" style="font-size:14px;color:var(--text2);"></span>
-    <button class="nav-btn" onclick="window.location.href='dashboard.html'">My Dashboard</button>
+    <button class="nav-btn" onclick="window.location.href='dashboard.html'" data-i18n="my_dashboard">My Dashboard</button>
   </div>
 </nav>
 
 <!-- HERO -->
 <div class="host-hero">
-  <div class="earnings-badge">💰 0% host fee for your first 3 months</div>
-  <h1>List your space.<br>Earn extra income.</h1>
+  <div class="earnings-badge">💰 <span data-i18n="hero_fee">0% host fee for your first 3 months</span></div>
+  <h1><span data-i18n="hero_title">List your space.<br>Earn extra income.</span></h1>
   <p>Join hosts across the Philippines earning money from their spare rooms, condos and houses.</p>
   <div class="hero-stats">
     <div>
@@ -169,18 +173,18 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
     <!-- LISTING FORM -->
     <div id="listing-form" style="display:none;">
       <div class="form-steps">
-        <div class="form-step active" id="step-tab-1">1. Property</div>
-        <div class="form-step" id="step-tab-2">2. Details</div>
-        <div class="form-step" id="step-tab-3">3. Pricing</div>
-        <div class="form-step" id="step-tab-4">4. Photos</div>
+        <div class="form-step active" id="step-tab-1"><span data-i18n="tab1">1. Property</span></div>
+        <div class="form-step" id="step-tab-2"><span data-i18n="tab2">2. Details</span></div>
+        <div class="form-step" id="step-tab-3"><span data-i18n="tab3">3. Pricing</span></div>
+        <div class="form-step" id="step-tab-4"><span data-i18n="tab4">4. Photos</span></div>
       </div>
 
       <div class="form-body">
 
         <!-- STEP 1: Property Type -->
         <div class="form-section active" id="step-1">
-          <div class="form-title">What kind of place do you have?</div>
-          <div class="form-sub">Choose the type that best describes your space.</div>
+          <div class="form-title"><span data-i18n="ft1">What kind of place do you have?</span></div>
+          <div class="form-sub"><span data-i18n="fs1">Choose the type that best describes your space.</span></div>
           <div class="type-grid">
             <div class="type-chip selected" onclick="selectType(this,'apartment')">
               <div class="type-chip-icon">🏢</div>
@@ -209,23 +213,23 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
           </div>
 
           <div class="field">
-            <label>Property title *</label>
+            <label data-i18n="lbl_title">Property title *</label>
             <input id="f-title" placeholder="e.g. Cozy Studio in BGC with Pool Access" />
           </div>
           <div class="field">
-            <label>Description *</label>
+            <label data-i18n="lbl_desc">Description *</label>
             <textarea id="f-desc" placeholder="Describe your space — highlight what makes it special, nearby attractions, house rules..."></textarea>
           </div>
           <div class="form-nav">
             <div></div>
-            <button class="btn-next" onclick="goStep(2)">Next: Details →</button>
+            <button class="btn-next" onclick="goStep(2)" data-i18n="next_details">Next: Details →</button>
           </div>
         </div>
 
         <!-- STEP 2: Details -->
         <div class="form-section" id="step-2">
-          <div class="form-title">Tell us more about your space</div>
-          <div class="form-sub">Help guests know what to expect.</div>
+          <div class="form-title"><span data-i18n="ft2">Tell us more about your space</span></div>
+          <div class="form-sub"><span data-i18n="fs2">Help guests know what to expect.</span></div>
 
           <div class="field-row3">
             <div class="field">
@@ -243,7 +247,7 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
           </div>
 
           <div class="field">
-            <label>Address</label>
+            <label data-i18n="lbl_address">Address</label>
             <input id="f-address" placeholder="Street address" />
           </div>
           <div class="field-row">
@@ -261,7 +265,7 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
           </div>
           <div class="field-row">
             <div class="field">
-              <label>City *</label>
+              <label data-i18n="lbl_city">City *</label>
               <input id="f-city" placeholder="e.g. Makati City" />
             </div>
             <div class="field">
@@ -302,19 +306,19 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
           </div>
 
           <div class="form-nav">
-            <button class="btn-prev" onclick="goStep(1)">← Back</button>
-            <button class="btn-next" onclick="goStep(3)">Next: Pricing →</button>
+            <button class="btn-prev" onclick="goStep(1)" data-i18n="back_btn">← Back</button>
+            <button class="btn-next" onclick="goStep(3)" data-i18n="next_pricing">Next: Pricing →</button>
           </div>
         </div>
 
         <!-- STEP 3: Pricing -->
         <div class="form-section" id="step-3">
-          <div class="form-title">Set your price</div>
-          <div class="form-sub">You can always change this later. We recommend starting competitively.</div>
+          <div class="form-title"><span data-i18n="ft3">Set your price</span></div>
+          <div class="form-sub"><span data-i18n="fs3">You can always change this later. We recommend starting competitively.</span></div>
 
           <!-- CURRENCY -->
           <div class="field" style="margin-bottom:20px;">
-            <label>Currency</label>
+            <label data-i18n="lbl_currency">Currency</label>
             <select id="f-currency" onchange="updateCalc()">
               <option value="PHP" selected>Philippine Peso (&#8369;)</option>
               <option value="USD">US Dollar ($)</option>
@@ -367,7 +371,7 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
 
           <!-- MINIMUM STAY -->
           <div class="field" style="margin-bottom:16px;">
-            <label>Minimum stay</label>
+            <label data-i18n="lbl_minstay">Minimum stay</label>
             <select id="f-min-stay">
               <option value="1">1 night (any length welcome)</option>
               <option value="3">3 nights minimum</option>
@@ -381,7 +385,7 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
 
           <!-- CANCELLATION POLICY -->
           <div class="field" style="margin-bottom:16px;">
-            <label>Cancellation policy</label>
+            <label data-i18n="lbl_cancel">Cancellation policy</label>
             <select id="f-cancellation">
               <option value="flexible">Flexible — Full refund up to 24h before check-in</option>
               <option value="moderate">Moderate — Full refund up to 5 days before check-in</option>
@@ -406,8 +410,8 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
 
         <!-- STEP 4: Photos -->
         <div class="form-section" id="step-4">
-          <div class="form-title">Add photos of your space</div>
-          <div class="form-sub">Great photos get 3x more bookings. Add at least 3 photos.</div>
+          <div class="form-title"><span data-i18n="ft4">Add photos of your space</span></div>
+          <div class="form-sub"><span data-i18n="fs4">Great photos get 3x more bookings. Add at least 3 photos.</span></div>
 
           <div class="img-preview" id="img-preview"></div>
 
@@ -423,7 +427,7 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
           </div>
 
           <div class="form-nav">
-            <button class="btn-prev" onclick="goStep(3)">← Back</button>
+            <button class="btn-prev" onclick="goStep(3)" data-i18n="back_btn">← Back</button>
             <button class="btn-submit" onclick="submitListing()">🚀 Submit listing for review</button>
           </div>
         </div>
@@ -747,6 +751,118 @@ async function submitListing() {
     btn.disabled = false;
   }
 }
+</script>
+
+<script>
+// ── TRANSLATION ENGINE ────────────────────────────────────
+const I18N = {
+  en: {
+    my_dashboard: "My Dashboard",
+    hero_fee: "0% host fee for your first 3 months",
+    hero_title: "List your space.<br>Earn extra income.",
+    tab1: "1. Property", tab2: "2. Details", tab3: "3. Pricing", tab4: "4. Photos",
+    ft1: "What kind of place do you have?", fs1: "Choose the type that best describes your space.",
+    ft2: "Tell us more about your space", fs2: "Help guests know what to expect.",
+    ft3: "Set your price", fs3: "You can always change this later. We recommend starting competitively.",
+    ft4: "Add photos of your space", fs4: "Great photos get 3x more bookings. Add at least 3 photos.",
+    lbl_title: "Property title *", lbl_desc: "Description *", lbl_address: "Address",
+    lbl_city: "City *", lbl_currency: "Currency", lbl_minstay: "Minimum stay", lbl_cancel: "Cancellation policy",
+    back_btn: "← Back",
+    submit_listing: "Submit listing", submitting: "Submitting..."
+  },
+  ko: {
+    my_dashboard: "대시보드",
+    hero_fee: "처음 3개월 호스트 수수료 0%",
+    hero_title: "공간을 등록하고<br>추가 수입을 올리세요.",
+    tab1: "1. 부동산", tab2: "2. 세부정보", tab3: "3. 가격", tab4: "4. 사진",
+    ft1: "어떤 종류의 공간인가요?", fs1: "공간을 가장 잘 설명하는 유형을 선택하세요.",
+    ft2: "공간에 대해 더 알려주세요", fs2: "게스트가 무엇을 기대할지 알려주세요.",
+    ft3: "가격을 설정하세요", fs3: "나중에 언제든지 변경할 수 있습니다. 경쟁력 있는 가격으로 시작하세요.",
+    ft4: "공간 사진을 추가하세요", fs4: "좋은 사진은 예약을 3배 늘립니다. 최소 3장을 추가하세요.",
+    lbl_title: "숙소 제목 *", lbl_desc: "설명 *", lbl_address: "주소",
+    lbl_city: "도시 *", lbl_currency: "통화", lbl_minstay: "최소 체류 기간", lbl_cancel: "취소 정책",
+    back_btn: "← 이전",
+    submit_listing: "등록 완료", submitting: "제출 중..."
+  },
+  zh: {
+    my_dashboard: "我的仪表板",
+    hero_fee: "前3个月零佣金",
+    hero_title: "发布您的房源。<br>赚取额外收入。",
+    tab1: "1. 房产", tab2: "2. 详情", tab3: "3. 价格", tab4: "4. 照片",
+    ft1: "您的房子是什么类型？", fs1: "选择最符合您房子的类型。",
+    ft2: "详细介绍您的空间", fs2: "让客人了解会有什么。",
+    ft3: "设置价格", fs3: "您可以随时修改。建议从具有竞争力的价格开始。",
+    ft4: "添加照片", fs4: "优质照片可使预订量增加3倍。请至少添加3张照片。",
+    lbl_title: "房源标题 *", lbl_desc: "描述 *", lbl_address: "地址",
+    lbl_city: "城市 *", lbl_currency: "货币", lbl_minstay: "最短入住时间", lbl_cancel: "取消政策",
+    back_btn: "← 返回",
+    submit_listing: "提交房源", submitting: "提交中..."
+  },
+  ja: {
+    my_dashboard: "マイダッシュボード",
+    hero_fee: "最初の3ヶ月は手数料無料",
+    hero_title: "物件を登録。<br>収入を増やしましょう。",
+    tab1: "1. 物件", tab2: "2. 詳細", tab3: "3. 料金", tab4: "4. 写真",
+    ft1: "どんな物件ですか？", fs1: "あなたの物件に最も近いタイプを選んでください。",
+    ft2: "物件の詳細を教えてください", fs2: "ゲストに伝えたいことを記入してください。",
+    ft3: "料金を設定", fs3: "あとからでも変更できます。競争力のある価格から始めることをお勧めします。",
+    ft4: "物件の写真を追加", fs4: "良い写真は予約を3倍にします。最低3枚追加してください。",
+    lbl_title: "物件名 *", lbl_desc: "説明 *", lbl_address: "住所",
+    lbl_city: "都市 *", lbl_currency: "通貨", lbl_minstay: "最短滋在日数", lbl_cancel: "キャンセルポリシー",
+    back_btn: "← 戻る",
+    submit_listing: "登録する", submitting: "送信中..."
+  }
+};
+
+const LANG_LABELS = { en: 'EN', ko: '한국어', zh: '中文', ja: '日本語' };
+const LANG_ORDER  = ['en', 'ko', 'zh', 'ja'];
+
+function getLang() { return localStorage.getItem('rentleeys_lang') || 'en'; }
+
+function applyTranslations() {
+  var lang = getLang();
+  var dict = I18N[lang] || I18N.en;
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    if (dict[key] !== undefined) el.innerHTML = dict[key];
+  });
+  var label = document.getElementById('lang-label');
+  if (label) label.textContent = LANG_LABELS[lang] || 'EN';
+  document.documentElement.lang = lang;
+  renderLangMenu();
+}
+
+function toggleLang() {
+  var menu = document.getElementById('lang-menu');
+  if (menu) menu.classList.toggle('open');
+}
+
+function setLang(lang) {
+  localStorage.setItem('rentleeys_lang', lang);
+  applyTranslations();
+  var menu = document.getElementById('lang-menu');
+  if (menu) menu.classList.remove('open');
+}
+
+function renderLangMenu() {
+  var menu = document.getElementById('lang-menu');
+  if (!menu) return;
+  var current = getLang();
+  menu.innerHTML = LANG_ORDER.map(function(l) {
+    var active = l === current ? 'background:#fff0f4;color:#ff5a5f;font-weight:700;' : '';
+    return '<div onclick="setLang(\''+l+'\')" style="padding:10px 16px;cursor:pointer;font-size:13px;border-radius:8px;'+active+'">'+LANG_LABELS[l]+'</div>';
+  }).join('');
+}
+
+document.addEventListener('click', function(e) {
+  var menu = document.getElementById('lang-menu');
+  var btn  = document.getElementById('lang-toggle');
+  if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+    menu.classList.remove('open');
+  }
+});
+
+document.addEventListener('DOMContentLoaded', applyTranslations);
 </script>
 </body>
 </html>

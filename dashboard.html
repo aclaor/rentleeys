@@ -1265,12 +1265,13 @@ async function removeCoHost(id) {
 </body>
 </html>  <!-- CALENDAR -->
   <div class="page" id="page-calendar">
-    <div class="page-header">
+    <div class="page-header" style="text-align:center;">
       <div class="page-title">Availability Calendar 📅</div>
       <div class="page-sub">Block dates when your property is unavailable</div>
     </div>
-    <div class="cal-wrap">
-      <select class="listing-cal-select" id="cal-listing-select" onchange="loadCalendar()" style="max-width:560px;margin-left:auto;margin-right:auto;display:block;">
+    <div style="display:flex;justify-content:center;width:100%;">
+    <div class="cal-wrap" style="width:100%;max-width:560px;margin:0;">
+      <select class="listing-cal-select" id="cal-listing-select" onchange="loadCalendar()">
         <option value="">Select a listing...</option>
       </select>
       <div id="cal-container" class="cal-card" style="display:none;">
@@ -1287,6 +1288,7 @@ async function removeCoHost(id) {
         </div>
         <div class="cal-hint">Click a date to block or unblock it. Booked dates cannot be changed.</div>
       </div>
+    </div>
     </div>
   </div>
 

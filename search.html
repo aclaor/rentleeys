@@ -91,7 +91,7 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
 .empty-sub{font-size:14px;color:var(--text2);}
 .skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px;}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-</style>
+#lang-menu.open{display:block!important;}</style>
 </head>
 <body>
 
@@ -99,10 +99,14 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
   <a href="/" class="nav-logo">rent<span>leeys</span></a>
   <div class="search-bar">
     <span>🔍</span>
-    <input id="nav-search" placeholder="Search destination..." onkeydown="if(event.key==='Enter')applySearch()" />
+    <input id="nav-search" placeholder="Search destination..." data-i18n-ph="search_ph" onkeydown="if(event.key==='Enter')applySearch()" />
     <button class="search-bar-btn" onclick="applySearch()">→</button>
   </div>
-  <button class="nav-btn" onclick="window.location.href='host.html'">+ List property</button>
+  <div style="position:relative;margin-right:8px;">
+    <button id="lang-toggle" onclick="toggleLang()" style="background:none;border:1.5px solid var(--border);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);">🌐 <span id="lang-label">EN</span></button>
+    <div id="lang-menu" style="display:none;position:absolute;top:38px;right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:6px;min-width:100px;z-index:300;"></div>
+  </div>
+  <button class="nav-btn" onclick="window.location.href='host.html'" data-i18n="nav_list">+ List property</button>
 </nav>
 
 <div class="search-layout">
@@ -111,30 +115,30 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
   <div class="filters-panel">
 
     <div class="filter-section">
-      <div class="filter-title">Property type</div>
+      <div class="filter-title" data-i18n="f_type">Property type</div>
       <div class="filter-chips">
-        <div class="filter-chip active" onclick="toggleFilter(this,'type','all')" data-val="all">All</div>
-        <div class="filter-chip" onclick="toggleFilter(this,'type','apartment')" data-val="apartment">🏢 Apartment</div>
-        <div class="filter-chip" onclick="toggleFilter(this,'type','house')" data-val="house">🏡 House</div>
-        <div class="filter-chip" onclick="toggleFilter(this,'type','room')" data-val="room">🛏️ Room</div>
-        <div class="filter-chip" onclick="toggleFilter(this,'type','condo')" data-val="condo">🏙️ Condo</div>
-        <div class="filter-chip" onclick="toggleFilter(this,'type','villa')" data-val="villa">🏰 Villa</div>
+        <div class="filter-chip active" onclick="toggleFilter(this,'type','all')" data-val="all" data-i18n="f_all">All</div>
+        <div class="filter-chip" onclick="toggleFilter(this,'type','apartment')" data-val="apartment"><span data-i18n="f_apartment">🏢 Apartment</span></div>
+        <div class="filter-chip" onclick="toggleFilter(this,'type','house')" data-val="house"><span data-i18n="f_house">🏡 House</span></div>
+        <div class="filter-chip" onclick="toggleFilter(this,'type','room')" data-val="room"><span data-i18n="f_room">🛏️ Room</span></div>
+        <div class="filter-chip" onclick="toggleFilter(this,'type','condo')" data-val="condo"><span data-i18n="f_condo">🏙️ Condo</span></div>
+        <div class="filter-chip" onclick="toggleFilter(this,'type','villa')" data-val="villa"><span data-i18n="f_villa">🏰 Villa</span></div>
       </div>
     </div>
 
     <div class="filter-section">
-      <div class="filter-title">Price per night</div>
+      <div class="filter-title" data-i18n="f_price">Price per night</div>
       <div class="price-range">
-        <input class="price-input" id="price-min" type="number" placeholder="Min ₱" />
-        <input class="price-input" id="price-max" type="number" placeholder="Max ₱" />
+        <input class="price-input" id="price-min" type="number" placeholder="Min ₱" data-i18n-ph="f_min" />
+        <input class="price-input" id="price-max" type="number" placeholder="Max ₱" data-i18n-ph="f_max" />
       </div>
     </div>
 
     <div class="filter-section">
-      <div class="filter-title">Bedrooms</div>
+      <div class="filter-title" data-i18n="f_beds">Bedrooms</div>
       <div class="filter-chips">
-        <div class="filter-chip active" onclick="toggleFilter(this,'beds','any')" data-val="any">Any</div>
-        <div class="filter-chip" onclick="toggleFilter(this,'beds','0')" data-val="0">Studio</div>
+        <div class="filter-chip active" onclick="toggleFilter(this,'beds','any')" data-val="any" data-i18n="f_any">Any</div>
+        <div class="filter-chip" onclick="toggleFilter(this,'beds','0')" data-val="0"><span data-i18n="f_studio">Studio</span></div>
         <div class="filter-chip" onclick="toggleFilter(this,'beds','1')" data-val="1">1</div>
         <div class="filter-chip" onclick="toggleFilter(this,'beds','2')" data-val="2">2</div>
         <div class="filter-chip" onclick="toggleFilter(this,'beds','3')" data-val="3">3+</div>
@@ -142,37 +146,37 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
     </div>
 
     <div class="filter-section">
-      <div class="filter-title">Amenities</div>
+      <div class="filter-title" data-i18n="f_amenities">Amenities</div>
       <div class="filter-chips">
-        <div class="filter-chip" onclick="toggleAmenityFilter(this,'WiFi')" data-val="WiFi">📶 WiFi</div>
-        <div class="filter-chip" onclick="toggleAmenityFilter(this,'Air Conditioning')" data-val="ac">❄️ Aircon</div>
-        <div class="filter-chip" onclick="toggleAmenityFilter(this,'Pool')" data-val="pool">🏊 Pool</div>
-        <div class="filter-chip" onclick="toggleAmenityFilter(this,'Kitchen')" data-val="kitchen">🍳 Kitchen</div>
-        <div class="filter-chip" onclick="toggleAmenityFilter(this,'Parking')" data-val="parking">🚗 Parking</div>
-        <div class="filter-chip" onclick="toggleAmenityFilter(this,'Pet Friendly')" data-val="pets">🐾 Pets OK</div>
+        <div class="filter-chip" onclick="toggleAmenityFilter(this,'WiFi')" data-val="WiFi"><span data-i18n="f_wifi">📶 WiFi</span></div>
+        <div class="filter-chip" onclick="toggleAmenityFilter(this,'Air Conditioning')" data-val="ac"><span data-i18n="f_aircon">❄️ Aircon</span></div>
+        <div class="filter-chip" onclick="toggleAmenityFilter(this,'Pool')" data-val="pool"><span data-i18n="f_pool">🏊 Pool</span></div>
+        <div class="filter-chip" onclick="toggleAmenityFilter(this,'Kitchen')" data-val="kitchen"><span data-i18n="f_kitchen">🍳 Kitchen</span></div>
+        <div class="filter-chip" onclick="toggleAmenityFilter(this,'Parking')" data-val="parking"><span data-i18n="f_parking">🚗 Parking</span></div>
+        <div class="filter-chip" onclick="toggleAmenityFilter(this,'Pet Friendly')" data-val="pets"><span data-i18n="f_pets">🐾 Pets OK</span></div>
       </div>
     </div>
 
     <div class="filter-section">
-      <div class="filter-title">Stay length</div>
+      <div class="filter-title" data-i18n="f_stay">Stay length</div>
       <div class="filter-chips">
-        <div class="filter-chip active" onclick="toggleFilter(this,'stay','any')" data-val="any">Any</div>
-        <div class="filter-chip" onclick="toggleFilter(this,'stay','7')" data-val="7">📅 Weekly</div>
-        <div class="filter-chip" onclick="toggleFilter(this,'stay','30')" data-val="30">🗓️ Monthly</div>
-        <div class="filter-chip" onclick="toggleFilter(this,'stay','90')" data-val="90">📆 3+ months</div>
+        <div class="filter-chip active" onclick="toggleFilter(this,'stay','any')" data-val="any" data-i18n="f_any">Any</div>
+        <div class="filter-chip" onclick="toggleFilter(this,'stay','7')" data-val="7"><span data-i18n="f_weekly">📅 Weekly</span></div>
+        <div class="filter-chip" onclick="toggleFilter(this,'stay','30')" data-val="30"><span data-i18n="f_monthly_chip">🗓️ Monthly</span></div>
+        <div class="filter-chip" onclick="toggleFilter(this,'stay','90')" data-val="90"><span data-i18n="f_3months">📆 3+ months</span></div>
       </div>
     </div>
 
     <div class="filter-section">
-      <div class="filter-title">Monthly rate</div>
+      <div class="filter-title" data-i18n="f_monthly">Monthly rate</div>
       <div class="price-range">
-        <input class="price-input" id="monthly-max" type="number" placeholder="Max ₱/mo" />
+        <input class="price-input" id="monthly-max" type="number" placeholder="Max ₱/mo" data-i18n-ph="f_maxmo" />
       </div>
       <div style="font-size:11px;color:var(--text3);margin-top:6px;">Only shows listings with a monthly rate set</div>
     </div>
 
-    <button class="filter-btn" onclick="applyFilters()">Apply Filters</button>
-    <button class="clear-btn" onclick="clearFilters()">Clear all filters</button>
+    <button class="filter-btn" onclick="applyFilters()" data-i18n="f_apply">Apply Filters</button>
+    <button class="clear-btn" onclick="clearFilters()" data-i18n="f_clear">Clear all filters</button>
   </div>
 
   <!-- RESULTS -->
@@ -424,6 +428,122 @@ function addMarkersToMap(data) {
 var _lastData = null;
 
 window.addEventListener('DOMContentLoaded', loadResults);
+</script>
+
+<script>
+// ── TRANSLATION ENGINE ────────────────────────────────────
+const I18N = {
+  en: {
+    nav_list: "+ List property", search_ph: "Search destination...",
+    f_type: "Property type", f_price: "Price per night", f_beds: "Bedrooms",
+    f_amenities: "Amenities", f_stay: "Stay length", f_monthly: "Monthly rate",
+    f_all: "All", f_any: "Any", f_studio: "Studio",
+    f_apartment: "🏢 Apartment", f_house: "🏡 House", f_room: "🛏️ Room",
+    f_condo: "🏙️ Condo", f_villa: "🏰 Villa",
+    f_weekly: "📅 Weekly", f_monthly_chip: "🗓️ Monthly", f_3months: "📆 3+ months",
+    f_wifi: "📶 WiFi", f_aircon: "❄️ Aircon", f_pool: "🏊 Pool",
+    f_kitchen: "🍳 Kitchen", f_parking: "🚗 Parking", f_pets: "🐾 Pets OK",
+    f_apply: "Apply Filters", f_clear: "Clear all filters",
+    f_min: "Min ₱", f_max: "Max ₱", f_maxmo: "Max ₱/mo",
+    v_list: "☰ List", v_map: "🗺️ Map"
+  },
+  ko: {
+    nav_list: "+ 숙소 등록", search_ph: "여행지 검색...",
+    f_type: "숙소 유형", f_price: "1박 가격", f_beds: "침실 수",
+    f_amenities: "편의시설", f_stay: "체류 기간", f_monthly: "월 요금",
+    f_all: "전체", f_any: "상관없음", f_studio: "원룸",
+    f_apartment: "🏢 아파트", f_house: "🏡 주택", f_room: "🛏️ 객실",
+    f_condo: "🏙️ 콘도", f_villa: "🏰 빌라",
+    f_weekly: "📅 주간", f_monthly_chip: "🗓️ 월간", f_3months: "📆 3개월 이상",
+    f_wifi: "📶 와이파이", f_aircon: "❄️ 에어컨", f_pool: "🏊 수영장",
+    f_kitchen: "🍳 주방", f_parking: "🚗 주차장", f_pets: "🐾 반려동물 가능",
+    f_apply: "필터 적용", f_clear: "필터 초기화",
+    f_min: "최소 ₱", f_max: "최대 ₱", f_maxmo: "월 최대 ₱",
+    v_list: "☰ 목록", v_map: "🗺️ 지도"
+  },
+  zh: {
+    nav_list: "+ 发布房源", search_ph: "搜索目的地...",
+    f_type: "房源类型", f_price: "每晚价格", f_beds: "卧室数",
+    f_amenities: "设施", f_stay: "入住时长", f_monthly: "月租",
+    f_all: "全部", f_any: "任意", f_studio: "工作室",
+    f_apartment: "🏢 公寓", f_house: "🏡 房屋", f_room: "🛏️ 单间",
+    f_condo: "🏙️ 公寓大楼", f_villa: "🏰 别墅",
+    f_weekly: "📅 每周", f_monthly_chip: "🗓️ 每月", f_3months: "📆 3个月以上",
+    f_wifi: "📶 WiFi", f_aircon: "❄️ 空调", f_pool: "🏊 游泳池",
+    f_kitchen: "🍳 厅房", f_parking: "🚗 停车位", f_pets: "🐾 允许宠物",
+    f_apply: "应用筛选", f_clear: "清除所有筛选",
+    f_min: "最低 ₱", f_max: "最高 ₱", f_maxmo: "月租最高 ₱",
+    v_list: "☰ 列表", v_map: "🗺️ 地图"
+  },
+  ja: {
+    nav_list: "+ 物件を登録", search_ph: "行き先を検索...",
+    f_type: "物件タイプ", f_price: "1泊の料金", f_beds: "寝室数",
+    f_amenities: "設備", f_stay: "滏在期間", f_monthly: "月額",
+    f_all: "すべて", f_any: "すべて", f_studio: "スタジオ",
+    f_apartment: "🏢 アパート", f_house: "🏡 一戸建て", f_room: "🛏️ 部屋",
+    f_condo: "🏙️ コンド", f_villa: "🏰 ヴィラ",
+    f_weekly: "📅 週単位", f_monthly_chip: "🗓️ 月単位", f_3months: "📆 3ヶ月以上",
+    f_wifi: "📶 WiFi", f_aircon: "❄️ エアコン", f_pool: "🏊 プール",
+    f_kitchen: "🍳 キッチン", f_parking: "🚗 駐車場", f_pets: "🐾 ペット可",
+    f_apply: "フィルターを適用", f_clear: "すべてクリア",
+    f_min: "最小 ₱", f_max: "最大 ₱", f_maxmo: "月額最大 ₱",
+    v_list: "☰ リスト", v_map: "🗺️ マップ"
+  }
+};
+
+const LANG_LABELS = { en: 'EN', ko: '한국어', zh: '中文', ja: '日本語' };
+const LANG_ORDER  = ['en', 'ko', 'zh', 'ja'];
+
+function getLang() { return localStorage.getItem('rentleeys_lang') || 'en'; }
+
+function applyTranslations() {
+  var lang = getLang();
+  var dict = I18N[lang] || I18N.en;
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    if (dict[key] !== undefined) el.innerHTML = dict[key];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n-ph');
+    if (dict[key] !== undefined) el.placeholder = dict[key];
+  });
+  var label = document.getElementById('lang-label');
+  if (label) label.textContent = LANG_LABELS[lang] || 'EN';
+  document.documentElement.lang = lang;
+  renderLangMenu();
+}
+
+function toggleLang() {
+  var menu = document.getElementById('lang-menu');
+  if (menu) menu.classList.toggle('open');
+}
+
+function setLang(lang) {
+  localStorage.setItem('rentleeys_lang', lang);
+  applyTranslations();
+  var menu = document.getElementById('lang-menu');
+  if (menu) menu.classList.remove('open');
+}
+
+function renderLangMenu() {
+  var menu = document.getElementById('lang-menu');
+  if (!menu) return;
+  var current = getLang();
+  menu.innerHTML = LANG_ORDER.map(function(l) {
+    var active = l === current ? 'background:var(--primary-light,#fff0f4);color:var(--primary,#ff5a5f);font-weight:700;' : '';
+    return '<div onclick="setLang(\''+l+'\')" style="padding:10px 16px;cursor:pointer;font-size:13px;border-radius:8px;'+active+'">'+LANG_LABELS[l]+'</div>';
+  }).join('');
+}
+
+document.addEventListener('click', function(e) {
+  var menu = document.getElementById('lang-menu');
+  var btn  = document.getElementById('lang-toggle');
+  if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+    menu.classList.remove('open');
+  }
+});
+
+document.addEventListener('DOMContentLoaded', applyTranslations);
 </script>
 </body>
 </html>

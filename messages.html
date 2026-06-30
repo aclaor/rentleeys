@@ -81,6 +81,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);height:100vh
 
 /* NEW MSG BTN */
 .new-msg-btn{margin:12px;padding:10px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+
+.translate-btn{background:none;border:none;font-size:11px;color:var(--text3);cursor:pointer;padding:2px 6px;border-radius:6px;transition:.15s;}
+.translate-btn:hover{background:var(--bg2);color:var(--text2);}
+.translate-btn.loading{opacity:.5;pointer-events:none;}
+.translated-text{border-left:2px solid var(--primary);padding-left:8px!important;}
 </style>
 </head>
 <body>
@@ -607,10 +612,15 @@ function renderMessages() {
     if (m.sender === 'typing') {
       return '<div class="msg-bubble ai" style="padding:14px;"><div style="display:flex;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#ccc;animation:bounce 1s infinite;"></span><span style="width:6px;height:6px;border-radius:50%;background:#ccc;animation:bounce 1s infinite .2s;"></span><span style="width:6px;height:6px;border-radius:50%;background:#ccc;animation:bounce 1s infinite .4s;"></span></div></div>';
     }
-    var senderLabel = m.sender === 'ai' ? '<div class="msg-sender">🛡️ Rentleeys Support</div>' : m.sender === 'them' ? '<div class="msg-sender">Host</div>' : '';
+    var senderLabel = m.sender === 'ai' ? '<div class="msg-sender">🛡️ Rentleeys Support</div>' : m.sender === 'them' ? '<div class="msg-sender">'+(_currentIsHost ? 'Guest' : 'Host')+'</div>' : '';
     var cls = m.sender === 'me' ? 'me' : m.sender === 'ai' ? 'ai' : 'them';
     var time = m.time ? '<div style="font-size:11px;color:'+(m.sender==='me'?'rgba(255,255,255,0.7)':'var(--text3)')+';margin-top:4px;">'+m.time+'</div>' : '';
-    return '<div style="display:flex;flex-direction:column;align-items:'+(m.sender==='me'?'flex-end':'flex-start')+';">'+senderLabel+'<div class="msg-bubble '+cls+'">'+m.text.replace(/\n/g,'<br>')+time+'</div></div>';
+    var msgId  = 'msg-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+    var transBtn = (m.sender === 'them' || m.sender === 'ai')
+      ? '<div style="margin-top:4px;"><button class="translate-btn" data-text="'+encodeURIComponent(m.text)+'" data-id="'+msgId+'" onclick="translateMsg(this)">🌐 Translate</button></div>'
+      : '';
+    var translatedDiv = '<div class="translated-text" id="tr-'+msgId+'" style="display:none;margin-top:6px;padding:8px 10px;background:rgba(0,0,0,0.06);border-radius:8px;font-size:12px;color:var(--text2);font-style:italic;"></div>';
+    return '<div style="display:flex;flex-direction:column;align-items:'+(m.sender==='me'?'flex-end':'flex-start')+';">'+senderLabel+'<div class="msg-bubble '+cls+'" id="'+msgId+'">'+m.text.replace(/\n/g,'<br>')+time+'</div>'+translatedDiv+transBtn+'</div>';
   }).join('');
   container.scrollTop = container.scrollHeight;
 }
@@ -711,6 +721,104 @@ async function sendMessageNotification(msgData) {
 var style = document.createElement('style');
 style.textContent = '@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}';
 document.head.appendChild(style);
+
+// ── AUTO TRANSLATE ────────────────────────────────────────
+var _translateCache = {};
+var _currentIsHost  = false; // set when opening a chat
+
+async function translateMsg(btn) {
+  var text    = decodeURIComponent(btn.getAttribute('data-text'));
+  var msgId   = btn.getAttribute('data-id');
+  var trDiv   = document.getElementById('tr-'+msgId);
+  if (!trDiv) return;
+
+  // Toggle off if already showing
+  if (trDiv.style.display === 'block') {
+    trDiv.style.display = 'none';
+    btn.textContent = '🌐 Translate';
+    return;
+  }
+
+  // Use cache
+  if (_translateCache[text]) {
+    trDiv.textContent = _translateCache[text];
+    trDiv.style.display = 'block';
+    btn.textContent = '🌐 Hide translation';
+    return;
+  }
+
+  btn.classList.add('loading');
+  btn.textContent = 'Translating...';
+
+  try {
+    // Detect language and translate to English (or Filipino if already English)
+    // Using MyMemory free translation API — no key needed, 5000 chars/day free
+    var targetLang = detectLang(text) === 'tl' ? 'en' : 'en';
+    var url = 'https://api.mymemory.translated.net/get?q='
+      + encodeURIComponent(text.slice(0,500))
+      + '&langpair=auto|' + targetLang;
+
+    var res  = await fetch(url);
+    var data = await res.json();
+    var translated = data.responseData && data.responseData.translatedText
+      ? data.responseData.translatedText
+      : null;
+
+    if (!translated || translated === text) {
+      // Try Filipino target
+      var url2 = 'https://api.mymemory.translated.net/get?q='
+        + encodeURIComponent(text.slice(0,500))
+        + '&langpair=en|tl';
+      var res2  = await fetch(url2);
+      var data2 = await res2.json();
+      translated = data2.responseData && data2.responseData.translatedText
+        ? data2.responseData.translatedText : null;
+    }
+
+    if (translated && translated !== text) {
+      _translateCache[text] = translated;
+      trDiv.textContent = translated;
+      trDiv.style.display = 'block';
+      btn.textContent = '🌐 Hide translation';
+    } else {
+      btn.textContent = '🌐 Translate';
+      showToast('Could not translate this message', 'error');
+    }
+  } catch(e) {
+    btn.textContent = '🌐 Translate';
+    showToast('Translation failed — check connection', 'error');
+  } finally {
+    btn.classList.remove('loading');
+  }
+}
+
+function detectLang(text) {
+  // Simple heuristic — Filipino common words
+  var filWords = /\b(ang|ng|mga|sa|na|at|ay|ko|mo|siya|namin|natin|nila|ito|iyon|dito|diyan|doon|kami|kayo|sila|ako|ikaw|hindi|oo|po|ho|paano|bakit|saan|kailan|sino|ano)\b/i;
+  return filWords.test(text) ? 'tl' : 'en';
+}
+
+// Auto-translate toggle in chat header
+function toggleAutoTranslate() {
+  var btn = document.getElementById('auto-translate-btn');
+  _autoTranslate = !_autoTranslate;
+  if (btn) {
+    btn.style.background = _autoTranslate ? 'var(--primary)' : '';
+    btn.style.color      = _autoTranslate ? '#fff' : '';
+    btn.title = _autoTranslate ? 'Auto-translate ON' : 'Auto-translate OFF';
+  }
+  if (_autoTranslate) translateAllVisible();
+}
+
+var _autoTranslate = false;
+
+function translateAllVisible() {
+  document.querySelectorAll('.translate-btn').forEach(function(btn) {
+    var trId = 'tr-' + btn.getAttribute('data-id');
+    var trDiv = document.getElementById(trId);
+    if (trDiv && trDiv.style.display !== 'block') translateMsg(btn);
+  });
+}
 </script>
 </body>
 </html>

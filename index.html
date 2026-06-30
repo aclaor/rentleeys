@@ -342,7 +342,7 @@ footer {
   .host-cta { text-align:center; justify-content:center; }
   .nav-links { display:none; }
 }
-</style>
+#lang-menu.open{display:block!important;}</style>
 </head>
 <body>
 
@@ -350,16 +350,20 @@ footer {
 <nav class="nav">
   <a href="/" class="nav-logo">rent<span>leeys</span></a>
   <div class="nav-links">
-    <a href="#how">How it works</a>
-    <a href="#destinations">Destinations</a>
-    <a href="host.html">Become a host</a>
-    <a href="resources.html">Resources</a>
-    <a href="#" onclick="goToMessages(event)">💬 Messages</a>
-    <a href="help.html">Help</a>
+    <a href="#how" data-i18n="nav_how">How it works</a>
+    <a href="#destinations" data-i18n="nav_destinations">Destinations</a>
+    <a href="host.html" data-i18n="nav_host">Become a host</a>
+    <a href="resources.html" data-i18n="nav_resources">Resources</a>
+    <a href="#" onclick="goToMessages(event)">💬 <span data-i18n="nav_messages">Messages</span></a>
+    <a href="help.html" data-i18n="nav_help">Help</a>
+  </div>
+  <div style="position:relative;margin-right:8px;">
+    <button id="lang-toggle" onclick="toggleLang()" style="background:none;border:1.5px solid var(--border);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);">🌐 <span id="lang-label">EN</span></button>
+    <div id="lang-menu" style="display:none;position:absolute;top:38px;right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:6px;min-width:100px;z-index:300;"></div>
   </div>
   <div id="nav-auth-btns">
-    <button class="nav-btn outline" onclick="openAuth('login')">Sign in</button>
-    <button class="nav-btn" onclick="openAuth('signup')">Sign up free</button>
+    <button class="nav-btn outline" onclick="openAuth('login')" data-i18n="nav_signin">Sign in</button>
+    <button class="nav-btn" onclick="openAuth('signup')" data-i18n="nav_signup">Sign up free</button>
   </div>
   <div id="nav-user-menu" style="display:none;align-items:center;gap:10px;">
     <a href="dashboard.html" style="font-size:14px;color:var(--text2);text-decoration:none;font-weight:500;">My Dashboard</a>
@@ -372,30 +376,30 @@ footer {
   <div class="hero-bg"></div>
   <div class="hero-content">
   <div class="hero-left">
-  <div class="hero-badge">🌏 <span>Now available in Philippines</span> and 50+ countries</div>
-  <h1>Find your perfect stay<br>at <em>half the price</em></h1>
-  <p>Verified homes, apartments, and rooms from local hosts. No hidden fees. No price gouging.</p>
+  <div class="hero-badge">🌏 <span data-i18n="hero_badge">Now available in Philippines and 50+ countries</span></div>
+  <h1 data-i18n="hero_title">Find your perfect stay<br>at <em>half the price</em></h1>
+  <p data-i18n="hero_desc">Verified homes, apartments, and rooms from local hosts. No hidden fees. No price gouging.</p>
 
   <!-- SEARCH -->
   <div class="search-box">
     <div class="search-field">
-      <span class="search-label">Where</span>
+      <span class="search-label" data-i18n="search_where">Where</span>
       <input class="search-input" id="search-location" placeholder="City, region or country" />
     </div>
     <div class="search-field">
-      <span class="search-label">Check in</span>
+      <span class="search-label" data-i18n="search_checkin">Check in</span>
       <input class="search-input" id="search-checkin" type="date" />
     </div>
     <div class="search-field">
-      <span class="search-label">Check out</span>
+      <span class="search-label" data-i18n="search_checkout">Check out</span>
       <input class="search-input" id="search-checkout" type="date" />
     </div>
     <div class="search-field">
-      <span class="search-label">Guests</span>
+      <span class="search-label" data-i18n="search_guests">Guests</span>
       <input class="search-input" id="search-guests" placeholder="1 guest" />
     </div>
     <div class="search-field">
-      <span class="search-label">Stay length</span>
+      <span class="search-label" data-i18n="search_stay">Stay length</span>
       <select class="search-input" id="search-stay" style="border:none;outline:none;background:none;font-size:13px;color:var(--text2);width:100%;cursor:pointer;">
         <option value="">Any</option>
         <option value="7">Weekly (7+ nights)</option>
@@ -426,17 +430,17 @@ footer {
 
   <!-- HOST CARD -->
   <div class="hero-card">
-    <div class="hero-card-eye">For Property Owners</div>
-    <h2>List Your Property Free</h2>
-    <p class="hero-card-sub">Join hosts earning ₱15,000+/month.</p>
+    <div class="hero-card-eye" data-i18n="hc_eyebrow">For Property Owners</div>
+    <h2 data-i18n="hc_title">List Your Property Free</h2>
+    <p class="hero-card-sub" data-i18n="hc_sub">Join hosts earning ₱15,000+/month.</p>
     <ul class="hero-check-list">
-      <li><div class="hero-check-icon">&#10003;</div>100% free to list</li>
-      <li><div class="hero-check-icon">&#10003;</div>0% host fee for 3 months</li>
-      <li><div class="hero-check-icon">&#10003;</div>No commission. No hidden fees.</li>
-      <li><div class="hero-check-icon">&#10003;</div>Live in 24 hours</li>
+      <li><div class="hero-check-icon">&#10003;</div><span data-i18n="hc_check1">100% free to list</span></li>
+      <li><div class="hero-check-icon">&#10003;</div><span data-i18n="hc_check2">0% host fee for 3 months</span></li>
+      <li><div class="hero-check-icon">&#10003;</div><span data-i18n="hc_check3">No commission. No hidden fees.</span></li>
+      <li><div class="hero-check-icon">&#10003;</div><span data-i18n="hc_check4">Live in 24 hours</li>
     </ul>
-    <button class="hero-card-btn" onclick="window.location.href='host.html'">Sign Up as a Host</button>
-    <p class="hero-card-note">It only takes 2 minutes!</p>
+    <button class="hero-card-btn" onclick="window.location.href='host.html'" data-i18n="hc_btn">Sign Up as a Host</button>
+    <p class="hero-card-note" data-i18n="hc_note">It only takes 2 minutes!</p>
   </div>
 
   </div><!-- end hero-content -->
@@ -945,6 +949,124 @@ async function forgotPassword() {
     errEl.style.display = 'block';
   }
 }
+</script>
+
+<script>
+// ── TRANSLATION ENGINE ────────────────────────────────────
+const I18N = {
+  en: {
+    nav_how: "How it works", nav_destinations: "Destinations", nav_host: "Become a host",
+    nav_resources: "Resources", nav_messages: "Messages", nav_help: "Help",
+    nav_signin: "Sign in", nav_signup: "Sign up free",
+    hero_badge: "Now available in Philippines and 50+ countries",
+    hero_title: 'Find your perfect stay<br>at <em>half the price</em>',
+    hero_desc: "Verified homes, apartments, and rooms from local hosts. No hidden fees. No price gouging.",
+    search_where: "Where", search_checkin: "Check in", search_checkout: "Check out",
+    search_guests: "Guests", search_stay: "Stay length",
+    hc_eyebrow: "For Property Owners", hc_title: "List Your Property Free",
+    hc_sub: "Join hosts earning ₱15,000+/month.",
+    hc_check1: "100% free to list", hc_check2: "0% host fee for 3 months",
+    hc_check3: "No commission. No hidden fees.", hc_check4: "Live in 24 hours",
+    hc_btn: "Sign Up as a Host", hc_note: "It only takes 2 minutes!"
+  },
+  ko: {
+    nav_how: "이용 방법", nav_destinations: "여행지", nav_host: "호스트 되기",
+    nav_resources: "리소스", nav_messages: "메시지", nav_help: "도움말",
+    nav_signin: "로그인", nav_signup: "무료 회원가입",
+    hero_badge: "필리핀과 50개국 이상에서 이용 가능",
+    hero_title: '절반 가격에<br><em>따뜻한 숨소</em>를 찾아보세요',
+    hero_desc: "현지 호스트의 검증된 주택, 아파트, 객실. 숨겨진 수수료는 없습니다.",
+    search_where: "여행지", search_checkin: "체크인", search_checkout: "체크아웃",
+    search_guests: "인원", search_stay: "체류 기간",
+    hc_eyebrow: "소유주님을 위한 안내", hc_title: "무료로 등록하세요",
+    hc_sub: "월 ₱15,000+ 수익을 올리는 호스트가 되세요.",
+    hc_check1: "100% 무료 등록", hc_check2: "처음 3개월 수수료 0%",
+    hc_check3: "수수료 없음. 숨겨진 비용 없음.", hc_check4: "24시간 내 개설",
+    hc_btn: "호스트로 가입하기", hc_note: "2분밖에 안 걸려요!"
+  },
+  zh: {
+    nav_how: "如何运作", nav_destinations: "目的地", nav_host: "成为房东",
+    nav_resources: "资源", nav_messages: "消息", nav_help: "帮助",
+    nav_signin: "登录", nav_signup: "免费注册",
+    hero_badge: "现已在菲律宾及50多个国家上线",
+    hero_title: '以一半价格<br>寻找您的<em>完美住处</em>',
+    hero_desc: "来自本地房东的已验证房屋、公寓和房间。无隐藏费用。无价格薄割。",
+    search_where: "地点", search_checkin: "入住", search_checkout: "退房",
+    search_guests: "入住人数", search_stay: "入住时长",
+    hc_eyebrow: "针对业主", hc_title: "免费发布您的房源",
+    hc_sub: "加入每月赚取₱15,000+的房东行列。",
+    hc_check1: "100%免费发布", hc_check2: "前3个月零佣金",
+    hc_check3: "无佣金。无隐藏费用。", hc_check4: "24小时内上线",
+    hc_btn: "注册成为房东", hc_note: "只需2分钟！"
+  },
+  ja: {
+    nav_how: "使い方", nav_destinations: "行き先", nav_host: "ホストになる",
+    nav_resources: "リソース", nav_messages: "メッセージ", nav_help: "ヘルプ",
+    nav_signin: "サインイン", nav_signup: "無料登録",
+    hero_badge: "フィリピンと世界50カ国以上で利用可能",
+    hero_title: '半額の価格で<br><em>最高の滑在</em>を見つけよう',
+    hero_desc: "地元ホストによる認証済みの住宅、アパート、部屋。隠れた料金なし。",
+    search_where: "場所", search_checkin: "チェックイン", search_checkout: "チェックアウト",
+    search_guests: "人数", search_stay: "滏在期間",
+    hc_eyebrow: "物件オーナーの方へ", hc_title: "物件を無料で登録",
+    hc_sub: "月額₱15,000以上を稼ぐホストに仔間入りしましょう。",
+    hc_check1: "100%無料で登録", hc_check2: "最初の3ヶ月は手数料無料",
+    hc_check3: "手数料なし。隠れた料金なし。", hc_check4: "24時間以内に公開",
+    hc_btn: "ホストとして登録", hc_note: "たった2分で完了！"
+  }
+};
+
+const LANG_LABELS = { en: 'EN', ko: '한국어', zh: '中文', ja: '日本語' };
+const LANG_ORDER  = ['en', 'ko', 'zh', 'ja'];
+
+function getLang() {
+  return localStorage.getItem('rentleeys_lang') || 'en';
+}
+
+function applyTranslations() {
+  var lang = getLang();
+  var dict = I18N[lang] || I18N.en;
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    if (dict[key] !== undefined) el.innerHTML = dict[key];
+  });
+  var label = document.getElementById('lang-label');
+  if (label) label.textContent = LANG_LABELS[lang] || 'EN';
+  document.documentElement.lang = lang;
+  renderLangMenu();
+}
+
+function toggleLang() {
+  var menu = document.getElementById('lang-menu');
+  if (menu) menu.classList.toggle('open');
+}
+
+function setLang(lang) {
+  localStorage.setItem('rentleeys_lang', lang);
+  applyTranslations();
+  var menu = document.getElementById('lang-menu');
+  if (menu) menu.classList.remove('open');
+}
+
+function renderLangMenu() {
+  var menu = document.getElementById('lang-menu');
+  if (!menu) return;
+  var current = getLang();
+  menu.innerHTML = LANG_ORDER.map(function(l) {
+    var active = l === current ? 'background:var(--primary-light);color:var(--primary);font-weight:700;' : '';
+    return '<div onclick="setLang(\''+l+'\')" style="padding:10px 16px;cursor:pointer;font-size:13px;border-radius:8px;'+active+'">'+LANG_LABELS[l]+'</div>';
+  }).join('');
+}
+
+document.addEventListener('click', function(e) {
+  var menu = document.getElementById('lang-menu');
+  var btn  = document.getElementById('lang-toggle');
+  if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+    menu.classList.remove('open');
+  }
+});
+
+document.addEventListener('DOMContentLoaded', applyTranslations);
 </script>
 </body>
 </html>

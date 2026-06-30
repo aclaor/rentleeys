@@ -379,6 +379,17 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);}
             </select>
           </div>
 
+          <!-- CANCELLATION POLICY -->
+          <div class="field" style="margin-bottom:16px;">
+            <label>Cancellation policy</label>
+            <select id="f-cancellation">
+              <option value="flexible">Flexible — Full refund up to 24h before check-in</option>
+              <option value="moderate">Moderate — Full refund up to 5 days before check-in</option>
+              <option value="strict">Strict — 50% refund up to 7 days before check-in, no refund after</option>
+              <option value="non-refundable">Non-refundable — No refund</option>
+            </select>
+          </div>
+
           <div style="background:var(--bg2);border-radius:12px;padding:20px;margin-bottom:16px;">
             <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;" id="calc-title">Estimated earnings (30 days at 70% occupancy):</div>
             <div class="calc-row"><span id="calc-label">21 nights × <span id="calc-price">₱0</span></span><span id="calc-gross">₱0</span></div>
@@ -699,6 +710,7 @@ async function submitListing() {
         if (ptype === 'monthly' && selected < 30) return 30;
         return selected;
       })(),
+      cancellation_policy: document.getElementById('f-cancellation') ? document.getElementById('f-cancellation').value : 'flexible',
       currency:         document.getElementById('f-currency').value,
       max_guests:     parseInt(document.getElementById('f-guests').value),
       bedrooms:       parseInt(document.getElementById('f-beds').value),

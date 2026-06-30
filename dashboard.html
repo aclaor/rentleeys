@@ -141,7 +141,15 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);display:fle
 .push-prompt{background:linear-gradient(135deg,var(--primary),#ff8a8e);border-radius:14px;padding:16px 18px;margin:16px;color:#fff;display:flex;gap:12px;align-items:center;}
 .push-prompt-text{font-size:13px;line-height:1.5;flex:1;}
 .push-prompt-btn{background:#fff;color:var(--primary);border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+
+.dc-code-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
+.dc-code-item:last-child{border-bottom:none;}
+.dc-badge{font-family:var(--mono,monospace);font-size:13px;font-weight:700;color:var(--primary);background:var(--primary-light);padding:4px 12px;border-radius:6px;}
+.dc-meta{font-size:12px;color:var(--text2);margin-top:2px;}
+.dc-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px;}
+.dc-del:hover{color:#dc2626;}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -177,6 +185,9 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);display:fle
     </a>
     <a class="nav-item" onclick="showPage('verification')" id="nav-verification">
       <span class="nav-icon">🪪</span> Verification
+    </a>
+    <a class="nav-item" onclick="showPage('discounts')" id="nav-discounts">
+      <span class="nav-icon">🏷️</span> Discount Codes
     </a>
     <a class="nav-item" onclick="showPage('earnings')" id="nav-earnings">
       <span class="nav-icon">💰</span> Earnings
@@ -321,6 +332,18 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);display:fle
       <div style="background:var(--green-light);border:1px solid #bbf7d0;border-radius:10px;padding:16px;font-size:14px;color:#166534;">
         🎉 <strong>You're on the 0% fee period!</strong> Rentleeys charges 0% host fee for your first 3 months. After that, just 5% — still the lowest in the industry.
       </div>
+    </div>
+    <!-- Monthly chart -->
+    <div class="card">
+      <div class="card-title">Monthly earnings (last 6 months)</div>
+      <canvas id="earn-chart" height="80"></canvas>
+      <div id="earn-chart-empty" style="text-align:center;padding:32px;color:var(--text2);display:none;">No earnings data yet</div>
+    </div>
+    <!-- Stats row -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
+      <div class="stat-card"><div class="stat-label">Avg per booking</div><div class="stat-val" id="earn-avg">₱0</div></div>
+      <div class="stat-card"><div class="stat-label">Bookings this month</div><div class="stat-val" id="earn-bookings-month">0</div></div>
+      <div class="stat-card"><div class="stat-label">Occupancy rate</div><div class="stat-val" id="earn-occupancy">0%</div></div>
     </div>
     <div class="card">
       <div class="card-title">Transaction history</div>
@@ -885,7 +908,137 @@ _db.auth.onAuthStateChange(function(event, session) {
     setTimeout(checkPushPrompt, 1000);
   }
 });
+
+// ── EARNINGS CHARTS ──────────────────────────────────────
+var _earnChart = null;
+
+async function loadEarnings() {
+  if (!_user) return;
+  var { data: bookings } = await _db.from('rentleeys_bookings')
+    .select('total_price,check_in,check_out,status,currency,rentleeys_properties(title)')
+    .or('host_id.eq.'+_user.id)
+    .order('created_at',{ascending:false});
+
+  var confirmed = (bookings||[]).filter(function(b){ return b.status==='confirmed'; });
+  var now = new Date();
+  var thisMonth = confirmed.filter(function(b){
+    var d=new Date(b.check_in); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+  });
+  var total     = confirmed.reduce(function(s,b){ return s+(b.total_price||0); },0);
+  var pending   = (bookings||[]).filter(function(b){ return b.status==='pending'; }).reduce(function(s,b){ return s+(b.total_price||0); },0);
+  var monthTotal= thisMonth.reduce(function(s,b){ return s+(b.total_price||0); },0);
+  var sym = '₱';
+  var set = function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
+  set('earn-total', sym+total.toLocaleString());
+  set('earn-month', sym+monthTotal.toLocaleString());
+  set('earn-pending', sym+pending.toLocaleString());
+  set('earn-avg', confirmed.length ? sym+Math.round(total/confirmed.length).toLocaleString() : sym+'0');
+  set('earn-bookings-month', thisMonth.length);
+  var bookedNights = thisMonth.reduce(function(s,b){ return s+Math.max(1,(new Date(b.check_out)-new Date(b.check_in))/(864e5)); },0);
+  set('earn-occupancy', Math.min(100,Math.round(bookedNights/30*100))+'%');
+
+  var months=[],amounts=[];
+  for (var i=5;i>=0;i--) {
+    var d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    months.push(d.toLocaleDateString('en-US',{month:'short'}));
+    amounts.push(confirmed.filter(function(b){ var bd=new Date(b.check_in); return bd.getMonth()===d.getMonth()&&bd.getFullYear()===d.getFullYear(); }).reduce(function(s,b){ return s+(b.total_price||0); },0));
+  }
+  var canvas=document.getElementById('earn-chart');
+  var emptyEl=document.getElementById('earn-chart-empty');
+  if (!canvas) return;
+  if (amounts.every(function(a){ return a===0; })) { canvas.style.display='none'; if(emptyEl) emptyEl.style.display='block'; return; }
+  if(emptyEl) emptyEl.style.display='none'; canvas.style.display='block';
+  if (_earnChart) _earnChart.destroy();
+  if (typeof Chart === 'undefined') return;
+  _earnChart = new Chart(canvas.getContext('2d'), {
+    type:'bar',
+    data:{ labels:months, datasets:[{ label:'Earnings', data:amounts, backgroundColor:'rgba(255,90,95,0.15)', borderColor:'#ff5a5f', borderWidth:2, borderRadius:8, borderSkipped:false }] },
+    options:{ responsive:true, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){ return sym+ctx.raw.toLocaleString(); } } } }, scales:{ y:{ beginAtZero:true, grid:{color:'rgba(0,0,0,0.05)'}, ticks:{callback:function(v){ return sym+(v>=1000?(v/1000).toFixed(0)+'k':v); }} }, x:{grid:{display:false}} } }
+  });
+  var list=document.getElementById('earn-list');
+  if (!list||!bookings||bookings.length===0) return;
+  list.innerHTML='<table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:2px solid var(--border);text-align:left;"><th style="padding:10px 8px;font-size:12px;color:var(--text2);">Property</th><th style="padding:10px 8px;font-size:12px;color:var(--text2);">Dates</th><th style="padding:10px 8px;font-size:12px;color:var(--text2);">Amount</th><th style="padding:10px 8px;font-size:12px;color:var(--text2);">Status</th></tr></thead><tbody>'
+    +(bookings||[]).slice(0,20).map(function(b){
+      var prop=b.rentleeys_properties||{};
+      var sc=b.status==='confirmed'?'#16a34a':b.status==='pending'?'#92400e':'#6b7280';
+      var sb=b.status==='confirmed'?'#f0fdf4':b.status==='pending'?'#fef3c7':'#f9fafb';
+      return '<tr style="border-bottom:1px solid var(--border);"><td style="padding:12px 8px;font-size:13px;font-weight:600;">'+(prop.title||'—')+'</td><td style="padding:12px 8px;font-size:12px;color:var(--text2);">'+b.check_in+' → '+b.check_out+'</td><td style="padding:12px 8px;font-size:13px;font-weight:700;">'+sym+Number(b.total_price||0).toLocaleString()+'</td><td style="padding:12px 8px;"><span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:'+sb+';color:'+sc+';">'+b.status+'</span></td></tr>';
+    }).join('')+'</tbody></table>';
+}
+
+// ── DISCOUNT CODES ────────────────────────────────────────
+async function loadDiscounts() {
+  var { data: codes } = await _db.from('rentleeys_promo_codes').select('*').eq('host_id',_user.id).order('created_at',{ascending:false});
+  var list=document.getElementById('dc-list');
+  if (!list) return;
+  if (!codes||codes.length===0) { list.innerHTML='<div class="empty"><div class="empty-icon">🏷️</div><div class="empty-title">No codes yet</div></div>'; return; }
+  list.innerHTML=codes.map(function(c){
+    var discStr=c.discount_type==='percent'?c.discount_value+'%':'₱'+Number(c.discount_value).toLocaleString();
+    var usageStr=c.max_uses>0?c.times_used+'/'+c.max_uses+' used':c.times_used+' used';
+    var validStr=c.valid_until?'Until '+c.valid_until:'No expiry';
+    return '<div class="dc-code-item"><div><div class="dc-badge">'+c.code+'</div><div class="dc-meta">'+discStr+' off · '+usageStr+' · '+validStr+'</div></div><button class="dc-del" data-id="'+c.id+'" onclick="deleteCode(this.dataset.id)" title="Delete">🗑</button></div>';
+  }).join('');
+}
+
+async function createDiscountCode() {
+  var code=(document.getElementById('dc-code').value||'').toUpperCase().trim();
+  var type=document.getElementById('dc-type').value;
+  var val=parseFloat(document.getElementById('dc-value').value);
+  var maxU=parseInt(document.getElementById('dc-max-uses').value)||0;
+  var from=document.getElementById('dc-from').value||null;
+  var to=document.getElementById('dc-to').value||null;
+  if (!code){ showToast('Please enter a code name'); return; }
+  if (!val||val<=0){ showToast('Please enter a discount value'); return; }
+  if (type==='percent'&&val>100){ showToast('Percentage cannot exceed 100%'); return; }
+  var { error }=await _db.from('rentleeys_promo_codes').insert({ host_id:_user.id, code:code, discount_type:type, discount_value:val, max_uses:maxU, valid_from:from, valid_until:to, times_used:0 });
+  if (error){ showToast('Error: '+error.message); return; }
+  showToast('✅ Code '+code+' created!');
+  document.getElementById('dc-code').value='';
+  document.getElementById('dc-value').value='';
+  loadDiscounts();
+}
+
+async function deleteCode(id) {
+  if (!confirm('Delete this promo code?')) return;
+  await _db.from('rentleeys_promo_codes').delete().eq('id',id).eq('host_id',_user.id);
+  showToast('Code deleted');
+  loadDiscounts();
+}
 </script>
+
+  <!-- DISCOUNTS PAGE -->
+  <div class="page" id="page-discounts" style="display:none;">
+    <div class="page-header">
+      <div class="page-title">Discount Codes 🏷️</div>
+      <div class="page-sub">Create promo codes for your listings</div>
+    </div>
+    <div class="card" style="max-width:600px;">
+      <div class="card-title">Create a new code</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div class="field"><label>Code</label><input id="dc-code" placeholder="e.g. WELCOME20" style="text-transform:uppercase;"/></div>
+        <div class="field"><label>Discount type</label>
+          <select id="dc-type">
+            <option value="percent">Percentage (%)</option>
+            <option value="flat">Flat amount (₱)</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div class="field"><label>Discount value</label><input id="dc-value" type="number" placeholder="e.g. 20" min="1"/></div>
+        <div class="field"><label>Max uses (0 = unlimited)</label><input id="dc-max-uses" type="number" placeholder="0" min="0" value="0"/></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div class="field"><label>Valid from</label><input id="dc-from" type="date"/></div>
+        <div class="field"><label>Valid until</label><input id="dc-to" type="date"/></div>
+      </div>
+      <button onclick="createDiscountCode()" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;">Create Code</button>
+    </div>
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">Your codes</div>
+      <div id="dc-list"><div class="empty"><div class="empty-icon">🏷️</div><div class="empty-title">No codes yet</div></div></div>
+    </div>
+  </div>
+
 </body>
 </html>  <!-- CALENDAR -->
   <div class="page" id="page-calendar">

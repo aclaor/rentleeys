@@ -99,13 +99,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 
 /* LOADING */
 .loading{text-align:center;padding:80px 24px;color:var(--text2);}
-</style>
+#lang-menu.open{display:block!important;}</style>
 </head>
 <body>
 
 <nav class="nav">
   <a href="/" class="nav-logo">rent<span>leeys</span></a>
-  <div class="nav-back" onclick="history.back()">← Back to search</div>
+  <div class="nav-back" onclick="history.back()" data-i18n="back">← Back to search</div>
+  <div style="position:relative;margin-left:auto;">
+    <button id="lang-toggle" onclick="toggleLang()" style="background:none;border:1.5px solid var(--border,#e5e7eb);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2,#6b7280);">🌐 <span id="lang-label">EN</span></button>
+    <div id="lang-menu" style="display:none;position:absolute;top:38px;right:0;background:#fff;border:1px solid var(--border,#e5e7eb);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:6px;min-width:100px;z-index:300;"></div>
+  </div>
 </nav>
 
 <div id="listing-content">
@@ -120,7 +124,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
   <!-- Header -->
   <div style="padding:18px 24px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
     <button onclick="closeBookModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280;">×</button>
-    <div style="font-family:var(--sans);font-size:16px;font-weight:700;" id="modal-step-title">Request to book</div>
+    <div style="font-family:var(--sans);font-size:16px;font-weight:700;" id="modal-step-title" data-i18n="modal_title">Request to book</div>
     <div style="width:32px;"></div>
   </div>
 
@@ -134,11 +138,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 
   <!-- STEP 1: When to pay -->
   <div id="bs1" style="padding:24px;">
-    <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Step 1 of 4</div>
-    <div style="font-family:var(--sans);font-size:20px;font-weight:800;margin-bottom:20px;">Choose when to pay</div>
+    <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;"><span data-i18n="step1of4">Step 1 of 4</span></div>
+    <div style="font-family:var(--sans);font-size:20px;font-weight:800;margin-bottom:20px;" data-i18n="choose_when_pay">Choose when to pay</div>
     <div onclick="selectPayNow(true)" id="opt-pay-now" style="border:2px solid var(--primary);border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;background:#fff5f5;">
       <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div><div style="font-family:var(--sans);font-weight:700;" id="s1-pay-now-lbl">Pay now</div><div style="font-size:13px;color:#6b7280;">Secure your booking immediately</div></div>
+        <div><div style="font-family:var(--sans);font-weight:700;" id="s1-pay-now-lbl" data-i18n="pay_now">Pay now</div><div style="font-size:13px;color:#6b7280;" data-i18n="secure_now">Secure your booking immediately</div></div>
         <div style="width:20px;height:20px;border-radius:50%;background:var(--primary);border:2px solid var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><div style="width:8px;height:8px;border-radius:50%;background:#fff;"></div></div>
       </div>
     </div>
@@ -151,69 +155,69 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
     <div style="background:#f7f8fa;border-radius:12px;padding:16px;margin-top:20px;">
       <div style="font-family:var(--sans);font-size:14px;font-weight:700;margin-bottom:10px;" id="s1-title">—</div>
       <div style="display:flex;justify-content:space-between;font-size:14px;color:#6b7280;margin-bottom:6px;"><span id="s1-nlabel">—</span><span id="s1-sub">—</span></div>
-      <div style="display:flex;justify-content:space-between;font-size:14px;color:#6b7280;margin-bottom:6px;"><span>Service fee (8%)</span><span id="s1-fee">—</span></div>
-      <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;padding-top:10px;border-top:1px solid #e5e7eb;"><span>Total</span><span id="s1-total">—</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;color:#6b7280;margin-bottom:6px;"><span data-i18n="service_fee">Service fee (8%)</span><span id="s1-fee">—</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;padding-top:10px;border-top:1px solid #e5e7eb;"><span data-i18n="total">Total</span><span id="s1-total">—</span></div>
     </div>
-    <button onclick="goBS(2)" style="width:100%;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);margin-top:16px;">Next</button>
+    <button onclick="goBS(2)" style="width:100%;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);margin-top:16px;" data-i18n="next_btn">Next</button>
   </div>
 
   <!-- STEP 2: Payment method -->
   <div id="bs2" style="padding:24px;display:none;">
-    <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Step 2 of 4</div>
-    <div style="font-family:var(--sans);font-size:20px;font-weight:800;margin-bottom:16px;">Add a payment method</div>
+    <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;"><span data-i18n="step2of4">Step 2 of 4</span></div>
+    <div style="font-family:var(--sans);font-size:20px;font-weight:800;margin-bottom:16px;"><span data-i18n="add_payment">Add a payment method</span></div>
     <div id="paypal-buttons-container" style="margin-bottom:16px;"></div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;"><div style="flex:1;height:1px;background:#e5e7eb;"></div><span style="font-size:12px;color:#9ca3af;">or pay with</span><div style="flex:1;height:1px;background:#e5e7eb;"></div></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;"><div style="flex:1;height:1px;background:#e5e7eb;"></div><span style="font-size:12px;color:#9ca3af;" data-i18n="or_pay_with">or pay with</span><div style="flex:1;height:1px;background:#e5e7eb;"></div></div>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
       <div onclick="pickPayMethod('gcash')" id="pm-gcash" style="border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px;">
         <span style="font-size:22px;">📱</span>
-        <div style="flex:1;"><div style="font-weight:600;font-size:14px;">GCash</div><div style="font-size:12px;color:#9ca3af;">Philippine mobile wallet</div></div>
+        <div style="flex:1;"><div style="font-weight:600;font-size:14px;"><span data-i18n="gcash">GCash</span></div><div style="font-size:12px;color:#9ca3af;"><span data-i18n="gcash_desc">Philippine mobile wallet</span></div></div>
         <div style="width:18px;height:18px;border-radius:50%;border:2px solid #e5e7eb;" id="pm-gcash-dot"></div>
       </div>
       <div onclick="pickPayMethod('bank')" id="pm-bank" style="border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px;">
         <span style="font-size:22px;">🏦</span>
-        <div style="flex:1;"><div style="font-weight:600;font-size:14px;">Bank transfer</div><div style="font-size:12px;color:#9ca3af;">BDO, BPI, Metrobank</div></div>
+        <div style="flex:1;"><div style="font-weight:600;font-size:14px;"><span data-i18n="bank">Bank transfer</span></div><div style="font-size:12px;color:#9ca3af;"><span data-i18n="bank_desc">BDO, BPI, Metrobank</span></div></div>
         <div style="width:18px;height:18px;border-radius:50%;border:2px solid #e5e7eb;" id="pm-bank-dot"></div>
       </div>
       <div onclick="pickPayMethod('card')" id="pm-card" style="border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px;">
         <span style="font-size:22px;">💳</span>
-        <div style="flex:1;"><div style="font-weight:600;font-size:14px;">Credit / Debit card</div><div style="font-size:12px;color:#9ca3af;">Visa, Mastercard — powered by PayMongo</div></div>
+        <div style="flex:1;"><div style="font-weight:600;font-size:14px;"><span data-i18n="card">Credit / Debit card</span></div><div style="font-size:12px;color:#9ca3af;"><span data-i18n="card_desc">Visa, Mastercard — powered by PayMongo</span></div></div>
         <div style="width:18px;height:18px;border-radius:50%;border:2px solid #e5e7eb;" id="pm-card-dot"></div>
       </div>
     </div>
     <div id="gcash-info" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;margin-bottom:12px;font-size:13px;color:#166534;">📱 Send to GCash: <strong>+63 968 891 7516</strong><br>Account: <strong>Rentleeys</strong><br>Reference: shown after booking</div>
     <div id="bank-info" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:12px;font-size:13px;color:#1e40af;">🏦 BPI Account: <strong>4249127979</strong><br>Account name: <strong>Rentleeys</strong><br>Reference: shown after booking</div>
     <div id="card-info" style="display:none;background:#fefce8;border:1px solid #fde68a;border-radius:10px;padding:14px;margin-bottom:12px;font-size:13px;color:#92400e;">💳 You will be redirected to PayMongo's secure checkout to complete your payment by card.</div>
-    <div style="display:flex;gap:10px;"><button onclick="goBS(1)" style="flex:1;background:none;border:1.5px solid #e5e7eb;border-radius:12px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;">Back</button><button onclick="if(_payMethod==='card'){initiateCardPayment();}else{goBS(3);}" style="flex:2;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);">Next</button></div>
+    <div style="display:flex;gap:10px;"><button onclick="goBS(1)" style="flex:1;background:none;border:1.5px solid #e5e7eb;border-radius:12px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;" data-i18n="back_btn">Back</button><button onclick="if(_payMethod==='card'){initiateCardPayment();}else{goBS(3);}" style="flex:2;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);" data-i18n="next_btn">Next</button></div>
   </div>
 
   <!-- STEP 3: Message -->
   <div id="bs3" style="padding:24px;display:none;">
-    <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Step 3 of 4</div>
-    <div style="font-family:var(--sans);font-size:20px;font-weight:800;margin-bottom:6px;">Message the host</div>
-    <div style="font-size:14px;color:#6b7280;margin-bottom:16px;">Let them know a bit about yourself and why you're visiting.</div>
+    <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;"><span data-i18n="step3of4">Step 3 of 4</span></div>
+    <div style="font-family:var(--sans);font-size:20px;font-weight:800;margin-bottom:6px;"><span data-i18n="message_host_title">Message the host</span></div>
+    <div style="font-size:14px;color:#6b7280;margin-bottom:16px;">data-i18n="message_host_sub">Let them know a bit about yourself and why you're visiting.</div>
     <textarea id="book-message" placeholder="Hi! I'm visiting Manila for a family vacation and your place looks perfect..." style="width:100%;padding:14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:14px;font-family:var(--body);resize:vertical;min-height:120px;outline:none;margin-bottom:16px;line-height:1.6;"></textarea>
-    <div style="display:flex;gap:10px;"><button onclick="goBS(2)" style="flex:1;background:none;border:1.5px solid #e5e7eb;border-radius:12px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;">Back</button><button onclick="goBS(4)" style="flex:2;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);">Next</button></div>
+    <div style="display:flex;gap:10px;"><button onclick="goBS(2)" style="flex:1;background:none;border:1.5px solid #e5e7eb;border-radius:12px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;" data-i18n="back_btn">Back</button><button onclick="goBS(4)" style="flex:2;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);" data-i18n="next_btn">Next</button></div>
   </div>
 
   <!-- STEP 4: Review -->
   <div id="bs4" style="padding:24px;display:none;">
-    <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Step 4 of 4</div>
-    <div style="font-family:var(--sans);font-size:20px;font-weight:800;margin-bottom:20px;">Review your request</div>
+    <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;"><span data-i18n="step4of4">Step 4 of 4</span></div>
+    <div style="font-family:var(--sans);font-size:20px;font-weight:800;margin-bottom:20px;"><span data-i18n="review_request">Review your request</span></div>
     <div style="border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:14px;">
-      <div style="font-family:var(--sans);font-weight:700;margin-bottom:12px;">Your trip</div>
+      <div style="font-family:var(--sans);font-weight:700;margin-bottom:12px;"><span data-i18n="your_trip">Your trip</span></div>
       <div style="display:flex;justify-content:space-between;">
-        <div><div style="font-size:13px;font-weight:600;">Dates</div><div style="font-size:13px;color:#6b7280;" id="r4-dates">—</div></div>
-        <div style="text-align:right;"><div style="font-size:13px;font-weight:600;">Guests</div><div style="font-size:13px;color:#6b7280;" id="r4-guests">—</div></div>
+        <div><div style="font-size:13px;font-weight:600;" data-i18n="dates">Dates</div><div style="font-size:13px;color:#6b7280;" id="r4-dates">—</div></div>
+        <div style="text-align:right;"><div style="font-size:13px;font-weight:600;" data-i18n="guests">Guests</div><div style="font-size:13px;color:#6b7280;" id="r4-guests">—</div></div>
       </div>
     </div>
     <div style="border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:14px;">
-      <div style="font-family:var(--sans);font-weight:700;margin-bottom:12px;">Price details</div>
+      <div style="font-family:var(--sans);font-weight:700;margin-bottom:12px;"><span data-i18n="price_details">Price details</span></div>
       <div style="display:flex;justify-content:space-between;font-size:14px;color:#6b7280;margin-bottom:8px;"><span id="r4-nlabel">—</span><span id="r4-sub">—</span></div>
       <div style="display:flex;justify-content:space-between;font-size:14px;color:#6b7280;margin-bottom:8px;"><span>Service fee (8%)</span><span id="r4-fee">—</span></div>
       <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;padding-top:10px;border-top:1px solid #e5e7eb;"><span>Total</span><span id="r4-total">—</span></div>
     </div>
     <div style="border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:16px;">
-      <div style="font-family:var(--sans);font-weight:700;margin-bottom:6px;">Payment method</div>
+      <div style="font-family:var(--sans);font-weight:700;margin-bottom:6px;"><span data-i18n="payment_method">Payment method</span></div>
       <div style="font-size:14px;color:#6b7280;" id="r4-paymethod">PayPal</div>
     </div>
     <div id="book-err" style="color:#ef4444;font-size:13px;margin-bottom:8px;display:none;"></div>
@@ -221,11 +225,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
     <div id="manual-confirm-btn" style="display:none;">
       <button onclick="confirmBooking(null)" style="width:100%;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);margin-bottom:10px;">Confirm booking request 🏠</button>
     </div>
-    <button onclick="goBS(3)" style="width:100%;background:none;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px;font-size:14px;cursor:pointer;margin-bottom:10px;">Back</button>
+    <button onclick="goBS(3)" style="width:100%;background:none;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px;font-size:14px;cursor:pointer;margin-bottom:10px;" data-i18n="back_btn">Back</button>
     <div style="margin-bottom:14px;">
       <div style="display:flex;gap:8px;">
-        <input id="promo-input" placeholder="Promo code (optional)" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;outline:none;"/>
-        <button onclick="applyPromo()" style="padding:10px 16px;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text);">Apply</button>
+        <input id="promo-input" placeholder="Promo code (optional)" data-i18n-ph="promo_ph" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;outline:none;"/>
+        <button onclick="applyPromo()" style="padding:10px 16px;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text);" data-i18n="apply_btn">Apply</button>
       </div>
       <div id="promo-msg" style="font-size:12px;margin-top:6px;display:none;"></div>
     </div>
@@ -443,8 +447,8 @@ async function loadListing() {
             ${Array.from({length:data.max_guests},function(_,i){return '<option value="'+(i+1)+'">'+(i+1)+' guest'+(i>0?'s':'')+'</option>';}).join('')}
           </select>
         </div>
-        <button class="book-btn" onclick="openBooking()">Request to book</button>
-        <button onclick="messageHost()" style="width:100%;background:#fff;color:var(--primary);border:2px solid var(--primary);border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);margin-bottom:4px;">💬 Message Host</button>
+        <button class="book-btn" onclick="openBooking()" data-i18n="request_book_btn">Request to book</button>
+        <button onclick="messageHost()" style="width:100%;background:#fff;color:var(--primary);border:2px solid var(--primary);border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);margin-bottom:4px;" data-i18n="msg_host_btn">💬 Message Host</button>
         <div class="price-breakdown">
           <div class="price-row"><span id="price-label">${sym}${Number(data.price_per_night).toLocaleString()} × ${nights} nights</span><span id="price-subtotal">${sym}${Number(total).toLocaleString()}</span></div>
           <div class="price-row"><span>Service fee (8%)</span><span id="price-fee">${sym}${Number(total*0.08).toFixed(2)}</span></div>
@@ -890,6 +894,126 @@ function messageHost() {
 }
 
 window.addEventListener('DOMContentLoaded', loadListing);
+</script>
+
+<script>
+// ── TRANSLATION ENGINE ────────────────────────────────────
+const I18N = {
+  en: {
+    back: "← Back to search", modal_title: "Request to book",
+    step1of4: "Step 1 of 4", step2of4: "Step 2 of 4", step3of4: "Step 3 of 4", step4of4: "Step 4 of 4",
+    choose_when_pay: "Choose when to pay", pay_now: "Pay now", secure_now: "Secure your booking immediately",
+    add_payment: "Add a payment method", or_pay_with: "or pay with",
+    gcash: "GCash", gcash_desc: "Philippine mobile wallet",
+    bank: "Bank transfer", bank_desc: "BDO, BPI, Metrobank",
+    card: "Credit / Debit card", card_desc: "Visa, Mastercard — powered by PayMongo",
+    message_host_title: "Message the host", message_host_sub: "Let them know a bit about yourself and why you" + String.fromCharCode(39) + "re visiting.",
+    review_request: "Review your request", your_trip: "Your trip", dates: "Dates", guests: "Guests",
+    price_details: "Price details", service_fee: "Service fee (8%)", total: "Total", payment_method: "Payment method",
+    back_btn: "Back", next_btn: "Next",
+    promo_ph: "Promo code (optional)", apply_btn: "Apply",
+    msg_host_btn: "💬 Message Host", request_book_btn: "Request to book"
+  },
+  ko: {
+    back: "← 검색으로 돌아가기", modal_title: "예약 요청",
+    step1of4: "1/4 단계", step2of4: "2/4 단계", step3of4: "3/4 단계", step4of4: "4/4 단계",
+    choose_when_pay: "결제 시기 선택", pay_now: "지금 결제", secure_now: "예약을 즉시 확정합니다",
+    add_payment: "결제 수단 추가", or_pay_with: "또는 다음으로 결제",
+    gcash: "GCash", gcash_desc: "필리핀 모바일 지갑",
+    bank: "은행 송금", bank_desc: "BDO, BPI, Metrobank",
+    card: "신용/체크카드", card_desc: "Visa, Mastercard — PayMongo 제공",
+    message_host_title: "호스트에게 메시지 보내기", message_host_sub: "자기소개와 방문 목적을 간단히 알려주세요.",
+    review_request: "요청 내용 확인", your_trip: "여행 정보", dates: "날짜", guests: "인원",
+    price_details: "가격 세부정보", service_fee: "서비스 수수료 (8%)", total: "총액", payment_method: "결제 수단",
+    back_btn: "이전", next_btn: "다음",
+    promo_ph: "프로모 코드 (선택)", apply_btn: "적용",
+    msg_host_btn: "💬 호스트에게 메시지", request_book_btn: "예약 요청하기"
+  },
+  zh: {
+    back: "← 返回搜索", modal_title: "预订请求",
+    step1of4: "第1/4步", step2of4: "第2/4步", step3of4: "第3/4步", step4of4: "第4/4步",
+    choose_when_pay: "选择付款时间", pay_now: "立即付款", secure_now: "立即确认您的预订",
+    add_payment: "添加付款方式", or_pay_with: "或使用以下方式付款",
+    gcash: "GCash", gcash_desc: "菲律宾移动钱包",
+    bank: "银行转账", bank_desc: "BDO, BPI, Metrobank",
+    card: "信用/借记卡", card_desc: "Visa, Mastercard — 由PayMongo提供",
+    message_host_title: "给房东发消息", message_host_sub: "简单介绍一下自己和入住原因。",
+    review_request: "查看请求详情", your_trip: "您的行程", dates: "日期", guests: "人数",
+    price_details: "价格详情", service_fee: "服务费 (8%)", total: "总计", payment_method: "付款方式",
+    back_btn: "返回", next_btn: "下一步",
+    promo_ph: "优惠码（选填）", apply_btn: "使用",
+    msg_host_btn: "💬 联系房东", request_book_btn: "请求预订"
+  },
+  ja: {
+    back: "← 検索に戻る", modal_title: "予約リクエスト",
+    step1of4: "ステップ1/4", step2of4: "ステップ2/4", step3of4: "ステップ3/4", step4of4: "ステップ4/4",
+    choose_when_pay: "支払いタイミングを選択", pay_now: "今すぐ支払う", secure_now: "予約をすぐに確定させる",
+    add_payment: "支払い方法を追加", or_pay_with: "または次の方法で支払う",
+    gcash: "GCash", gcash_desc: "フィリピンのモバイルウォレット",
+    bank: "銀行振込", bank_desc: "BDO, BPI, Metrobank",
+    card: "クレジット/デビットカード", card_desc: "Visa, Mastercard — PayMongo提供",
+    message_host_title: "ホストにメッセージ", message_host_sub: "自己紹介と訪問目的を簡単に伝えましょう。",
+    review_request: "リクエストを確認", your_trip: "あなたの旅行", dates: "日付", guests: "人数",
+    price_details: "料金詳細", service_fee: "サービス料 (8%)", total: "合計", payment_method: "支払い方法",
+    back_btn: "戻る", next_btn: "次へ",
+    promo_ph: "プロモコード（任意）", apply_btn: "適用",
+    msg_host_btn: "💬 ホストに連絡", request_book_btn: "予約をリクエスト"
+  }
+};
+
+const LANG_LABELS = { en: 'EN', ko: '한국어', zh: '中文', ja: '日本語' };
+const LANG_ORDER  = ['en', 'ko', 'zh', 'ja'];
+
+function getLang() { return localStorage.getItem('rentleeys_lang') || 'en'; }
+
+function applyTranslations() {
+  var lang = getLang();
+  var dict = I18N[lang] || I18N.en;
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    if (dict[key] !== undefined) el.innerHTML = dict[key];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n-ph');
+    if (dict[key] !== undefined) el.placeholder = dict[key];
+  });
+  var label = document.getElementById('lang-label');
+  if (label) label.textContent = LANG_LABELS[lang] || 'EN';
+  document.documentElement.lang = lang;
+  renderLangMenu();
+}
+
+function toggleLang() {
+  var menu = document.getElementById('lang-menu');
+  if (menu) menu.classList.toggle('open');
+}
+
+function setLang(lang) {
+  localStorage.setItem('rentleeys_lang', lang);
+  applyTranslations();
+  var menu = document.getElementById('lang-menu');
+  if (menu) menu.classList.remove('open');
+}
+
+function renderLangMenu() {
+  var menu = document.getElementById('lang-menu');
+  if (!menu) return;
+  var current = getLang();
+  menu.innerHTML = LANG_ORDER.map(function(l) {
+    var active = l === current ? 'background:#fff0f4;color:#ff5a5f;font-weight:700;' : '';
+    return '<div onclick="setLang(\''+l+'\')" style="padding:10px 16px;cursor:pointer;font-size:13px;border-radius:8px;'+active+'">'+LANG_LABELS[l]+'</div>';
+  }).join('');
+}
+
+document.addEventListener('click', function(e) {
+  var menu = document.getElementById('lang-menu');
+  var btn  = document.getElementById('lang-toggle');
+  if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+    menu.classList.remove('open');
+  }
+});
+
+document.addEventListener('DOMContentLoaded', applyTranslations);
 </script>
 </body>
 </html>

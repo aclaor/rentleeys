@@ -148,6 +148,25 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);display:fle
 .dc-meta{font-size:12px;color:var(--text2);margin-top:2px;}
 .dc-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px;}
 .dc-del:hover{color:#dc2626;}
+
+/* ── CO-HOSTS ──────────────────────────────────────────── */
+.cohost-wrap{max-width:700px;}
+.cohost-invite-card{background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;}
+.cohost-list{display:flex;flex-direction:column;gap:12px;}
+.cohost-item{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;}
+.cohost-avatar{width:42px;height:42px;border-radius:50%;background:var(--primary-light);color:var(--primary);font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cohost-info{flex:1;min-width:0;}
+.cohost-name{font-size:14px;font-weight:700;color:var(--text);}
+.cohost-email{font-size:12px;color:var(--text2);margin-top:2px;}
+.cohost-prop{font-size:11px;color:var(--text3);margin-top:2px;}
+.cohost-status{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.cohost-status.pending{background:#fef3c7;color:#92400e;}
+.cohost-status.active{background:#f0fdf4;color:#16a34a;}
+.cohost-remove{background:none;border:1.5px solid #fecaca;color:#dc2626;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;transition:.15s;}
+.cohost-remove:hover{background:#fef2f2;}
+.cohost-permissions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.perm-chip{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--bg2);color:var(--text2);border:1px solid var(--border);}
+.perm-chip.on{background:var(--primary-light);color:var(--primary);border-color:#fecdd9;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
@@ -179,6 +198,9 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);display:fle
     </a>
     <a class="nav-item" onclick="showPage('reservations')" id="nav-reservations">
       <span class="nav-icon">🔔</span> Reservations
+    </a>
+    <a class="nav-item" onclick="showPage('cohosts')" id="nav-cohosts">
+      <span class="nav-icon">🤝</span> Co-hosts
     </a>
     <a class="nav-item" onclick="showPage('calendar')" id="nav-calendar">
       <span class="nav-icon">📅</span> Calendar
@@ -595,6 +617,7 @@ function showPage(page) {
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
   document.getElementById('page-'+page).classList.add('active');
   if (page === 'calendar')      initCalendarPage();
+  if (page === 'cohosts')        initCoHostPage();
   if (page === 'verification')  initVerificationPage();
   var nav = document.getElementById('nav-'+page);
   if (nav) nav.classList.add('active');
@@ -1004,6 +1027,127 @@ async function deleteCode(id) {
   showToast('Code deleted');
   loadDiscounts();
 }
+
+// ── CO-HOSTS ─────────────────────────────────────────────
+async function initCoHostPage() {
+  // Populate property select
+  var sel = document.getElementById('ch-property');
+  if (!sel) return;
+  var { data: props } = await _db.from('rentleeys_properties')
+    .select('id,title').eq('host_id', _user.id);
+  sel.innerHTML = '<option value="">Select a listing...</option>'
+    + (props||[]).map(function(p){ return '<option value="'+p.id+'">'+p.title+'</option>'; }).join('');
+  loadCoHosts();
+  loadCoHosting();
+}
+
+async function loadCoHosts() {
+  // Co-hosts I've invited for my properties
+  var { data } = await _db.from('rentleeys_co_hosts')
+    .select('*, rentleeys_properties(title)')
+    .eq('host_id', _user.id)
+    .order('created_at', { ascending: false });
+
+  var list = document.getElementById('cohost-list');
+  if (!list) return;
+  if (!data || data.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">🤝</div><div class="empty-title">No co-hosts yet</div><div class="empty-sub">Invite someone to help manage your properties.</div></div>';
+    return;
+  }
+  list.innerHTML = data.map(function(ch) {
+    var prop = ch.rentleeys_properties || {};
+    var initials = (ch.email||'?').charAt(0).toUpperCase();
+    var perms = ch.permissions || {};
+    var permChips = [
+      { key:'bookings', label:'Bookings' },
+      { key:'messages', label:'Messages' },
+      { key:'listing',  label:'Edit listing' },
+      { key:'calendar', label:'Calendar' }
+    ].map(function(p){
+      return '<span class="perm-chip'+(perms[p.key]?' on':'')+'">'+p.label+'</span>';
+    }).join('');
+    return '<div class="cohost-item">'
+      + '<div class="cohost-avatar">'+initials+'</div>'
+      + '<div class="cohost-info">'
+      + '<div class="cohost-name">'+(ch.email||'Unknown')+'</div>'
+      + '<div class="cohost-prop">📍 '+(prop.title||'Property')+'</div>'
+      + '<div class="cohost-permissions">'+permChips+'</div>'
+      + '</div>'
+      + '<span class="cohost-status '+ch.status+'">'+ch.status+'</span>'
+      + '<button class="cohost-remove" data-id="'+ch.id+'" onclick="removeCoHost(this.dataset.id)">× Remove</button>'
+      + '</div>';
+  }).join('');
+}
+
+async function loadCoHosting() {
+  // Properties where I am a co-host
+  var { data } = await _db.from('rentleeys_co_hosts')
+    .select('*, rentleeys_properties(title,images)')
+    .eq('co_host_id', _user.id)
+    .order('created_at', { ascending: false });
+
+  var list = document.getElementById('cohosting-list');
+  if (!list) return;
+  if (!data || data.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">🏠</div><div class="empty-title">Not co-hosting any properties</div></div>';
+    return;
+  }
+  list.innerHTML = data.map(function(ch) {
+    var prop = ch.rentleeys_properties || {};
+    var emoji = prop.images && prop.images[0] ? '' : '🏠';
+    return '<div class="cohost-item">'
+      + (prop.images && prop.images[0]
+        ? '<img src="'+prop.images[0]+'" style="width:42px;height:42px;border-radius:10px;object-fit:cover;flex-shrink:0;">'
+        : '<div class="cohost-avatar">🏠</div>')
+      + '<div class="cohost-info">'
+      + '<div class="cohost-name">'+(prop.title||'Property')+'</div>'
+      + '<div class="cohost-email">Invited by host</div>'
+      + '</div>'
+      + '<span class="cohost-status '+ch.status+'">'+ch.status+'</span>'
+      + '</div>';
+  }).join('');
+}
+
+async function inviteCoHost() {
+  var propId = document.getElementById('ch-property').value;
+  var email  = document.getElementById('ch-email').value.trim().toLowerCase();
+  if (!propId) { showToast('Please select a property'); return; }
+  if (!email || !email.includes('@')) { showToast('Please enter a valid email'); return; }
+
+  var perms = {
+    bookings: document.getElementById('perm-bookings').checked,
+    messages: document.getElementById('perm-messages').checked,
+    listing:  document.getElementById('perm-listing').checked,
+    calendar: document.getElementById('perm-calendar').checked
+  };
+
+  // Check if user exists with that email
+  var { data: hostData } = await _db.from('rentleeys_hosts')
+    .select('user_id,full_name').eq('email', email).maybeSingle();
+
+  var coHostId = hostData ? hostData.user_id : null;
+
+  var { error } = await _db.from('rentleeys_co_hosts').upsert({
+    property_id: propId,
+    host_id:     _user.id,
+    co_host_id:  coHostId || '00000000-0000-0000-0000-000000000000',
+    email:       email,
+    permissions: perms,
+    status:      coHostId ? 'active' : 'pending'
+  }, { onConflict: 'property_id,email' });
+
+  if (error) { showToast('Error: '+error.message); return; }
+  document.getElementById('ch-email').value = '';
+  showToast(coHostId ? '✅ Co-host added!' : '✅ Invite sent to '+email+'!');
+  loadCoHosts();
+}
+
+async function removeCoHost(id) {
+  if (!confirm('Remove this co-host?')) return;
+  await _db.from('rentleeys_co_hosts').delete().eq('id', id).eq('host_id', _user.id);
+  showToast('Co-host removed');
+  loadCoHosts();
+}
 </script>
 
   <!-- DISCOUNTS PAGE -->
@@ -1036,6 +1180,58 @@ async function deleteCode(id) {
     <div class="card" style="margin-top:20px;">
       <div class="card-title">Your codes</div>
       <div id="dc-list"><div class="empty"><div class="empty-icon">🏷️</div><div class="empty-title">No codes yet</div></div></div>
+    </div>
+  </div>
+
+
+  <!-- CO-HOSTS PAGE -->
+  <div class="page" id="page-cohosts" style="display:none;">
+    <div class="page-header">
+      <div class="page-title">Co-hosts 🤝</div>
+      <div class="page-sub">Invite others to help manage your properties</div>
+    </div>
+    <div class="cohost-wrap">
+
+      <!-- Invite form -->
+      <div class="cohost-invite-card">
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Invite a co-host</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.5;">Co-hosts can manage bookings, respond to messages, and update listings on your behalf.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div class="field" style="margin:0;">
+            <label>Property</label>
+            <select id="ch-property" style="margin-top:4px;">
+              <option value="">Select a listing...</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0;">
+            <label>Co-host email</label>
+            <input id="ch-email" type="email" placeholder="e.g. friend@email.com" style="margin-top:4px;"/>
+          </div>
+        </div>
+        <div style="margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;">Permissions</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-bookings" checked> Manage bookings</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-messages" checked> Reply to messages</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-listing"> Edit listing</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-calendar"> Manage calendar</label>
+          </div>
+        </div>
+        <button onclick="inviteCoHost()" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;">Send Invite</button>
+      </div>
+
+      <!-- Active co-hosts -->
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:12px;">Your co-hosts</div>
+      <div class="cohost-list" id="cohost-list">
+        <div class="empty"><div class="empty-icon">🤝</div><div class="empty-title">No co-hosts yet</div><div class="empty-sub">Invite someone to help manage your properties.</div></div>
+      </div>
+
+      <!-- Properties I co-host -->
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-top:28px;margin-bottom:12px;">Properties I co-host</div>
+      <div class="cohost-list" id="cohosting-list">
+        <div class="empty"><div class="empty-icon">🏠</div><div class="empty-title">Not co-hosting any properties</div></div>
+      </div>
+
     </div>
   </div>
 

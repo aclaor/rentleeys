@@ -915,12 +915,36 @@ function renderCalendar() {
 function calToggle(el) { toggleDate(el.getAttribute("data-date")); }
 async function toggleDate(ds) {
   if (!_calPropId) return;
+
+  // Never allow blocking a guest-paid/confirmed booking date
+  if (_bookedDates.has(ds)) {
+    showToast('This date is already booked by a guest and cannot be blocked.');
+    return;
+  }
+
   if (_blockedDates.has(ds)) {
-    await _db.from('rentleeys_blocked_dates').delete().eq('property_id',_calPropId).eq('date',ds);
+    await _db.from('rentleeys_blocked_dates').delete()
+      .eq('property_id', _calPropId).eq('date', ds);
     _blockedDates.delete(ds);
+    showToast('Date unblocked');
   } else {
-    await _db.from('rentleeys_blocked_dates').insert({property_id:_calPropId, host_id:_user.id, date:ds});
+    // DB-level safety check in case local state is stale
+    var { data: existing } = await _db.from('rentleeys_bookings')
+      .select('id').eq('property_id', _calPropId).eq('status', 'confirmed')
+      .lte('check_in', ds).gt('check_out', ds).maybeSingle();
+
+    if (existing) {
+      showToast('Cannot block — a confirmed guest booking exists for this date.');
+      _bookedDates.add(ds);
+      renderCalendar();
+      return;
+    }
+
+    await _db.from('rentleeys_blocked_dates').upsert({
+      property_id: _calPropId, host_id: _user.id, date: ds
+    }, { onConflict: 'property_id,date' });
     _blockedDates.add(ds);
+    showToast('Date blocked');
   }
   renderCalendar();
 }

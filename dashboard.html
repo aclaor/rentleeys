@@ -1219,82 +1219,49 @@ async function removeCoHost(id) {
     </div>
   </div>
 
-
   <!-- CO-HOSTS PAGE -->
   <div class="page" id="page-cohosts">
     <div class="page-header">
       <div class="page-title">Co-hosts 🤝</div>
       <div class="page-sub">Invite others to help manage your properties</div>
     </div>
-    <div class="cohost-wrap">
 
-      <!-- Invite form -->
-      <div class="cohost-invite-card">
-        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Invite a co-host</div>
-        <div style="font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.5;">Co-hosts can manage bookings, respond to messages, and update listings on your behalf.</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-          <div class="field" style="margin:0;">
-            <label>Property</label>
-            <select id="ch-property" style="margin-top:4px;">
-              <option value="">Select a listing...</option>
-            </select>
-          </div>
-          <div class="field" style="margin:0;">
-            <label>Co-host email</label>
-            <input id="ch-email" type="email" placeholder="e.g. friend@email.com" style="margin-top:4px;"/>
-          </div>
+    <div class="card">
+      <div class="card-title">Invite a co-host</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.5;">Co-hosts can manage bookings, respond to messages, and update listings on your behalf.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div class="field" style="margin:0;">
+          <label>Property</label>
+          <select id="ch-property" style="margin-top:4px;"><option value="">Select a listing...</option></select>
         </div>
-        <div style="margin-bottom:16px;">
-          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;">Permissions</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-bookings" checked> Manage bookings</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-messages" checked> Reply to messages</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-listing"> Edit listing</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-calendar"> Manage calendar</label>
-          </div>
+        <div class="field" style="margin:0;">
+          <label>Co-host email</label>
+          <input id="ch-email" type="email" placeholder="e.g. friend@email.com" style="margin-top:4px;"/>
         </div>
-        <button onclick="inviteCoHost()" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;">Send Invite</button>
       </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;">Permissions</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-bookings" checked> Manage bookings</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-messages" checked> Reply to messages</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-listing"> Edit listing</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-calendar"> Manage calendar</label>
+        </div>
+      </div>
+      <button onclick="inviteCoHost()" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;">Send Invite</button>
+    </div>
 
-      <!-- Active co-hosts -->
-      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:12px;">Your co-hosts</div>
+    <div class="card">
+      <div class="card-title">Your co-hosts</div>
       <div class="cohost-list" id="cohost-list">
         <div class="empty"><div class="empty-icon">🤝</div><div class="empty-title">No co-hosts yet</div><div class="empty-sub">Invite someone to help manage your properties.</div></div>
       </div>
+    </div>
 
-      <!-- Properties I co-host -->
-      <div style="font-size:15px;font-weight:700;color:var(--text);margin-top:28px;margin-bottom:12px;">Properties I co-host</div>
+    <div class="card">
+      <div class="card-title">Properties I co-host</div>
       <div class="cohost-list" id="cohosting-list">
         <div class="empty"><div class="empty-icon">🏠</div><div class="empty-title">Not co-hosting any properties</div></div>
-      </div>
-
-    </div>
-  </div>
-
-</body>
-</html>  <!-- CALENDAR -->
-  <div class="page" id="page-calendar" style="overflow-x:hidden;width:100%;box-sizing:border-box;">
-    <div class="page-header" style="text-align:center;">
-      <div class="page-title">Availability Calendar 📅</div>
-      <div class="page-sub">Block dates when your property is unavailable</div>
-    </div>
-    <div class="cal-wrap" style="width:560px;max-width:100%;box-sizing:border-box;margin:0 auto;">
-      <select class="listing-cal-select" id="cal-listing-select" onchange="loadCalendar()">
-        <option value="">Select a listing...</option>
-      </select>
-      <div id="cal-container" class="cal-card" style="display:none;">
-        <div class="cal-header">
-          <button class="cal-nav-btn" onclick="changeMonth(-1)">←</button>
-          <div class="cal-title" id="cal-title"></div>
-          <button class="cal-nav-btn" onclick="changeMonth(1)">→</button>
-        </div>
-        <div class="cal-grid" id="cal-grid"></div>
-        <div class="cal-legend">
-          <span><span class="cal-legend-dot" style="background:#fef2f2;border:1px solid #fecaca;"></span>Blocked by you</span>
-          <span><span class="cal-legend-dot" style="background:#fef3c7;border:1px solid #fde68a;"></span>Booked by guest</span>
-          <span><span class="cal-legend-dot" style="background:#fff;border:1px solid #e5e7eb;"></span>Available</span>
-        </div>
-        <div class="cal-hint">Click a date to block or unblock it. Booked dates cannot be changed.</div>
       </div>
     </div>
   </div>

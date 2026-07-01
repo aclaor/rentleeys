@@ -1266,6 +1266,33 @@ async function removeCoHost(id) {
     </div>
   </div>
 
+  <!-- CALENDAR -->
+  <div class="page" id="page-calendar" style="overflow-x:hidden;width:100%;box-sizing:border-box;">
+    <div class="page-header" style="text-align:center;">
+      <div class="page-title">Availability Calendar 📅</div>
+      <div class="page-sub">Block dates when your property is unavailable</div>
+    </div>
+    <div class="cal-wrap" style="width:560px;max-width:100%;box-sizing:border-box;margin:0 auto;">
+      <select class="listing-cal-select" id="cal-listing-select" onchange="loadCalendar()">
+        <option value="">Select a listing...</option>
+      </select>
+      <div id="cal-container" class="cal-card" style="display:none;">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="changeMonth(-1)">←</button>
+          <div class="cal-title" id="cal-title"></div>
+          <button class="cal-nav-btn" onclick="changeMonth(1)">→</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-legend">
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fff0f4;border-color:#fecdd9;"></div>Blocked by you</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fef3c7;border-color:#fde68a;"></div>Booked by guest</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fff;border-color:#e5e7eb;"></div>Available</div>
+        </div>
+        <div class="cal-hint">Click a date to block or unblock it. Booked dates cannot be changed.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ID VERIFICATION -->
   <div class="page" id="page-verification">
     <div class="page-header">

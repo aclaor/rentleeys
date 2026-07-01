@@ -310,7 +310,6 @@ async function loadResults() {
     var emoji = EMOJIS[p.property_type] || '🏠';
     var color = COLORS[i % COLORS.length];
     var sym = p.currency === 'PHP' ? '₱' : '$';
-    var rating = null;
     var ratingHTML = '<span style="font-size:11px;color:var(--text3);">New</span>';
     return '<a class="prop-card" href="listing.html?id='+p.id+'">'
       +'<div class="prop-img" style="background:'+(p.images&&p.images[0]?'none':color)+';">'

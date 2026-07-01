@@ -420,6 +420,185 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);display:fle
     </div>
   </div>
 
+  <!-- DISCOUNTS PAGE -->
+  <div class="page" id="page-discounts">
+    <div class="page-header">
+      <div class="page-title">Discount Codes 🏷️</div>
+      <div class="page-sub">Create promo codes for your listings</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Create a new code</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div class="field"><label>Code</label><input id="dc-code" placeholder="e.g. WELCOME20" style="text-transform:uppercase;"/></div>
+        <div class="field"><label>Discount type</label>
+          <select id="dc-type">
+            <option value="percent">Percentage (%)</option>
+            <option value="flat">Flat amount (₱)</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div class="field"><label>Discount value</label><input id="dc-value" type="number" placeholder="e.g. 20" min="1"/></div>
+        <div class="field"><label>Max uses (0 = unlimited)</label><input id="dc-max-uses" type="number" placeholder="0" min="0" value="0"/></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div class="field"><label>Valid from</label><input id="dc-from" type="date"/></div>
+        <div class="field"><label>Valid until</label><input id="dc-to" type="date"/></div>
+      </div>
+      <button onclick="createDiscountCode()" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;">Create Code</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Your codes</div>
+      <div id="dc-list"><div class="empty"><div class="empty-icon">🏷️</div><div class="empty-title">No codes yet</div></div></div>
+    </div>
+  </div>
+
+  <!-- CO-HOSTS PAGE -->
+  <div class="page" id="page-cohosts">
+    <div class="page-header">
+      <div class="page-title">Co-hosts 🤝</div>
+      <div class="page-sub">Invite others to help manage your properties</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Invite a co-host</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.5;">Co-hosts can manage bookings, respond to messages, and update listings on your behalf.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div class="field" style="margin:0;">
+          <label>Property</label>
+          <select id="ch-property" style="margin-top:4px;"><option value="">Select a listing...</option></select>
+        </div>
+        <div class="field" style="margin:0;">
+          <label>Co-host email</label>
+          <input id="ch-email" type="email" placeholder="e.g. friend@email.com" style="margin-top:4px;"/>
+        </div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;">Permissions</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-bookings" checked> Manage bookings</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-messages" checked> Reply to messages</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-listing"> Edit listing</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-calendar"> Manage calendar</label>
+        </div>
+      </div>
+      <button onclick="inviteCoHost()" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;">Send Invite</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Your co-hosts</div>
+      <div class="cohost-list" id="cohost-list">
+        <div class="empty"><div class="empty-icon">🤝</div><div class="empty-title">No co-hosts yet</div><div class="empty-sub">Invite someone to help manage your properties.</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Properties I co-host</div>
+      <div class="cohost-list" id="cohosting-list">
+        <div class="empty"><div class="empty-icon">🏠</div><div class="empty-title">Not co-hosting any properties</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="page" id="page-calendar" style="overflow-x:hidden;width:100%;box-sizing:border-box;">
+    <div class="page-header" style="text-align:center;">
+      <div class="page-title">Availability Calendar 📅</div>
+      <div class="page-sub">Block dates when your property is unavailable</div>
+    </div>
+    <div class="cal-wrap" style="width:560px;max-width:100%;box-sizing:border-box;margin:0 auto;">
+      <select class="listing-cal-select" id="cal-listing-select" onchange="loadCalendar()">
+        <option value="">Select a listing...</option>
+      </select>
+      <div id="cal-container" class="cal-card" style="display:none;">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="changeMonth(-1)">←</button>
+          <div class="cal-title" id="cal-title"></div>
+          <button class="cal-nav-btn" onclick="changeMonth(1)">→</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-legend">
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fff0f4;border-color:#fecdd9;"></div>Blocked by you</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fef3c7;border-color:#fde68a;"></div>Booked by guest</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fff;border-color:#e5e7eb;"></div>Available</div>
+        </div>
+        <div class="cal-hint">Click a date to block or unblock it. Booked dates cannot be changed.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ID VERIFICATION -->
+  <div class="page" id="page-verification">
+    <div class="page-header">
+      <div class="page-title">ID Verification 🪩</div>
+      <div class="page-sub">Verify your identity to build trust with guests</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:24px;max-width:880px;align-items:start;">
+
+      <div class="verif-card">
+        <div id="verif-status-badge" class="verif-badge unverified">⚠️ Not verified</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">Upload a government-issued ID</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:22px;line-height:1.6;">Accepted: passport, driver’s license, national ID, or any government photo ID.</div>
+
+        <div id="verif-upload-area" class="verif-upload" onclick="document.getElementById('id-file-input').click()">
+          <div style="width:60px;height:60px;background:var(--primary-light);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:28px;">🪩</div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">Click to upload your ID</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">JPG, PNG or PDF · Max 5MB</div>
+          <div style="display:inline-block;padding:9px 22px;background:var(--primary);color:#fff;border-radius:9px;font-size:13px;font-weight:700;">Choose file</div>
+        </div>
+
+        <input id="id-file-input" type="file" accept="image/*,.pdf" style="display:none;" onchange="handleIdUpload(this)">
+        <img id="id-preview" class="verif-preview" style="display:none;">
+        <button id="submit-verif-btn" onclick="submitVerification()" class="verif-submit-btn" style="display:none;">Submit for verification →</button>
+
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-top:16px;padding:12px 16px;background:var(--bg2);border-radius:10px;">
+          <span style="font-size:18px;flex-shrink:0;">🔒</span>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6;">Your ID is reviewed within 24 hours and is <strong>never shared</strong> with guests or third parties.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:22px;">
+          <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;">Why get verified?</div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <div style="width:36px;height:36px;background:#fff0f4;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">✅</div>
+              <div><div style="font-size:13px;font-weight:600;color:var(--text);">Verified badge on listings</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">Guests trust verified hosts more</div></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <div style="width:36px;height:36px;background:#f0fdf4;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">📈</div>
+              <div><div style="font-size:13px;font-weight:600;color:var(--text);">More bookings</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">Verified listings rank higher in search</div></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <div style="width:36px;height:36px;background:#eff6ff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">🛡️</div>
+              <div><div style="font-size:13px;font-weight:600;color:var(--text);">Safer community</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">Keeps Rentleeys trustworthy for everyone</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:22px;">
+          <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;">How it works</div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;gap:12px;align-items:center;">
+              <div style="width:30px;height:30px;background:var(--primary);border-radius:50%;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+              <div style="font-size:13px;color:var(--text);">Upload a clear photo of your ID</div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;">
+              <div style="width:30px;height:30px;background:var(--primary);border-radius:50%;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+              <div style="font-size:13px;color:var(--text);">Our team reviews within 24 hours</div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;">
+              <div style="width:30px;height:30px;background:var(--primary);border-radius:50%;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
+              <div style="font-size:13px;color:var(--text);">Get your ✅ verified badge on all listings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1185,182 +1364,3 @@ async function removeCoHost(id) {
   loadCoHosts();
 }
 </script>
-
-  <!-- DISCOUNTS PAGE -->
-  <div class="page" id="page-discounts">
-    <div class="page-header">
-      <div class="page-title">Discount Codes 🏷️</div>
-      <div class="page-sub">Create promo codes for your listings</div>
-    </div>
-    <div class="card">
-      <div class="card-title">Create a new code</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-        <div class="field"><label>Code</label><input id="dc-code" placeholder="e.g. WELCOME20" style="text-transform:uppercase;"/></div>
-        <div class="field"><label>Discount type</label>
-          <select id="dc-type">
-            <option value="percent">Percentage (%)</option>
-            <option value="flat">Flat amount (₱)</option>
-          </select>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-        <div class="field"><label>Discount value</label><input id="dc-value" type="number" placeholder="e.g. 20" min="1"/></div>
-        <div class="field"><label>Max uses (0 = unlimited)</label><input id="dc-max-uses" type="number" placeholder="0" min="0" value="0"/></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-        <div class="field"><label>Valid from</label><input id="dc-from" type="date"/></div>
-        <div class="field"><label>Valid until</label><input id="dc-to" type="date"/></div>
-      </div>
-      <button onclick="createDiscountCode()" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;">Create Code</button>
-    </div>
-    <div class="card">
-      <div class="card-title">Your codes</div>
-      <div id="dc-list"><div class="empty"><div class="empty-icon">🏷️</div><div class="empty-title">No codes yet</div></div></div>
-    </div>
-  </div>
-
-  <!-- CO-HOSTS PAGE -->
-  <div class="page" id="page-cohosts">
-    <div class="page-header">
-      <div class="page-title">Co-hosts 🤝</div>
-      <div class="page-sub">Invite others to help manage your properties</div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Invite a co-host</div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.5;">Co-hosts can manage bookings, respond to messages, and update listings on your behalf.</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-        <div class="field" style="margin:0;">
-          <label>Property</label>
-          <select id="ch-property" style="margin-top:4px;"><option value="">Select a listing...</option></select>
-        </div>
-        <div class="field" style="margin:0;">
-          <label>Co-host email</label>
-          <input id="ch-email" type="email" placeholder="e.g. friend@email.com" style="margin-top:4px;"/>
-        </div>
-      </div>
-      <div style="margin-bottom:16px;">
-        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;">Permissions</div>
-        <div style="display:flex;gap:16px;flex-wrap:wrap;">
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-bookings" checked> Manage bookings</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-messages" checked> Reply to messages</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-listing"> Edit listing</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="perm-calendar"> Manage calendar</label>
-        </div>
-      </div>
-      <button onclick="inviteCoHost()" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;">Send Invite</button>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Your co-hosts</div>
-      <div class="cohost-list" id="cohost-list">
-        <div class="empty"><div class="empty-icon">🤝</div><div class="empty-title">No co-hosts yet</div><div class="empty-sub">Invite someone to help manage your properties.</div></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Properties I co-host</div>
-      <div class="cohost-list" id="cohosting-list">
-        <div class="empty"><div class="empty-icon">🏠</div><div class="empty-title">Not co-hosting any properties</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- CALENDAR -->
-  <div class="page" id="page-calendar" style="overflow-x:hidden;width:100%;box-sizing:border-box;">
-    <div class="page-header" style="text-align:center;">
-      <div class="page-title">Availability Calendar 📅</div>
-      <div class="page-sub">Block dates when your property is unavailable</div>
-    </div>
-    <div class="cal-wrap" style="width:560px;max-width:100%;box-sizing:border-box;margin:0 auto;">
-      <select class="listing-cal-select" id="cal-listing-select" onchange="loadCalendar()">
-        <option value="">Select a listing...</option>
-      </select>
-      <div id="cal-container" class="cal-card" style="display:none;">
-        <div class="cal-header">
-          <button class="cal-nav-btn" onclick="changeMonth(-1)">←</button>
-          <div class="cal-title" id="cal-title"></div>
-          <button class="cal-nav-btn" onclick="changeMonth(1)">→</button>
-        </div>
-        <div class="cal-grid" id="cal-grid"></div>
-        <div class="cal-legend">
-          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fff0f4;border-color:#fecdd9;"></div>Blocked by you</div>
-          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fef3c7;border-color:#fde68a;"></div>Booked by guest</div>
-          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fff;border-color:#e5e7eb;"></div>Available</div>
-        </div>
-        <div class="cal-hint">Click a date to block or unblock it. Booked dates cannot be changed.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ID VERIFICATION -->
-  <div class="page" id="page-verification">
-    <div class="page-header">
-      <div class="page-title">ID Verification 🪩</div>
-      <div class="page-sub">Verify your identity to build trust with guests</div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 320px;gap:24px;max-width:880px;align-items:start;">
-
-      <div class="verif-card">
-        <div id="verif-status-badge" class="verif-badge unverified">⚠️ Not verified</div>
-        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">Upload a government-issued ID</div>
-        <div style="font-size:13px;color:var(--text2);margin-bottom:22px;line-height:1.6;">Accepted: passport, driver’s license, national ID, or any government photo ID.</div>
-
-        <div id="verif-upload-area" class="verif-upload" onclick="document.getElementById('id-file-input').click()">
-          <div style="width:60px;height:60px;background:var(--primary-light);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:28px;">🪩</div>
-          <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">Click to upload your ID</div>
-          <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">JPG, PNG or PDF · Max 5MB</div>
-          <div style="display:inline-block;padding:9px 22px;background:var(--primary);color:#fff;border-radius:9px;font-size:13px;font-weight:700;">Choose file</div>
-        </div>
-
-        <input id="id-file-input" type="file" accept="image/*,.pdf" style="display:none;" onchange="handleIdUpload(this)">
-        <img id="id-preview" class="verif-preview" style="display:none;">
-        <button id="submit-verif-btn" onclick="submitVerification()" class="verif-submit-btn" style="display:none;">Submit for verification →</button>
-
-        <div style="display:flex;align-items:flex-start;gap:10px;margin-top:16px;padding:12px 16px;background:var(--bg2);border-radius:10px;">
-          <span style="font-size:18px;flex-shrink:0;">🔒</span>
-          <div style="font-size:12px;color:var(--text2);line-height:1.6;">Your ID is reviewed within 24 hours and is <strong>never shared</strong> with guests or third parties.</div>
-        </div>
-      </div>
-
-      <div style="display:flex;flex-direction:column;gap:16px;">
-        <div style="background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:22px;">
-          <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;">Why get verified?</div>
-          <div style="display:flex;flex-direction:column;gap:14px;">
-            <div style="display:flex;gap:12px;align-items:flex-start;">
-              <div style="width:36px;height:36px;background:#fff0f4;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">✅</div>
-              <div><div style="font-size:13px;font-weight:600;color:var(--text);">Verified badge on listings</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">Guests trust verified hosts more</div></div>
-            </div>
-            <div style="display:flex;gap:12px;align-items:flex-start;">
-              <div style="width:36px;height:36px;background:#f0fdf4;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">📈</div>
-              <div><div style="font-size:13px;font-weight:600;color:var(--text);">More bookings</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">Verified listings rank higher in search</div></div>
-            </div>
-            <div style="display:flex;gap:12px;align-items:flex-start;">
-              <div style="width:36px;height:36px;background:#eff6ff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">🛡️</div>
-              <div><div style="font-size:13px;font-weight:600;color:var(--text);">Safer community</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">Keeps Rentleeys trustworthy for everyone</div></div>
-            </div>
-          </div>
-        </div>
-
-        <div style="background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:22px;">
-          <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;">How it works</div>
-          <div style="display:flex;flex-direction:column;gap:14px;">
-            <div style="display:flex;gap:12px;align-items:center;">
-              <div style="width:30px;height:30px;background:var(--primary);border-radius:50%;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
-              <div style="font-size:13px;color:var(--text);">Upload a clear photo of your ID</div>
-            </div>
-            <div style="display:flex;gap:12px;align-items:center;">
-              <div style="width:30px;height:30px;background:var(--primary);border-radius:50%;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
-              <div style="font-size:13px;color:var(--text);">Our team reviews within 24 hours</div>
-            </div>
-            <div style="display:flex;gap:12px;align-items:center;">
-              <div style="width:30px;height:30px;background:var(--primary);border-radius:50%;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
-              <div style="font-size:13px;color:var(--text);">Get your ✅ verified badge on all listings</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>

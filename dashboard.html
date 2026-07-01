@@ -150,8 +150,8 @@ body{background:var(--bg2);color:var(--text);font-family:var(--body);display:fle
 .dc-del:hover{color:#dc2626;}
 
 /* ── CO-HOSTS ──────────────────────────────────────────── */
-.cohost-wrap{max-width:700px;}
-.cohost-invite-card{background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;}
+.cohost-wrap{width:100%;}
+.cohost-invite-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;}
 .cohost-list{display:flex;flex-direction:column;gap:12px;}
 .cohost-item{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;}
 .cohost-avatar{width:42px;height:42px;border-radius:50%;background:var(--primary-light);color:var(--primary);font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -1192,7 +1192,7 @@ async function removeCoHost(id) {
       <div class="page-title">Discount Codes 🏷️</div>
       <div class="page-sub">Create promo codes for your listings</div>
     </div>
-    <div class="card" style="max-width:600px;">
+    <div class="card">
       <div class="card-title">Create a new code</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
         <div class="field"><label>Code</label><input id="dc-code" placeholder="e.g. WELCOME20" style="text-transform:uppercase;"/></div>
@@ -1213,7 +1213,7 @@ async function removeCoHost(id) {
       </div>
       <button onclick="createDiscountCode()" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;">Create Code</button>
     </div>
-    <div class="card" style="margin-top:20px;">
+    <div class="card">
       <div class="card-title">Your codes</div>
       <div id="dc-list"><div class="empty"><div class="empty-icon">🏷️</div><div class="empty-title">No codes yet</div></div></div>
     </div>

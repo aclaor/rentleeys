@@ -1457,4 +1457,145 @@ async function removeCoHost(id) {
   showToast('Co-host removed');
   loadCoHosts();
 }
+
+// ── RENTLEEYS AI ─────────────────────────────────────────
+var _aiOpen    = false;
+var _aiHistory = [];
+var _aiListings= [];
+
+function toggleAI() {
+  _aiOpen = !_aiOpen;
+  var panel = document.getElementById('ai-panel');
+  if (panel) panel.classList.toggle('open', _aiOpen);
+  if (_aiOpen) {
+    loadAIListings();
+    setTimeout(function(){ var i=document.getElementById('ai-input'); if(i) i.focus(); },200);
+  }
+}
+
+function quickAsk(btn) {
+  var input = document.getElementById('ai-input');
+  if (input) { input.value = btn.textContent.trim(); sendAI(); }
+  var q = document.getElementById('ai-quick');
+  if (q) q.style.display='none';
+}
+
+async function loadAIListings() {
+  if (_aiListings.length > 0) return;
+  try {
+    var r = await _db.from('rentleeys_properties')
+      .select('id,title,city,province,property_type,price_per_night,price_per_month,minimum_stay,bedrooms,max_guests,amenities,images,currency')
+      .eq('is_approved',true).eq('is_available',true).limit(100);
+    _aiListings = r.data || [];
+  } catch(e) { console.log('AI listings failed',e); }
+}
+
+function addAIMsg(text, role, cards) {
+  var msgs = document.getElementById('ai-messages');
+  if (!msgs) return;
+  var div = document.createElement('div');
+  div.className = 'ai-msg '+(role==='user'?'user':'bot');
+  div.innerHTML = text.replace(/\n/g,'<br>');
+  msgs.appendChild(div);
+  if (cards && cards.length) {
+    cards.forEach(function(p) {
+      var sym = p.currency==='PHP'?'\u20b1':'$';
+      var price = p.price_per_month && p.minimum_stay>=30
+        ? sym+Number(p.price_per_month).toLocaleString()+'/month'
+        : sym+Number(p.price_per_night).toLocaleString()+'/night';
+      var a = document.createElement('a');
+      a.className='ai-listing-card'; a.href='listing.html?id='+p.id;
+      var img = p.images&&p.images[0]
+        ? '<img class="ai-card-img" src="'+p.images[0]+'" alt="'+p.title+'">'
+        : '<div class="ai-card-img-placeholder">🏠</div>';
+      a.innerHTML = img+'<div class="ai-card-body">'
+        +'<div class="ai-card-title">'+p.title+'</div>'
+        +'<div class="ai-card-loc">📍 '+(p.city||'')+(p.province?', '+p.province:'')+'</div>'
+        +'<div class="ai-card-price">'+price+' · '+p.bedrooms+' bed · '+p.max_guests+' guests</div>'
+        +'</div>';
+      msgs.appendChild(a);
+    });
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendAI() {
+  var input = document.getElementById('ai-input');
+  var text = input ? input.value.trim() : '';
+  if (!text) return;
+  input.value = '';
+  var q = document.getElementById('ai-quick'); if(q) q.style.display='none';
+  addAIMsg(text,'user');
+  var msgs = document.getElementById('ai-messages');
+  var typing = document.createElement('div');
+  typing.className='ai-msg typing'; typing.id='ai-typing';
+  typing.innerHTML='<span class="ai-typing-dot"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span>';
+  msgs.appendChild(typing); msgs.scrollTop=msgs.scrollHeight;
+  await loadAIListings();
+  var ctx = _aiListings.length>0
+    ? 'Listings: '+_aiListings.map(function(p){
+        return p.title+'|'+p.city+'|'+p.property_type+'|'+p.bedrooms+'bed|'+p.max_guests+'guests'
+          +'|\u20b1'+(p.price_per_night||0)+'/night'+(p.price_per_month?'|\u20b1'+p.price_per_month+'/month':'')
+          +'|amenities:'+(p.amenities||[]).join(',')+'|id:'+p.id;
+      }).join('; ')
+    : 'No listings loaded.';
+  _aiHistory.push({role:'user',content:text});
+  try {
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},
+      body:JSON.stringify({
+        model:'llama-3.3-70b-versatile',
+        messages:[
+          {role:'system',content:'You are a helpful AI assistant for Rentleeys host dashboard. Help hosts manage listings, respond to guests, improve earnings, and understand their bookings. When recommending listings end with LISTINGS:[id1,id2]. Be friendly and concise. '+ctx},
+          ..._aiHistory
+        ],
+        max_tokens:400,temperature:0.7
+      })
+    });
+    var data = await res.json();
+    var reply = data.choices&&data.choices[0]?data.choices[0].message.content:'Sorry, try again.';
+    var cards=[]; var m=reply.match(/LISTINGS:\[([^\]]*)\]/);
+    if(m&&m[1]){ var ids=m[1].split(',').map(function(s){return s.trim();});
+      cards=_aiListings.filter(function(p){return ids.indexOf(p.id)!==-1;}); }
+    var clean=reply.replace(/LISTINGS:\[[^\]]*\]/g,'').trim();
+    var t=document.getElementById('ai-typing'); if(t) t.remove();
+    addAIMsg(clean,'bot',cards);
+    _aiHistory.push({role:'assistant',content:reply});
+    if(_aiHistory.length>10) _aiHistory=_aiHistory.slice(-10);
+  } catch(e) {
+    var t=document.getElementById('ai-typing'); if(t) t.remove();
+    addAIMsg('Connection error. Please try again.','bot');
+  }
+}
 </script>
+
+<!-- AI CHAT PANEL -->
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-panel-header">
+    <div class="ai-panel-info">
+      <div class="ai-panel-avatar">🤖</div>
+      <div>
+        <div class="ai-panel-title">Rentleeys AI</div>
+        <div class="ai-panel-sub">Powered by Llama 3 · Free</div>
+      </div>
+    </div>
+    <button class="ai-close-btn" onclick="toggleAI()">✕</button>
+  </div>
+  <div class="ai-messages" id="ai-messages">
+    <div class="ai-msg bot">Hi! 👋 I can help you manage your listings, answer guest questions, or find insights. Ask me anything!</div>
+  </div>
+  <div class="ai-quick" id="ai-quick">
+    <button class="ai-quick-btn" onclick="quickAsk(this)">📊 Earnings tips</button>
+    <button class="ai-quick-btn" onclick="quickAsk(this)">💬 Draft guest message</button>
+    <button class="ai-quick-btn" onclick="quickAsk(this)">🏠 Improve listing</button>
+    <button class="ai-quick-btn" onclick="quickAsk(this)">🐾 Pet policy help</button>
+  </div>
+  <div class="ai-input-wrap">
+    <input class="ai-input" id="ai-input" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')sendAI()"/>
+    <button class="ai-send" onclick="sendAI()">➤</button>
+  </div>
+</div>
+
+</body>
+</html>

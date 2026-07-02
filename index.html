@@ -342,7 +342,46 @@ footer {
   .host-cta { text-align:center; justify-content:center; }
   .nav-links { display:none; }
 }
-#lang-menu.open{display:block!important;}</style>
+#lang-menu.open{display:block!important;}
+/* ── AI CHAT ────────────────────────────────────────────── */
+.ai-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:linear-gradient(135deg,#ff5a5f,#ff8a8e);color:#fff;border:none;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap;font-family:inherit;}
+.ai-btn:hover{opacity:.9;transform:translateY(-1px);}
+.ai-btn-nav{padding:7px 14px;font-size:13px;}
+.ai-panel{position:fixed;top:64px;right:16px;width:380px;max-height:560px;background:#fff;border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,0.15);z-index:1000;display:none;flex-direction:column;overflow:hidden;border:1px solid var(--border,#e5e7eb);}
+.ai-panel.open{display:flex;}
+.ai-panel-header{background:linear-gradient(135deg,#ff5a5f,#ff8a8e);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
+.ai-panel-info{display:flex;align-items:center;gap:10px;}
+.ai-panel-avatar{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.ai-panel-title{color:#fff;font-size:15px;font-weight:700;}
+.ai-panel-sub{color:rgba(255,255,255,0.8);font-size:11px;}
+.ai-close-btn{background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
+.ai-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;}
+.ai-msg{max-width:85%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.6;}
+.ai-msg.bot{background:#f3f4f6;color:#111827;align-self:flex-start;border-bottom-left-radius:4px;}
+.ai-msg.user{background:linear-gradient(135deg,#ff5a5f,#ff8a8e);color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
+.ai-msg.typing{background:#f3f4f6;align-self:flex-start;padding:14px;}
+.ai-typing-dot{width:6px;height:6px;border-radius:50%;background:#9ca3af;display:inline-block;margin:0 2px;animation:aiDot 1.2s infinite;}
+.ai-typing-dot:nth-child(2){animation-delay:.2s;}
+.ai-typing-dot:nth-child(3){animation-delay:.4s;}
+@keyframes aiDot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+.ai-listing-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-top:4px;cursor:pointer;transition:.2s;text-decoration:none;display:block;}
+.ai-listing-card:hover{border-color:#ff5a5f;box-shadow:0 2px 12px rgba(255,90,95,0.15);}
+.ai-card-img{width:100%;height:90px;object-fit:cover;display:block;background:linear-gradient(135deg,#ffecd2,#fcb69f);}
+.ai-card-img-placeholder{width:100%;height:90px;background:linear-gradient(135deg,#ffecd2,#fcb69f);display:flex;align-items:center;justify-content:center;font-size:28px;}
+.ai-card-body{padding:10px 12px;}
+.ai-card-title{font-size:13px;font-weight:700;color:#111827;margin-bottom:2px;}
+.ai-card-loc{font-size:11px;color:#6b7280;margin-bottom:4px;}
+.ai-card-price{font-size:13px;font-weight:800;color:#ff5a5f;}
+.ai-input-wrap{padding:12px 16px;border-top:1px solid #f3f4f6;display:flex;gap:8px;}
+.ai-input{flex:1;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:13px;outline:none;font-family:inherit;}
+.ai-input:focus{border-color:#ff5a5f;}
+.ai-send{width:40px;height:40px;border-radius:10px;background:#ff5a5f;border:none;cursor:pointer;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;}
+.ai-send:hover{background:#e84e53;}
+.ai-quick{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 12px;}
+.ai-quick-btn{padding:5px 12px;background:#fff0f4;color:#ff5a5f;border:1px solid #fecdd9;border-radius:20px;font-size:11px;cursor:pointer;font-weight:600;}
+.ai-quick-btn:hover{background:#fecdd9;}
+@media(max-width:480px){.ai-panel{width:calc(100vw - 32px);right:16px;top:60px;}}
+</style>
 </head>
 <body>
 
@@ -361,6 +400,7 @@ footer {
     <button id="lang-toggle" onclick="toggleLang()" style="background:none;border:1.5px solid var(--border);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);">🌐 <span id="lang-label">EN</span></button>
     <div id="lang-menu" style="display:none;position:absolute;top:38px;right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:6px;min-width:100px;z-index:300;"></div>
   </div>
+  <button class="ai-btn ai-btn-nav" onclick="toggleAI()">🤖 AI Search</button>
   <div id="nav-auth-btns">
     <button class="nav-btn outline" onclick="openAuth('login')" data-i18n="nav_signin">Sign in</button>
     <button class="nav-btn" onclick="openAuth('signup')" data-i18n="nav_signup">Sign up free</button>
@@ -1067,6 +1107,171 @@ document.addEventListener('click', function(e) {
 });
 
 document.addEventListener('DOMContentLoaded', applyTranslations);
+</script>
+
+<!-- AI CHAT PANEL -->
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-panel-header">
+    <div class="ai-panel-info">
+      <div class="ai-panel-avatar">🤖</div>
+      <div>
+        <div class="ai-panel-title">Rentleeys AI</div>
+        <div class="ai-panel-sub">Powered by Llama 3 · Free</div>
+      </div>
+    </div>
+    <button class="ai-close-btn" onclick="toggleAI()">✕</button>
+  </div>
+  <div class="ai-messages" id="ai-messages">
+    <div class="ai-msg bot">Hi! 👋 I can help you find the perfect property. Try asking me anything!<br><br>Examples:<br>• <em>2BR condo in Makati with pool</em><br>• <em>Monthly rental under ₱15,000</em><br>• <em>Pet-friendly place near BGC</em></div>
+  </div>
+  <div class="ai-quick" id="ai-quick">
+    <button class="ai-quick-btn" onclick="quickAsk(this)">🐾 Pet-friendly</button>
+    <button class="ai-quick-btn" onclick="quickAsk(this)">🏊 Has pool</button>
+    <button class="ai-quick-btn" onclick="quickAsk(this)">📅 Monthly rent</button>
+    <button class="ai-quick-btn" onclick="quickAsk(this)">🚗 With parking</button>
+  </div>
+  <div class="ai-input-wrap">
+    <input class="ai-input" id="ai-input" placeholder="Ask anything about our properties..." onkeydown="if(event.key==='Enter')sendAI()"/>
+    <button class="ai-send" onclick="sendAI()">➤</button>
+  </div>
+</div>
+<script>
+// ── RENTLEEYS AI ─────────────────────────────────────────
+var _aiOpen     = false;
+var _aiHistory  = [];
+var _aiListings = [];
+
+function toggleAI() {
+  _aiOpen = !_aiOpen;
+  var panel = document.getElementById('ai-panel');
+  if (panel) panel.classList.toggle('open', _aiOpen);
+  if (_aiOpen) {
+    loadAIListings();
+    setTimeout(function(){ var i=document.getElementById('ai-input'); if(i) i.focus(); }, 200);
+  }
+}
+
+function quickAsk(btn) {
+  var input = document.getElementById('ai-input');
+  if (input) { input.value = btn.textContent.trim(); sendAI(); }
+  var quick = document.getElementById('ai-quick');
+  if (quick) quick.style.display = 'none';
+}
+
+async function loadAIListings() {
+  if (_aiListings.length > 0) return;
+  try {
+    var supa = typeof SUPA_URL !== 'undefined' ? SUPA_URL : '';
+    var key  = typeof SUPA_ANON !== 'undefined' ? SUPA_ANON : '';
+    if (!supa || !key) return;
+    var r = await fetch(supa+'/rest/v1/rentleeys_properties?select=id,title,city,province,country,property_type,price_per_night,price_per_month,minimum_stay,bedrooms,bathrooms,max_guests,amenities,images,currency&is_approved=eq.true&is_available=eq.true&limit=100', {
+      headers: { 'apikey': key, 'Authorization': 'Bearer '+key }
+    });
+    _aiListings = await r.json();
+  } catch(e) { console.log('AI listings load failed', e); }
+}
+
+function addAIMsg(text, role, cards) {
+  var msgs = document.getElementById('ai-messages');
+  if (!msgs) return;
+  var div = document.createElement('div');
+  div.className = 'ai-msg ' + (role==='user' ? 'user' : 'bot');
+  div.innerHTML = text.replace(/\n/g,'<br>');
+  msgs.appendChild(div);
+  if (cards && cards.length) {
+    cards.forEach(function(p) {
+      var sym   = p.currency === 'PHP' ? '\u20b1' : '$';
+      var price = p.price_per_month && p.minimum_stay >= 30
+        ? sym+Number(p.price_per_month).toLocaleString()+'/month'
+        : sym+Number(p.price_per_night).toLocaleString()+'/night';
+      var a = document.createElement('a');
+      a.className = 'ai-listing-card';
+      a.href = 'listing.html?id='+p.id;
+      var img = p.images && p.images[0]
+        ? '<img class="ai-card-img" src="'+p.images[0]+'" alt="'+p.title+'">'
+        : '<div class="ai-card-img-placeholder">\u1f3e0</div>';
+      a.innerHTML = img+'<div class="ai-card-body">'
+        +'<div class="ai-card-title">'+p.title+'</div>'
+        +'<div class="ai-card-loc">\u1f4cd '+(p.city||'')+(p.province?', '+p.province:'')+'</div>'
+        +'<div class="ai-card-price">'+price+' &middot; '+p.bedrooms+' bed &middot; '+p.max_guests+' guests</div>'
+        +'</div>';
+      msgs.appendChild(a);
+    });
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendAI() {
+  var input = document.getElementById('ai-input');
+  var text  = input ? input.value.trim() : '';
+  if (!text) return;
+  input.value = '';
+  var quick = document.getElementById('ai-quick');
+  if (quick) quick.style.display = 'none';
+
+  addAIMsg(text, 'user');
+
+  // Typing indicator
+  var msgs = document.getElementById('ai-messages');
+  var typing = document.createElement('div');
+  typing.className = 'ai-msg typing'; typing.id = 'ai-typing';
+  typing.innerHTML = '<span class="ai-typing-dot"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span>';
+  msgs.appendChild(typing); msgs.scrollTop = msgs.scrollHeight;
+
+  await loadAIListings();
+
+  var ctx = _aiListings.length > 0
+    ? 'Listings: ' + _aiListings.map(function(p) {
+        return p.title+'|'+p.city+','+(p.province||p.country||'')+
+               '|'+p.property_type+'|'+p.bedrooms+'bed|'+p.max_guests+'guests'+
+               '|\u20b1'+(p.price_per_night||0)+'/night'+(p.price_per_month?'|\u20b1'+p.price_per_month+'/month':'')+
+               '|amenities:'+(p.amenities||[]).join(',')+'|id:'+p.id;
+      }).join('; ')
+    : 'No listings loaded yet.';
+
+  _aiHistory.push({ role:'user', content:text });
+
+  try {
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer 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' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          {
+            role:'system',
+            content:'You are a helpful AI assistant for Rentleeys, a property rental platform in the Philippines. '
+              +'Help guests find properties and answer questions. '
+              +'When you find matching listings, end your reply with LISTINGS:[id1,id2,id3] using the exact IDs. '
+              +'Only recommend listings that actually match the request. '
+              +'Answer questions about pets, parking, pool, WiFi etc from the amenities data. '
+              +'Be friendly and concise (2-3 sentences). '
+              +ctx
+          },
+          ..._aiHistory
+        ],
+        max_tokens:400,
+        temperature:0.7
+      })
+    });
+    var data = await res.json();
+    var reply = data.choices && data.choices[0] ? data.choices[0].message.content : 'Sorry, I could not process that. Please try again.';
+    var cards = [];
+    var m = reply.match(/LISTINGS:\[([^\]]*)\]/);
+    if (m && m[1]) {
+      var ids = m[1].split(',').map(function(s){ return s.trim(); });
+      cards = _aiListings.filter(function(p){ return ids.indexOf(p.id) !== -1; });
+    }
+    var clean = reply.replace(/LISTINGS:\[[^\]]*\]/g,'').trim();
+    var t = document.getElementById('ai-typing'); if(t) t.remove();
+    addAIMsg(clean, 'bot', cards);
+    _aiHistory.push({ role:'assistant', content:reply });
+    if (_aiHistory.length > 10) _aiHistory = _aiHistory.slice(-10);
+  } catch(e) {
+    var t = document.getElementById('ai-typing'); if(t) t.remove();
+    addAIMsg('Sorry, having trouble connecting. Please try again.', 'bot');
+  }
+}
 </script>
 </body>
 </html>

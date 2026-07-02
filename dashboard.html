@@ -1458,10 +1458,292 @@ async function removeCoHost(id) {
   loadCoHosts();
 }
 
-// ── RENTLEEYS AI ─────────────────────────────────────────
-var _aiOpen    = false;
-var _aiHistory = [];
-var _aiListings= [];
+
+// ── RENTLEEYS AI (AGENTIC) ──────────────────────────────
+var _aiOpen     = false;
+var _aiHistory  = [];
+var _aiListings = [];
+var _aiPending  = null; // pending action waiting for confirmation
+
+// ── Tools the AI can call ─────────────────────────────────
+var AI_TOOLS = [
+  {
+    type: 'function',
+    function: {
+      name: 'search_listings',
+      description: 'Search available property listings by location, type, price, amenities, guests',
+      parameters: {
+        type: 'object',
+        properties: {
+          city:     { type: 'string', description: 'City or location to search in' },
+          type:     { type: 'string', description: 'Property type: apartment, house, condo, villa, room' },
+          max_price:{ type: 'number', description: 'Maximum price per night in PHP' },
+          min_beds: { type: 'number', description: 'Minimum number of bedrooms' },
+          guests:   { type: 'number', description: 'Number of guests' },
+          amenity:  { type: 'string', description: 'Required amenity e.g. pool, WiFi, parking, pets' }
+        }
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'block_dates',
+      description: 'Block specific dates on a property so guests cannot book those dates',
+      parameters: {
+        type: 'object',
+        properties: {
+          property_name: { type: 'string', description: 'Name or partial name of the property' },
+          dates: { type: 'array', items: { type: 'string' }, description: 'Array of dates to block in YYYY-MM-DD format' }
+        },
+        required: ['property_name', 'dates']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'update_price',
+      description: 'Update the nightly or monthly price of a property listing',
+      parameters: {
+        type: 'object',
+        properties: {
+          property_name: { type: 'string', description: 'Name or partial name of the property' },
+          price_per_night: { type: 'number', description: 'New price per night in PHP' },
+          price_per_month: { type: 'number', description: 'New price per month in PHP' }
+        },
+        required: ['property_name']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'send_message',
+      description: 'Send a message to a guest or host',
+      parameters: {
+        type: 'object',
+        properties: {
+          recipient_name: { type: 'string', description: 'Name of the guest or host to message' },
+          message: { type: 'string', description: 'The message content to send' }
+        },
+        required: ['recipient_name', 'message']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'create_discount',
+      description: 'Create a discount or promo code for a listing',
+      parameters: {
+        type: 'object',
+        properties: {
+          code:           { type: 'string',  description: 'The promo code text e.g. SUMMER20' },
+          discount_type:  { type: 'string',  description: 'Type of discount: percent or flat' },
+          discount_value: { type: 'number',  description: 'Discount amount e.g. 20 for 20% or 500 for ₱500' },
+          max_uses:       { type: 'number',  description: 'Maximum number of times the code can be used, 0 for unlimited' }
+        },
+        required: ['code', 'discount_type', 'discount_value']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'approve_booking',
+      description: 'Approve or confirm a pending booking request',
+      parameters: {
+        type: 'object',
+        properties: {
+          guest_name: { type: 'string', description: 'Name of the guest whose booking to approve' }
+        },
+        required: ['guest_name']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_earnings',
+      description: 'Get earnings summary or stats for the host',
+      parameters: { type: 'object', properties: {} }
+    }
+  }
+];
+
+// ── Execute tool calls ────────────────────────────────────
+async function executeTool(name, args) {
+  switch(name) {
+
+    case 'search_listings': {
+      await loadAIListings();
+      var results = _aiListings.filter(function(p) {
+        var ok = true;
+        if (args.city      && p.city && !p.city.toLowerCase().includes(args.city.toLowerCase())) ok=false;
+        if (args.type      && p.property_type && !p.property_type.toLowerCase().includes(args.type.toLowerCase())) ok=false;
+        if (args.max_price && p.price_per_night > args.max_price) ok=false;
+        if (args.min_beds  && p.bedrooms < args.min_beds) ok=false;
+        if (args.guests    && p.max_guests < args.guests) ok=false;
+        if (args.amenity   && p.amenities && !(p.amenities||[]).some(function(a){ return a.toLowerCase().includes(args.amenity.toLowerCase()); })) ok=false;
+        return ok;
+      });
+      return { listings: results, count: results.length };
+    }
+
+    case 'block_dates': {
+      // Find matching property
+      var { data: props } = await _db.from('rentleeys_properties')
+        .select('id,title').eq('host_id',_user.id).ilike('title','%'+args.property_name+'%');
+      if (!props || props.length === 0) return { error: 'Property "'+args.property_name+'" not found.' };
+      var prop = props[0];
+      // Require confirmation
+      _aiPending = { action:'block_dates', prop:prop, dates:args.dates };
+      return {
+        confirm_required: true,
+        message: 'Block '+args.dates.length+' date(s) on '+prop.title+'? Dates: '+args.dates.join(', '),
+        prop: prop
+      };
+    }
+
+    case 'update_price': {
+      var { data: props } = await _db.from('rentleeys_properties')
+        .select('id,title,price_per_night,price_per_month').eq('host_id',_user.id).ilike('title','%'+args.property_name+'%');
+      if (!props || props.length === 0) return { error: 'Property "'+args.property_name+'" not found.' };
+      var prop = props[0];
+      var changes = [];
+      if (args.price_per_night) changes.push('₱'+args.price_per_night+'/night');
+      if (args.price_per_month) changes.push('₱'+args.price_per_month+'/month');
+      _aiPending = { action:'update_price', prop:prop, price_per_night:args.price_per_night, price_per_month:args.price_per_month };
+      return {
+        confirm_required: true,
+        message: 'Update price for '+prop.title+' to '+changes.join(' and ')+'?'
+      };
+    }
+
+    case 'send_message': {
+      // Find the conversation
+      var { data: convs } = await _db.from('rentleeys_conversations')
+        .select('id,other_name,other_id').eq('user_id',_user.id);
+      var conv = (convs||[]).find(function(c){ return c.other_name && c.other_name.toLowerCase().includes(args.recipient_name.toLowerCase()); });
+      if (!conv) return { error: 'No conversation found with "'+args.recipient_name+'". You can message them from the Messages section.' };
+      _aiPending = { action:'send_message', conv:conv, message:args.message };
+      return {
+        confirm_required: true,
+        message: 'Send this message to '+conv.other_name+'? Message: '+args.message
+      };
+    }
+
+    case 'create_discount': {
+      _aiPending = {
+        action: 'create_discount',
+        code: args.code.toUpperCase(),
+        discount_type: args.discount_type,
+        discount_value: args.discount_value,
+        max_uses: args.max_uses || 0
+      };
+      var discStr = args.discount_type==='percent' ? args.discount_value+'%' : '₱'+args.discount_value;
+      return {
+        confirm_required: true,
+        message: 'Create promo code '+args.code.toUpperCase()+' for '+discStr+' off'+(args.max_uses?' (max '+args.max_uses+' uses)':'')+'?'
+      };
+    }
+
+    case 'approve_booking': {
+      var { data: bookings } = await _db.from('rentleeys_bookings')
+        .select('id,guest_name,check_in,check_out,total_price').eq('host_id',_user.id).eq('status','pending').ilike('guest_name','%'+args.guest_name+'%');
+      if (!bookings || bookings.length === 0) return { error: 'No pending booking found from "'+args.guest_name+'".' };
+      var booking = bookings[0];
+      _aiPending = { action:'approve_booking', booking:booking };
+      return {
+        confirm_required: true,
+        message: 'Approve booking from '+booking.guest_name+'. Dates: '+booking.check_in+' to '+booking.check_out+'. Amount: ₱'+Number(booking.total_price).toLocaleString()
+      };
+    }
+
+    case 'get_earnings': {
+      var { data: bookings } = await _db.from('rentleeys_bookings')
+        .select('total_price,status,created_at').eq('host_id',_user.id);
+      var confirmed = (bookings||[]).filter(function(b){ return b.status==='confirmed'; });
+      var total = confirmed.reduce(function(s,b){ return s+(b.total_price||0); },0);
+      var now = new Date();
+      var thisMonth = confirmed.filter(function(b){
+        var d=new Date(b.created_at); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+      });
+      var monthTotal = thisMonth.reduce(function(s,b){ return s+(b.total_price||0); },0);
+      return { total: total, this_month: monthTotal, confirmed_bookings: confirmed.length, pending: (bookings||[]).filter(function(b){ return b.status==='pending'; }).length };
+    }
+
+    default:
+      return { error: 'Unknown tool: '+name };
+  }
+}
+
+// ── Confirm pending action ────────────────────────────────
+async function confirmAIAction(yes) {
+  if (!_aiPending) return;
+  var pending = _aiPending;
+  _aiPending = null;
+
+  // Remove confirm buttons
+  var confirmDiv = document.getElementById('ai-confirm');
+  if (confirmDiv) confirmDiv.remove();
+
+  if (!yes) { addAIMsg('OK, cancelled. Let me know if you need anything else!', 'bot'); return; }
+
+  try {
+    switch(pending.action) {
+
+      case 'block_dates': {
+        var rows = pending.dates.map(function(d){ return { property_id:pending.prop.id, host_id:_user.id, date:d }; });
+        var { error } = await _db.from('rentleeys_blocked_dates').upsert(rows, { onConflict:'property_id,date' });
+        if (error) addAIMsg('Error blocking dates: '+error.message, 'bot');
+        else addAIMsg('✅ Done! '+pending.dates.length+' date(s) blocked on "'+pending.prop.title+'".', 'bot');
+        break;
+      }
+
+      case 'update_price': {
+        var updates = {};
+        if (pending.price_per_night) updates.price_per_night = pending.price_per_night;
+        if (pending.price_per_month) updates.price_per_month = pending.price_per_month;
+        var { error } = await _db.from('rentleeys_properties').update(updates).eq('id',pending.prop.id);
+        if (error) addAIMsg('Error updating price: '+error.message, 'bot');
+        else addAIMsg('✅ Price updated for "'+pending.prop.title+'"!', 'bot');
+        break;
+      }
+
+      case 'send_message': {
+        var { error } = await _db.from('rentleeys_messages').insert({
+          sender_id: _user.id, receiver_id: pending.conv.other_id,
+          content: pending.message
+        });
+        if (error) addAIMsg('Error sending message: '+error.message, 'bot');
+        else addAIMsg('✅ Message sent to '+pending.conv.other_name+'!', 'bot');
+        break;
+      }
+
+      case 'create_discount': {
+        var { error } = await _db.from('rentleeys_promo_codes').insert({
+          host_id: _user.id, code: pending.code,
+          discount_type: pending.discount_type, discount_value: pending.discount_value,
+          max_uses: pending.max_uses, times_used: 0
+        });
+        if (error) addAIMsg('Error creating code: '+error.message, 'bot');
+        else addAIMsg('✅ Promo code "'+pending.code+'" created! Guests can use it at checkout.', 'bot');
+        break;
+      }
+
+      case 'approve_booking': {
+        var { error } = await _db.from('rentleeys_bookings').update({ status:'confirmed' }).eq('id',pending.booking.id);
+        if (error) addAIMsg('Error approving booking: '+error.message, 'bot');
+        else addAIMsg('✅ Booking approved for '+pending.booking.guest_name+'! They will be notified.', 'bot');
+        break;
+      }
+    }
+  } catch(e) {
+    addAIMsg('Something went wrong: '+e.message, 'bot');
+  }
+}
 
 function toggleAI() {
   _aiOpen = !_aiOpen;
@@ -1476,8 +1758,7 @@ function toggleAI() {
 function quickAsk(btn) {
   var input = document.getElementById('ai-input');
   if (input) { input.value = btn.textContent.trim(); sendAI(); }
-  var q = document.getElementById('ai-quick');
-  if (q) q.style.display='none';
+  var q = document.getElementById('ai-quick'); if(q) q.style.display='none';
 }
 
 async function loadAIListings() {
@@ -1495,51 +1776,61 @@ function addAIMsg(text, role, cards) {
   if (!msgs) return;
   var div = document.createElement('div');
   div.className = 'ai-msg '+(role==='user'?'user':'bot');
-  div.innerHTML = text.replace(/\n/g,'<br>');
+  div.innerHTML = text.split('\n').join('<br>');
   msgs.appendChild(div);
   if (cards && cards.length) {
     cards.forEach(function(p) {
-      var sym = p.currency==='PHP'?'\u20b1':'$';
-      var price = p.price_per_month && p.minimum_stay>=30
-        ? sym+Number(p.price_per_month).toLocaleString()+'/month'
-        : sym+Number(p.price_per_night).toLocaleString()+'/night';
+      var sym = p.currency==='PHP'?'₱':'$';
+      var price = p.price_per_month&&p.minimum_stay>=30 ? sym+Number(p.price_per_month).toLocaleString()+'/month' : sym+Number(p.price_per_night).toLocaleString()+'/night';
       var a = document.createElement('a');
       a.className='ai-listing-card'; a.href='listing.html?id='+p.id;
-      var img = p.images&&p.images[0]
-        ? '<img class="ai-card-img" src="'+p.images[0]+'" alt="'+p.title+'">'
-        : '<div class="ai-card-img-placeholder">🏠</div>';
-      a.innerHTML = img+'<div class="ai-card-body">'
-        +'<div class="ai-card-title">'+p.title+'</div>'
-        +'<div class="ai-card-loc">📍 '+(p.city||'')+(p.province?', '+p.province:'')+'</div>'
-        +'<div class="ai-card-price">'+price+' · '+p.bedrooms+' bed · '+p.max_guests+' guests</div>'
-        +'</div>';
+      var img = p.images&&p.images[0] ? '<img class="ai-card-img" src="'+p.images[0]+'" alt="'+p.title+'">' : '<div class="ai-card-img-placeholder">🏠</div>';
+      a.innerHTML = img+'<div class="ai-card-body"><div class="ai-card-title">'+p.title+'</div><div class="ai-card-loc">📍 '+(p.city||'')+(p.province?', '+p.province:'')+'</div><div class="ai-card-price">'+price+' · '+p.bedrooms+' bed · '+p.max_guests+' guests</div></div>';
       msgs.appendChild(a);
     });
   }
   msgs.scrollTop = msgs.scrollHeight;
 }
 
+function showAIConfirm(message) {
+  var msgs = document.getElementById('ai-messages');
+  if (!msgs) return;
+  var div = document.createElement('div');
+  div.id = 'ai-confirm';
+  div.style.cssText = 'margin:8px 0;padding:12px 14px;background:#fff8f0;border:1.5px solid #fed7aa;border-radius:14px;font-size:13px;color:#92400e;';
+  div.innerHTML = '<div style="margin-bottom:10px;">'+message.split('\n').join('<br>')+'</div>'
+    +'<div style="display:flex;gap:8px;">'
+    +'<button onclick="confirmAIAction(true)" style="flex:1;padding:8px;background:#ff5a5f;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px;">✅ Yes, do it</button>'
+    +'<button onclick="confirmAIAction(false)" style="flex:1;padding:8px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px;">✕ Cancel</button>'
+    +'</div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
 async function sendAI() {
   var input = document.getElementById('ai-input');
-  var text = input ? input.value.trim() : '';
+  var text  = input ? input.value.trim() : '';
   if (!text) return;
   input.value = '';
   var q = document.getElementById('ai-quick'); if(q) q.style.display='none';
   addAIMsg(text,'user');
+
   var msgs = document.getElementById('ai-messages');
   var typing = document.createElement('div');
   typing.className='ai-msg typing'; typing.id='ai-typing';
   typing.innerHTML='<span class="ai-typing-dot"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span>';
   msgs.appendChild(typing); msgs.scrollTop=msgs.scrollHeight;
+
   await loadAIListings();
-  var ctx = _aiListings.length>0
-    ? 'Listings: '+_aiListings.map(function(p){
-        return p.title+'|'+p.city+'|'+p.property_type+'|'+p.bedrooms+'bed|'+p.max_guests+'guests'
-          +'|\u20b1'+(p.price_per_night||0)+'/night'+(p.price_per_month?'|\u20b1'+p.price_per_month+'/month':'')
-          +'|amenities:'+(p.amenities||[]).join(',')+'|id:'+p.id;
+
+  var listingsCtx = _aiListings.length>0
+    ? 'Available listings: '+_aiListings.map(function(p){
+        return p.title+'|'+p.city+'|'+p.property_type+'|'+p.bedrooms+'bed|'+p.max_guests+'guests|₱'+(p.price_per_night||0)+'/night'+(p.price_per_month?'|₱'+p.price_per_month+'/month':'')+'|amenities:'+(p.amenities||[]).join(',')+'|id:'+p.id;
       }).join('; ')
-    : 'No listings loaded.';
+    : '';
+
   _aiHistory.push({role:'user',content:text});
+
   try {
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
       method:'POST',
@@ -1547,25 +1838,63 @@ async function sendAI() {
       body:JSON.stringify({
         model:'llama-3.3-70b-versatile',
         messages:[
-          {role:'system',content:'You are a helpful AI assistant for Rentleeys host dashboard. Help hosts manage listings, respond to guests, improve earnings, and understand their bookings. When recommending listings end with LISTINGS:[id1,id2]. Be friendly and concise. '+ctx},
+          {role:'system',content:'You are an agentic AI assistant for Rentleeys, a property rental platform dashboard. '
+            +'You can answer questions AND perform real actions for the host by calling tools. '
+            +'When a host asks you to do something (block dates, update prices, send messages, create discounts, approve bookings), USE THE APPROPRIATE TOOL. '
+            +'For date blocking, convert relative dates like "next week" or "July 15-20" to specific YYYY-MM-DD format dates. '
+            +'Always be friendly, concise, and confirm before taking actions. '
+            +'The host is logged in. '+listingsCtx},
           ..._aiHistory
         ],
-        max_tokens:400,temperature:0.7
+        tools: AI_TOOLS,
+        tool_choice:'auto',
+        max_tokens:600,
+        temperature:0.3
       })
     });
     var data = await res.json();
-    var reply = data.choices&&data.choices[0]?data.choices[0].message.content:'Sorry, try again.';
-    var cards=[]; var m=reply.match(/LISTINGS:\[([^\]]*)\]/);
-    if(m&&m[1]){ var ids=m[1].split(',').map(function(s){return s.trim();});
-      cards=_aiListings.filter(function(p){return ids.indexOf(p.id)!==-1;}); }
-    var clean=reply.replace(/LISTINGS:\[[^\]]*\]/g,'').trim();
-    var t=document.getElementById('ai-typing'); if(t) t.remove();
-    addAIMsg(clean,'bot',cards);
-    _aiHistory.push({role:'assistant',content:reply});
-    if(_aiHistory.length>10) _aiHistory=_aiHistory.slice(-10);
+    var choice = data.choices && data.choices[0];
+    var t = document.getElementById('ai-typing'); if(t) t.remove();
+
+    if (choice && choice.message && choice.message.tool_calls && choice.message.tool_calls.length > 0) {
+      // AI wants to call a tool
+      var toolCall = choice.message.tool_calls[0];
+      var toolName = toolCall.function.name;
+      var toolArgs = JSON.parse(toolCall.function.arguments);
+
+      var result = await executeTool(toolName, toolArgs);
+
+      if (result.confirm_required) {
+        // Show confirmation UI
+        addAIMsg('I can do that! Please confirm:', 'bot');
+        showAIConfirm(result.message);
+        // Show listing cards if it's a search
+        if (result.listings) addAIMsg('Here are the matching properties:', 'bot', result.listings);
+      } else if (result.listings !== undefined) {
+        // Search result
+        if (result.count === 0) {
+          addAIMsg('I could not find any listings matching your criteria. Try adjusting your filters!', 'bot');
+        } else {
+          addAIMsg('Found '+result.count+' matching propert'+(result.count===1?'y':'ies')+':', 'bot', result.listings.slice(0,5));
+        }
+      } else if (result.total !== undefined) {
+        // Earnings
+        addAIMsg('💰 Earnings summary: Total ₱'+Number(result.total).toLocaleString()+', This month ₱'+Number(result.this_month).toLocaleString()+', Confirmed bookings: '+result.confirmed_bookings+', Pending: '+result.pending+'. Want tips on improving?', 'bot');
+      } else if (result.error) {
+        addAIMsg('⚠️ '+result.error, 'bot');
+      }
+      _aiHistory.push(choice.message);
+    } else {
+      // Regular text response
+      var reply = choice ? choice.message.content : 'Sorry, I could not process that. Please try again.';
+      addAIMsg(reply, 'bot');
+      _aiHistory.push({role:'assistant',content:reply});
+    }
+    if (_aiHistory.length > 12) _aiHistory = _aiHistory.slice(-12);
   } catch(e) {
-    var t=document.getElementById('ai-typing'); if(t) t.remove();
-    addAIMsg('Connection error. Please try again.','bot');
+    var t = document.getElementById('ai-typing'); if(t) t.remove();
+    addAIMsg('Connection error. Please try again.', 'bot');
+    console.error('AI error:',e);
   }
 }
 </script>
@@ -1586,10 +1915,10 @@ async function sendAI() {
     <div class="ai-msg bot">Hi! 👋 I can help you manage your listings, answer guest questions, or find insights. Ask me anything!</div>
   </div>
   <div class="ai-quick" id="ai-quick">
-    <button class="ai-quick-btn" onclick="quickAsk(this)">📊 Earnings tips</button>
-    <button class="ai-quick-btn" onclick="quickAsk(this)">💬 Draft guest message</button>
-    <button class="ai-quick-btn" onclick="quickAsk(this)">🏠 Improve listing</button>
-    <button class="ai-quick-btn" onclick="quickAsk(this)">🐾 Pet policy help</button>
+    <button class="ai-quick-btn" onclick="quickAsk(this)">📊 Show my earnings</button>
+    <button class="ai-quick-btn" onclick="quickAsk(this)">✅ Approve latest booking</button>
+    <button class="ai-quick-btn" onclick="quickAsk(this)">🏷️ Create 20% discount code</button>
+    <button class="ai-quick-btn" onclick="quickAsk(this)">💬 Message my latest guest</button>
   </div>
   <div class="ai-input-wrap">
     <input class="ai-input" id="ai-input" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')sendAI()"/>
